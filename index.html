@@ -49,14 +49,16 @@
         .field-group label { font-weight: bold; font-size: 0.9em; display: block; margin-bottom: 3px; color: var(--group-label); }
         .audit-info { font-size: 0.8em; color: #6c757d; margin-top: 6px; border-top: 1px dashed var(--border-color); padding-top: 4px; }
         
+        /* Kolorowanie wartości planów */
+        .val-red { color: #dc3545; font-weight: bold; }
+        .val-green { color: #28a745; font-weight: bold; }
+
         /* Kafelki i menu */
         .tiles-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 20px 0; }
         .tile { background: var(--card-bg); border: 2px solid #007bff; padding: 20px 10px; text-align: center; border-radius: 8px; font-weight: bold; color: #007bff; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         .tile:hover { background: #007bff; color: white; }
         .tile.disabled { border-color: var(--border-color); color: #aaa; cursor: not-allowed; background: var(--group-bg); }
         .tile.disabled:hover { background: var(--group-bg); color: #aaa; }
-        .back-btn { background: #6c757d; margin-bottom: 15px; }
-        .back-btn:hover { background: #5a6268; }
         
         /* Tabele */
         table.month-table, table.standard-table, table.cleaning-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.95em; background: var(--card-bg); color: var(--text-color); }
@@ -104,7 +106,7 @@
             color: var(--text-color);
             padding: 20px;
             border-radius: 8px;
-            max-width: 500px;
+            max-width: 600px;
             width: 100%;
             max-height: 90vh;
             overflow-y: auto;
@@ -162,6 +164,40 @@
             background: rgba(255, 255, 255, 0.4);
         }
 
+        /* Styl dla galerii zdjęć w planogramach */
+        .planogram-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .planogram-thumb-box {
+            position: relative;
+            background: var(--preview-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 5px;
+            text-align: center;
+        }
+        .planogram-thumb-box img {
+            width: 100%;
+            height: 110px;
+            object-fit: cover;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .del-photo-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            font-size: 0.75em;
+            padding: 3px 6px;
+            border-radius: 3px;
+            cursor: pointer;
+            margin-top: 4px;
+            width: 100%;
+        }
+
         /* Styl dla podglądu grafiku obrazkowego */
         .grafik-preview-box { text-align: center; margin-top: 15px; border: 2px dashed var(--border-color); padding: 15px; border-radius: 6px; background: var(--preview-bg); }
         .grafik-preview-box img { max-width: 100%; height: auto; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
@@ -204,15 +240,15 @@
         
         <!-- MODUŁ SPRZEDAŻY -->
         <div id="modul-sprzedaz" class="hidden">
-            <button class="back-btn" onclick="powrotDoMenu()">⬅ Powrót do menu</button>
-            
             <div id="view-monthly">
                 <h3>📊 Podsumowanie Miesięczne Sprzedaży</h3>
                 <label for="wybrany-miesiac">Wybierz miesiąc:</label>
                 <input type="month" id="wybrany-miesiac" onchange="zaladujMiesiacTabela()">
-                <div id="monthly-table-container">Ładowanie tabeli...</div>
                 
-                <button onclick="przejdzDoDnia(new Date().toISOString().split('T')[0])" style="margin-top: 15px; background: #28a745;">+ Uzupełnij / Edytuj dzisiejszy dzień</button>
+                <!-- ANALIZA PLANÓW -->
+                <div id="plans-container" style="margin-top: 15px;"></div>
+
+                <div id="monthly-table-container" style="margin-top: 20px;">Ładowanie tabeli...</div>
                 
                 <div id="admin-daily-section" class="hidden">
                     <hr style="margin: 20px 0;">
@@ -222,7 +258,6 @@
             </div>
 
             <div id="view-daily" class="hidden">
-                <button class="back-btn" onclick="powrotDoMiesiaca()" style="background: #6c757d;">⬅ Powrót do tabeli miesiąca</button>
                 <h3 id="daily-title">Raport Dzienny</h3>
                 
                 <label for="raport-data">Data raportu:</label>
@@ -258,7 +293,6 @@
 
         <!-- MODUŁ GRAFIK -->
         <div id="modul-grafik" class="hidden">
-            <button class="back-btn" onclick="powrotDoMenu()">⬅ Powrót do menu</button>
             <h3>📅 Grafik</h3>
             
             <div style="margin-bottom: 15px;">
@@ -298,7 +332,6 @@
 
         <!-- MODUŁ PLANOGRAMY -->
         <div id="modul-planogram" class="hidden">
-            <button class="back-btn" onclick="powrotDoMenu()">⬅ Powrót do menu</button>
             <h3>📋 Planogramy Ułożenia Towaru</h3>
             
             <div id="admin-planogram-kategoria-panel" class="field-group hidden" style="background: var(--card-bg); border: 2px dashed #007bff; margin-bottom: 20px;">
@@ -315,17 +348,16 @@
 
         <!-- MODAL SZCZEGÓŁÓW PLANOGRAMU (DLA PÓŁKI) -->
         <div id="modal-planogram-szczegoly" class="modal-overlay hidden">
-            <div class="modal-content" style="border: 2px solid #007bff; max-width: 600px;">
+            <div class="modal-content" style="border: 2px solid #007bff; max-width: 650px;">
                 <h4 id="modal-planogram-tytul" style="margin-top:0; color:#007bff;">Planogram</h4>
                 <div id="modal-planogram-tresc">Ładowanie...</div>
                 
                 <div id="admin-planogram-edycja" class="field-group hidden" style="margin-top: 15px; border-top: 1px solid var(--border-color); padding-top: 10px;">
-                    <h5 style="margin: 0 0 5px 0; color: #28a745;">⚙️ Panel Administratora (Zarządzaj zdjęciem)</h5>
-                    <label style="font-size: 0.85em;">Wybierz zdjęcie planogramu (z aparatu lub galerii):</label>
-                    <input type="file" id="admin-planogram-file" accept="image/*" style="padding: 6px;">
-                    <div style="display: flex; gap: 8px; margin-top: 5px;">
-                        <button onclick="zapiszPlanogram()" style="background: #28a745; margin: 0;">💾 Zapisz / Zastąp zdjęcie</button>
-                        <button onclick="usunPlanogramPlik()" style="background: #dc3545; margin: 0;" id="btn-usun-planogram">🗑️ Usuń zdjęcie</button>
+                    <h5 style="margin: 0 0 5px 0; color: #28a745;">⚙️ Panel Administratora (Dodaj kolejne zdjęcia)</h5>
+                    <label style="font-size: 0.85em;">Wybierz jedno lub więcej zdjęć (możesz zaznaczyć kilka naraz):</label>
+                    <input type="file" id="admin-planogram-file" accept="image/*" multiple style="padding: 6px;">
+                    <div style="margin-top: 5px;">
+                        <button onclick="dodajZdjeciaDoPlanogramu()" style="background: #28a745; margin: 0;">➕ Dodaj wybrane zdjęcia do galerii</button>
                     </div>
                 </div>
 
@@ -337,7 +369,6 @@
 
         <!-- MODUŁ SPRZĄTANIE / KONTROLA PÓŁEK -->
         <div id="modul-sprzatanie" class="hidden">
-            <button class="back-btn" onclick="powrotDoMenu()">⬅ Powrót do menu</button>
             <h3>🧹 Kontrola Półek i Czystości</h3>
             
             <div class="field-group" style="display: flex; gap: 10px; align-items: flex-end;">
@@ -426,7 +457,6 @@
 
         <!-- PANEL PRACOWNIKÓW -->
         <div id="modul-pracownicy" class="hidden">
-            <button class="back-btn" onclick="powrotDoMenu()">⬅ Powrót do menu</button>
             <h3>👥 Panel Zarządzania Pracownikami</h3>
             
             <div class="field-group">
@@ -533,6 +563,92 @@
             "Kasa 2: 5 półek", "Kasa 2: 9 półek", "Kawy / Sosy", "Lodówka mała", 
             "Lodówka Napoje", "Lodówka Piwo", "Oleje", "Piwo", "Soki i Woda", "Strefa zakasowa"
         ];
+
+        // --- OBSŁUGA KLAWISZA ESC I PRAWEGO PRZYCISKU MYSZY DLA KOMPUTERÓW ---
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                // Jeśli otwarte jest jakieś okno modalne / podgląd zoom, zamknij je najpierw
+                const zoomModal = document.getElementById('modal-zoom-zdjecia');
+                const polkaModal = document.getElementById('modal-polka');
+                const planogramModal = document.getElementById('modal-planogram-szczegoly');
+                const ustawieniaModal = document.getElementById('modal-ustawienia');
+                const pracownikModal = document.getElementById('modal-szczegoly-pracownika');
+
+                if (!zoomModal.classList.contains('hidden')) {
+                    zamknijZoomZdjecia();
+                    return;
+                }
+                if (!polkaModal.classList.contains('hidden')) {
+                    zamknijModalPolki();
+                    return;
+                }
+                if (!planogramModal.classList.contains('hidden')) {
+                    zamknijModalPlanogramu();
+                    return;
+                }
+                if (!ustawieniaModal.classList.contains('hidden')) {
+                    zamknijModalUstawienia();
+                    return;
+                }
+                if (!pracownikModal.classList.contains('hidden')) {
+                    zamknijEdycjePracownika();
+                    return;
+                }
+
+                // W przeciwnym razie zachowaj się jak przycisk wstecz
+                const hash = window.location.hash;
+                if (hash === '#dzien') {
+                    window.location.hash = '#sprzedaz';
+                } else if (hash && hash !== '#menu') {
+                    window.location.hash = '#menu';
+                }
+            }
+        });
+
+        window.addEventListener('contextmenu', (e) => {
+            // Prawy przycisk myszy symulujący wstecz (jeśli nie klikamy w edytowalny tekst/input/textarea)
+            const tag = e.target.tagName.toLowerCase();
+            if (tag === 'input' || tag === 'textarea' || tag === 'select') {
+                return; // Pozwól na domyślne menu kontekstowe w polach tekstowych
+            }
+
+            e.preventDefault(); // Zablokuj standardowe menu kontekstowe przeglądarki
+            
+            // Zamknij ewentualne otwarte modale
+            const zoomModal = document.getElementById('modal-zoom-zdjecia');
+            const polkaModal = document.getElementById('modal-polka');
+            const planogramModal = document.getElementById('modal-planogram-szczegoly');
+            const ustawieniaModal = document.getElementById('modal-ustawienia');
+            const pracownikModal = document.getElementById('modal-szczegoly-pracownika');
+
+            if (!zoomModal.classList.contains('hidden')) {
+                zamknijZoomZdjecia();
+                return;
+            }
+            if (!polkaModal.classList.contains('hidden')) {
+                zamknijModalPolki();
+                return;
+            }
+            if (!planogramModal.classList.contains('hidden')) {
+                zamknijModalPlanogramu();
+                return;
+            }
+            if (!ustawieniaModal.classList.contains('hidden')) {
+                zamknijModalUstawienia();
+                return;
+            }
+            if (!pracownikModal.classList.contains('hidden')) {
+                zamknijEdycjePracownika();
+                return;
+            }
+
+            const hash = window.location.hash;
+            if (hash === '#dzien') {
+                window.location.hash = '#sprzedaz';
+            } else if (hash && hash !== '#menu') {
+                window.location.hash = '#menu';
+            }
+        });
 
         // --- OBSŁUGA ZOOMU I GESTÓW ZDJĘCIA ---
         let scale = 1;
@@ -771,10 +887,6 @@
             window.location.hash = "#" + nazwa;
         }
 
-        window.powrotDoMenu = function() {
-            window.location.hash = "#menu";
-        }
-
         window.toggleEtatPole = function(prefix) {
             const umowa = document.getElementById(`${prefix}-p-umowa`).value;
             const etatBox = document.getElementById(`${prefix}-etat-box`);
@@ -827,8 +939,8 @@
                 let html = `<table class="cleaning-table">
                     <tr>
                         <th>Nazwa półki / strefy</th>
-                        <th>Data umieszczenia</th>
-                        <th>Status / Podgląd</th>`;
+                        <th>Data modyfikacji</th>
+                        <th>Status / Liczba zdjęć</th>`;
                 
                 const czyAdmin = currentUserData && currentUserData.rola === 'admin';
                 if (czyAdmin) {
@@ -841,9 +953,14 @@
                     let statusBadge = `<span class="badge-pending">Brak planogramu</span>`;
                     let dataUmieszczenia = "-";
 
-                    if (pData && pData.dataUmieszczenia) {
-                        dataUmieszczenia = pData.dataUmieszczenia;
-                        statusBadge = `<span class="badge-done">📷 Dostępne zdjęcie</span>`;
+                    if (pData) {
+                        if (pData.zdjęcia && pData.zdjęcia.length > 0) {
+                            dataUmieszczenia = pData.dataUmieszczenia || "-";
+                            statusBadge = `<span class="badge-done">📷 ${pData.zdjęcia.length} ${pData.zdjęcia.length === 1 ? 'zdjęcie' : (pData.zdjęcia.length < 5 ? 'zdjęcia' : 'zdjęć')}</span>`;
+                        } else if (pData.plik) {
+                            dataUmieszczenia = pData.dataUmieszczenia || "-";
+                            statusBadge = `<span class="badge-done">📷 1 zdjęcie</span>`;
+                        }
                     }
 
                     html += `<tr class="cleaning-row">
@@ -893,7 +1010,7 @@
         }
 
         window.usunPolkeZListyPlanogramu = async function(polkaNazwa) {
-            if (!confirm(`Czy na pewno chcesz usunąć strefę "${polkaNazwa}" z listy? Spowoduje to również usunięcie przypisanego do niej planogramu.`)) {
+            if (!confirm(`Czy na pewno chcesz usunąć strefę "${polkaNazwa}" z listy? Spowoduje to również usunięcie przypisanych do niej planogramów.`)) {
                 return;
             }
 
@@ -918,10 +1035,9 @@
             document.getElementById('modal-planogram-tytul').innerText = `Planogram: ${polkaNazwa}`;
             const trescDiv = document.getElementById('modal-planogram-tresc');
             const adminPanel = document.getElementById('admin-planogram-edycja');
-            const btnUsun = document.getElementById('btn-usun-planogram');
             document.getElementById('admin-planogram-file').value = "";
 
-            trescDiv.innerHTML = "Pobieranie zdjęcia...";
+            trescDiv.innerHTML = "Pobieranie zdjęć...";
             document.getElementById('modal-planogram-szczegoly').classList.remove('hidden');
 
             if (currentUserData && currentUserData.rola === 'admin') {
@@ -934,20 +1050,38 @@
                 const docRef = doc(db, "planogramy", polkaNazwa);
                 const docSnap = await getDoc(docRef);
 
-                if (docSnap.exists() && docSnap.data().plik) {
+                if (docSnap.exists()) {
                     const data = docSnap.data();
-                    if (currentUserData && currentUserData.rola === 'admin') {
-                        btnUsun.style.display = 'block';
+                    let listaZdjec = [];
+                    
+                    if (data.zdjęcia && Array.isArray(data.zdjęcia)) {
+                        listaZdjec = data.zdjęcia;
+                    } else if (data.plik) {
+                        listaZdjec = [data.plik];
                     }
 
-                    trescDiv.innerHTML = `<p style="font-size: 0.9em;">Data umieszczenia: <strong>${data.dataUmieszczenia}</strong> | Dodano przez: <strong>${data.autor || 'Admin'}</strong></p>
-                    <div style="text-align: center; margin-top: 10px;">
-                        <p style="font-size:0.85em; color:#28a745;">Kliknij na zdjęcie, aby powiększyć (zoom):</p>
-                        <img src="${data.plik}" onclick="otworzZoomZdjecia('${data.plik}')" style="max-height: 280px; max-width: 100%; border-radius: 4px; box-shadow: 0 2px 6px rgba(0,0,0,0.15); cursor: pointer;" title="Kliknij, aby powiększyć">
-                    </div>`;
+                    if (listaZdjec.length > 0) {
+                        let galleryHtml = `<p style="font-size: 0.9em; margin-bottom: 8px;">Ostatnia modyfikacja: <strong>${data.dataUmieszczenia || '-'}</strong> | Autor: <strong>${data.autor || 'Admin'}</strong></p>
+                        <p style="font-size: 0.85em; color: #28a745;">Kliknij na miniaturę, aby powiększyć zdjęcie:</p>
+                        <div class="planogram-gallery">`;
+
+                        listaZdjec.forEach((imgSrc, idx) => {
+                            galleryHtml += `<div class="planogram-thumb-box">
+                                <img src="${imgSrc}" onclick="otworzZoomZdjecia('${imgSrc}')" title="Kliknij, aby powiększyć">`;
+                            
+                            if (currentUserData && currentUserData.rola === 'admin') {
+                                galleryHtml += `<button class="del-photo-btn" onclick="usunPojedynczeZdjeciePlanogramu(${idx})">🗑️ Usuń</button>`;
+                            }
+                            galleryHtml += `</div>`;
+                        });
+
+                        galleryHtml += `</div>`;
+                        trescDiv.innerHTML = galleryHtml;
+                    } else {
+                        trescDiv.innerHTML = `<p style="color: #6c757d; text-align: center; padding: 20px;">Brak załączonych zdjęć planogramu dla tej półki.</p>`;
+                    }
                 } else {
-                    btnUsun.style.display = 'none';
-                    trescDiv.innerHTML = `<p style="color: #6c757d; text-align: center; padding: 20px;">Brak załączonego zdjęcia planogramu dla tej półki.</p>`;
+                    trescDiv.innerHTML = `<p style="color: #6c757d; text-align: center; padding: 20px;">Brak załączonych zdjęć planogramu dla tej półki.</p>`;
                 }
             } catch (e) {
                 console.error(e);
@@ -959,48 +1093,92 @@
             document.getElementById('modal-planogram-szczegoly').classList.add('hidden');
         }
 
-        window.zapiszPlanogram = async function() {
+        window.dodajZdjeciaDoPlanogramu = async function() {
             const fileInput = document.getElementById('admin-planogram-file');
             if (fileInput.files.length === 0) {
-                alert("Wybierz zdjęcie planogramu do wgrania!");
+                alert("Wybierz przynajmniej jedno zdjęcie do wgrania!");
                 return;
             }
 
-            const plik = fileInput.files[0];
-            const reader = new FileReader();
+            const files = Array.from(fileInput.files);
+            let wczytaneBase64 = [];
 
-            reader.onload = async function(e) {
-                const base64Data = e.target.result;
+            let readerPromises = files.map(file => {
+                return new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => resolve(e.target.result);
+                    reader.readAsDataURL(file);
+                });
+            });
+
+            wczytaneBase64 = await Promise.all(readerPromises);
+
+            try {
+                const docRef = doc(db, "planogramy", wymawiajacyPolkaPlanogram);
+                const docSnap = await getDoc(docRef);
+                let istniejaceZdjecia = [];
+
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    if (data.zdjęcia && Array.isArray(data.zdjęcia)) {
+                        istniejaceZdjecia = data.zdjęcia;
+                    } else if (data.plik) {
+                        istniejaceZdjecia = [data.plik];
+                    }
+                }
+
+                const laczneZdjecia = istniejaceZdjecia.concat(wczytaneBase64);
                 const teraz = new Date().toLocaleString();
                 const imieAktualne = currentUserData ? currentUserData.imie : "Admin";
 
-                try {
-                    await setDoc(doc(db, "planogramy", wymawiajacyPolkaPlanogram), {
-                        polka: wymawiajacyPolkaPlanogram,
-                        plik: base64Data,
-                        dataUmieszczenia: teraz,
-                        autor: imieAktualne
-                    });
-                    alert("Zdjęcie planogramu zostało pomyślnie zapisane!");
-                    otworzModalPlanogramu(wymawiajacyPolkaPlanogram);
-                    zaladujPlanogramyMenu();
-                } catch (err) {
-                    alert("Błąd podczas zapisu planogramu: " + err.message);
-                }
-            };
-            reader.readAsDataURL(plik);
-        }
+                await setDoc(docRef, {
+                    polka: wymawiajacyPolkaPlanogram,
+                    zdjęcia: laczneZdjecia,
+                    dataUmieszczenia: teraz,
+                    autor: imieAktualne
+                });
 
-        window.usunPlanogramPlik = async function() {
-            if (!confirm("Czy na pewno chcesz usunąć zdjęcie planogramu z tej półki?")) return;
-
-            try {
-                await deleteDoc(doc(db, "planogramy", wymawiajacyPolkaPlanogram));
-                alert("Usunięto zdjęcie planogramu.");
+                alert("Dodano nowe zdjęcia do planogramu!");
+                fileInput.value = "";
                 otworzModalPlanogramu(wymawiajacyPolkaPlanogram);
                 zaladujPlanogramyMenu();
+            } catch (err) {
+                alert("Błąd podczas zapisywania zdjęć: " + err.message);
+            }
+        }
+
+        window.usunPojedynczeZdjeciePlanogramu = async function(index) {
+            if (!confirm("Czy na pewno chcesz usunąć to konkretne zdjęcie?")) return;
+
+            try {
+                const docRef = doc(db, "planogramy", wymawiajacyPolkaPlanogram);
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    let istniejaceZdjecia = data.zdjęcia || (data.plik ? [data.plik] : []);
+                    
+                    istniejaceZdjecia.splice(index, 1);
+                    const teraz = new Date().toLocaleString();
+                    const imieAktualne = currentUserData ? currentUserData.imie : "Admin";
+
+                    if (istniejaceZdjecia.length > 0) {
+                        await setDoc(docRef, {
+                            polka: wymawiajacyPolkaPlanogram,
+                            zdjęcia: istniejaceZdjecia,
+                            dataUmieszczenia: teraz,
+                            autor: imieAktualne
+                        });
+                    } else {
+                        await deleteDoc(docRef);
+                    }
+
+                    alert("Usunięto zdjęcie.");
+                    otworzModalPlanogramu(wymawiajacyPolkaPlanogram);
+                    zaladujPlanogramyMenu();
+                }
             } catch (e) {
-                alert("Błąd podczas usuwania pliku.");
+                alert("Błąd podczas usuwania zdjęcia.");
             }
         }
 
@@ -1592,10 +1770,6 @@
             sprawdzWczytajDaneDlaDaty();
         }
 
-        window.powrotDoMiesiaca = function() {
-            window.location.hash = "#sprzedaz";
-        }
-
         window.zmienDateWFormularzu = function() {
             sprawdzWczytajDaneDlaDaty();
         }
@@ -1748,42 +1922,154 @@
             }
         }
 
-        window.zaladujMiesiacTabela = async function() {
-            const container = document.getElementById('monthly-table-container');
+        window.zapiszPlanyMiesieczne = async function() {
             const wybranyMiesiac = document.getElementById('wybrany-miesiac').value;
             if (!wybranyMiesiac) return;
+
+            const planKawa = Number(document.getElementById('input-plan-kawa').value) || 0;
+            const planHd = Number(document.getElementById('input-plan-hd').value) || 0;
+            const planSklep = Number(document.getElementById('input-plan-sklep').value) || 0;
+
+            try {
+                await setDoc(doc(db, "plany_miesieczne", wybranyMiesiac), {
+                    kawa: planKawa,
+                    hd: planHd,
+                    sklep: planSklep
+                });
+                alert("Zapisano plany miesięczne!");
+                zaladujMiesiacTabela();
+            } catch (e) {
+                alert("Błąd zapisu planów: " + e.message);
+            }
+        }
+
+        window.zaladujMiesiacTabela = async function() {
+            const container = document.getElementById('monthly-table-container');
+            const plansContainer = document.getElementById('plans-container');
+            const wybranyMiesiac = document.getElementById('wybrany-miesiac').value;
+            if (!wybranyMiesiac) return;
+            
             container.innerHTML = "Pobieranie...";
+            plansContainer.innerHTML = "Pobieranie planów...";
+
             try {
                 const querySnapshot = await getDocs(collection(db, "sprzedaz"));
-                let raporty = [];
+                let raportyMapa = {};
                 querySnapshot.forEach(doc => {
-                    if (doc.data().data?.startsWith(wybranyMiesiac)) raporty.push(doc.data());
+                    const dataR = doc.data();
+                    if (dataR.data?.startsWith(wybranyMiesiac)) {
+                        raportyMapa[dataR.data] = dataR;
+                    }
                 });
-                raporty.sort((a, b) => new Date(a.data) - new Date(b.data));
 
-                if (raporty.length === 0) {
-                    container.innerHTML = "<p style='text-align:center;'>Brak raportów w miesiącu.</p>";
-                    return;
-                }
+                // Pobranie zapisanych planów dla miesiąca
+                let planyData = { kawa: 0, hd: 0, sklep: 0 };
+                try {
+                    const planDoc = await getDoc(doc(db, "plany_miesieczne", wybranyMiesiac));
+                    if (planDoc.exists()) {
+                        planyData = planDoc.data();
+                    }
+                } catch(err) { console.error(err); }
+
+                // Generowanie wszystkich dni wybranego miesiąca
+                const [rok, mies] = wybranyMiesiac.split('-').map(Number);
+                const liczbaDni = new Date(rok, mies, 0).getDate();
 
                 let sKawaI = 0, sKawaW = 0, sHdI = 0, sHdW = 0, sSklepW = 0;
                 let table = `<table class="month-table"><tr><th>Dzień</th><th>Sprzedawca/cy</th><th>Kawa (szt/zł)</th><th>HD (szt/zł)</th><th>Sklep (zł)</th></tr>`;
-                raporty.forEach(r => {
-                    sKawaI += Number(r.kawa?.ilosc)||0; sKawaW += Number(r.kawa?.wartosc)||0;
-                    sHdI += Number(r.hd?.ilosc)||0; sHdW += Number(r.hd?.wartosc)||0;
-                    sSklepW += Number(r.sklep?.wartosc)||0;
-                    const sprzedawcyStr = r.sprzedawcy ? r.sprzedawcy.join(", ") : "-";
-                    table += `<tr class="clickable-row" onclick="przejdzDoDnia('${r.data}')">
-                        <td><strong>${r.data.slice(8)}</strong></td>
-                        <td style="font-size:0.9em;">${sprzedawcyStr}</td>
-                        <td>${r.kawa?.ilosc} / ${r.kawa?.wartosc}</td>
-                        <td>${r.hd?.ilosc} / ${r.hd?.wartosc}</td>
-                        <td>${r.sklep?.wartosc}</td>
-                    </tr>`;
-                });
-                table += `<tr class="sum-row"><td colspan="2">SUMA</td><td>${sKawaI} / ${sKawaW.toFixed(2)}</td><td>${sHdI} / ${sHdW.toFixed(2)}</td><td>${sSklepW.toFixed(2)}</td></tr></table>`;
+
+                for (let d = 1; d <= liczbaDni; d++) {
+                    const dzienStr = String(d).padStart(2, '0');
+                    const pelnaData = `${wybranyMiesiac}-${dzienStr}`;
+                    const r = raportyMapa[pelnaData];
+
+                    if (r) {
+                        sKawaI += Number(r.kawa?.ilosc) || 0;
+                        sKawaW += Number(r.kawa?.wartosc) || 0;
+                        sHdI += Number(r.hd?.ilosc) || 0;
+                        sHdW += Number(r.hd?.wartosc) || 0;
+                        sSklepW += Number(r.sklep?.wartosc) || 0;
+
+                        const sprzedawcyStr = r.sprzedawcy ? r.sprzedawcy.join(", ") : "-";
+                        table += `<tr class="cleaning-row" onclick="przejdzDoDnia('${pelnaData}')">
+                            <td><strong>${dzienStr}</strong></td>
+                            <td style="font-size:0.9em;">${sprzedawcyStr}</td>
+                            <td>${r.kawa?.ilosc ?? '-'} / ${r.kawa?.wartosc ?? '-'}</td>
+                            <td>${r.hd?.ilosc ?? '-'} / ${r.hd?.wartosc ?? '-'}</td>
+                            <td>${r.sklep?.wartosc ?? '-'}</td>
+                        </tr>`;
+                    } else {
+                        table += `<tr class="cleaning-row" onclick="przejdzDoDnia('${pelnaData}')" style="color: #999;">
+                            <td><strong>${dzienStr}</strong></td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                        </tr>`;
+                    }
+                }
+
+                table += `<tr class="sum-row"><td colspan="2">SUMA</td><td>${sKawaI} / ${sKawaW.toFixed(2)}</td><td>${sHdI} / ${sHdW.toFixed(2)}</td><td>${sSklepW.toFixed(2)}</td></tr>`;
+                table += `</table>`;
                 container.innerHTML = table;
-            } catch(e) { container.innerHTML = "Błąd tabeli."; }
+
+                // Sekcja planów na górze
+                const czyAdmin = currentUserData && currentUserData.rola === 'admin';
+                const inputReadonly = czyAdmin ? "" : "readonly";
+
+                const pKawa = planyData.kawa || 0;
+                const pHd = planyData.hd || 0;
+                const pSklep = planyData.sklep || 0;
+
+                const diff68Kawa = sKawaW - (pKawa * 0.68);
+                const diff68Hd = sHdW - (pHd * 0.68);
+                const diff68Sklep = sSklepW - (pSklep * 0.68);
+
+                const diff100Kawa = sKawaW - pKawa;
+                const diff100Hd = sHdW - pHd;
+                const diff100Sklep = sSklepW - pSklep;
+
+                let plansHtml = `<div style="background: var(--group-bg); padding: 12px; border-radius: 6px;">
+                    <h4 style="margin-top:0; color:#007bff;">🎯 Analiza Planów Miesięcznych</h4>
+                    <table class="month-table" style="margin-top:10px;">
+                        <tr>
+                            <th>Wskaźnik / Aspekt</th>
+                            <th>KAWA (zł)</th>
+                            <th>HD (zł)</th>
+                            <th>SKLEP (zł)</th>
+                        </tr>
+                        <tr>
+                            <td><strong>Plan kwotowy</strong></td>
+                            <td><input type="number" step="0.01" id="input-plan-kawa" value="${pKawa > 0 ? pKawa : ''}" placeholder="Wpisz plan" ${inputReadonly} style="margin:0; text-align:center;"></td>
+                            <td><input type="number" step="0.01" id="input-plan-hd" value="${pHd > 0 ? pHd : ''}" placeholder="Wpisz plan" ${inputReadonly} style="margin:0; text-align:center;"></td>
+                            <td><input type="number" step="0.01" id="input-plan-sklep" value="${pSklep > 0 ? pSklep : ''}" placeholder="Wpisz plan" ${inputReadonly} style="margin:0; text-align:center;"></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Do 68% planu</strong><br><span style="font-size:0.8em; color:#666;">(Sprzedaż - Plan * 68%)</span></td>
+                            <td class="${diff68Kawa >= 0 ? 'val-green' : 'val-red'}">${diff68Kawa.toFixed(2)} zł</td>
+                            <td class="${diff68Hd >= 0 ? 'val-green' : 'val-red'}">${diff68Hd.toFixed(2)} zł</td>
+                            <td class="${diff68Sklep >= 0 ? 'val-green' : 'val-red'}">${diff68Sklep.toFixed(2)} zł</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Do 100% planu</strong><br><span style="font-size:0.8em; color:#666;">(Sprzedaż - Plan)</span></td>
+                            <td class="${diff100Kawa >= 0 ? 'val-green' : 'val-red'}">${diff100Kawa.toFixed(2)} zł</td>
+                            <td class="${diff100Hd >= 0 ? 'val-green' : 'val-red'}">${diff100Hd.toFixed(2)} zł</td>
+                            <td class="${diff100Sklep >= 0 ? 'val-green' : 'val-red'}">${diff100Sklep.toFixed(2)} zł</td>
+                        </tr>
+                    </table>`;
+
+                if (czyAdmin) {
+                    plansHtml += `<button onclick="zapiszPlanyMiesieczne()" style="background: #28a745; margin-top: 10px;">💾 Zapisz plany dla tego miesiąca</button>`;
+                }
+
+                plansHtml += `</div>`;
+                plansContainer.innerHTML = plansHtml;
+
+            } catch(e) { 
+                console.error(e);
+                container.innerHTML = "Błąd tabeli."; 
+                plansContainer.innerHTML = "";
+            }
         }
 
         onAuthStateChanged(auth, async (user) => {
