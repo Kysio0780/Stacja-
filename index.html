@@ -1,0 +1,1524 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Obsługi Sklepu</title>
+    <link rel="manifest" href="manifest.json">
+    <style>
+        :root {
+            --bg-color: #f4f4f9;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --border-color: #ccc;
+            --input-bg: #ffffff;
+            --input-text: #333333;
+            --group-bg: #e9ecef;
+            --group-label: #495057;
+            --preview-bg: #fafafa;
+            --base-font-size: 14px;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --text-color: #e0e0e0;
+            --border-color: #444444;
+            --input-bg: #2d2d2d;
+            --input-text: #ffffff;
+            --group-bg: #2c2c2c;
+            --group-label: #b0b0b0;
+            --preview-bg: #252525;
+        }
+
+        [data-fontsize="small"] { --base-font-size: 12px; }
+        [data-fontsize="normal"] { --base-font-size: 14px; }
+        [data-fontsize="large"] { --base-font-size: 16px; }
+        [data-fontsize="xlarge"] { --base-font-size: 18px; }
+
+        body { font-family: Arial, sans-serif; font-size: var(--base-font-size); background: var(--bg-color); margin: 0; padding: 10px; color: var(--text-color); transition: background 0.3s, color 0.3s; }
+        .card { background: var(--card-bg); padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); max-width: 950px; margin: auto; margin-bottom: 20px; transition: background 0.3s; position: relative; }
+        input, select, button, textarea { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid var(--border-color); border-radius: 4px; box-sizing: border-box; font-family: inherit; font-size: inherit; background: var(--input-bg); color: var(--input-text); }
+        button { background: #007bff; color: white; border: none; font-weight: bold; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .hidden { display: none !important; }
+        .error { color: red; font-size: 1em; }
+        .admin-badge { background: #28a745; color: white; padding: 5px 10px; border-radius: 4px; display: inline-block; font-size: 0.85em; margin-bottom: 10px; }
+        .report-box { background: var(--group-bg); padding: 12px; border-left: 4px solid #007bff; margin: 12px 0; font-size: 0.95em; border-radius: 4px; }
+        .field-group { background: var(--group-bg); padding: 10px; border-radius: 4px; margin-bottom: 10px; }
+        .field-group label { font-weight: bold; font-size: 0.9em; display: block; margin-bottom: 3px; color: var(--group-label); }
+        .audit-info { font-size: 0.8em; color: #6c757d; margin-top: 6px; border-top: 1px dashed var(--border-color); padding-top: 4px; }
+        
+        /* Kafelki i menu */
+        .tiles-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 20px 0; }
+        .tile { background: var(--card-bg); border: 2px solid #007bff; padding: 20px 10px; text-align: center; border-radius: 8px; font-weight: bold; color: #007bff; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .tile:hover { background: #007bff; color: white; }
+        .tile.disabled { border-color: var(--border-color); color: #aaa; cursor: not-allowed; background: var(--group-bg); }
+        .tile.disabled:hover { background: var(--group-bg); color: #aaa; }
+        .back-btn { background: #6c757d; margin-bottom: 15px; }
+        .back-btn:hover { background: #5a6268; }
+        
+        /* Tabele */
+        table.month-table, table.standard-table, table.cleaning-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.95em; background: var(--card-bg); color: var(--text-color); }
+        table.month-table th, table.month-table td, table.standard-table th, table.standard-table td, table.cleaning-table th, table.cleaning-table td { border: 1px solid var(--border-color); padding: 8px; text-align: center; }
+        table.month-table th, table.standard-table th, table.cleaning-table th { background: #007bff; color: white; font-size: 0.85em; }
+        
+        .cleaning-row { cursor: pointer; transition: background 0.1s; }
+        .cleaning-row:hover { background: var(--group-bg) !important; }
+        .badge-done { background: #28a745; color: white; padding: 3px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; display: inline-block; }
+        .badge-pending { background: #ffc107; color: black; padding: 3px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; display: inline-block; }
+        .badge-warning { background: #ff9800; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.75em; margin-top: 3px; display: inline-block; }
+        .badge-photo { background: #17a2b8; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.75em; margin-top: 3px; display: inline-block; }
+
+        /* Ikona ustawień w prawym górnym rogu */
+        .settings-icon-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 22px;
+            cursor: pointer;
+            width: auto;
+            padding: 5px;
+            margin: 0;
+            color: var(--text-color);
+        }
+        .settings-icon-btn:hover {
+            color: #007bff;
+            background: none;
+        }
+
+        /* Styl dla okienek modalnych */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 1000;
+            padding: 15px;
+            box-sizing: border-box;
+        }
+        .modal-content {
+            background: var(--card-bg);
+            color: var(--text-color);
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        /* Modal pełnoekranowy do powiększania zdjęcia z zoomem */
+        .modal-image-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 2000;
+            overflow: hidden;
+            touch-action: none;
+        }
+        .zoomable-image-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+        }
+        .zoomable-image-container img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            cursor: grab;
+            transform-origin: center center;
+            transition: transform 0.05s ease-out;
+        }
+        .zoomable-image-container img:active {
+            cursor: grabbing;
+        }
+        .close-zoom-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            font-size: 24px;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            cursor: pointer;
+            z-index: 2010;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .close-zoom-btn:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        /* Styl dla podglądu grafiku obrazkowego */
+        .grafik-preview-box { text-align: center; margin-top: 15px; border: 2px dashed var(--border-color); padding: 15px; border-radius: 6px; background: var(--preview-bg); }
+        .grafik-preview-box img { max-width: 100%; height: auto; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+        
+        /* Prośby o zmiany */
+        .request-item { background: var(--group-bg); border-left: 4px solid #ffc107; padding: 10px; margin-bottom: 10px; border-radius: 4px; font-size: 0.95em; text-align: left; }
+    </style>
+</head>
+<body>
+
+    <!-- EKRAN LOGOWANIA -->
+    <div id="login-screen" class="card">
+        <h2>Logowanie do Sklepu</h2>
+        <input type="text" id="login-input" placeholder="Login">
+        <input type="password" id="password-input" placeholder="Hasło">
+        <button onclick="zaloguj()">Zaloguj się</button>
+        <p id="error-msg" class="error"></p>
+    </div>
+
+    <!-- PANEL GŁÓWNY (KAFELKI) -->
+    <div id="app-screen" class="card hidden" style="max-width: 950px;">
+        <button class="settings-icon-btn" onclick="otworzModalUstawienia()" title="Ustawienia wyglądu">⚙️</button>
+        <h2>Witaj, <span id="user-name"></span>!</h2>
+        <div id="role-container"></div>
+        
+        <hr>
+
+        <div id="menu-tiles">
+            <h3>Wybierz moduł:</h3>
+            <div class="tiles-grid">
+                <div class="tile" onclick="otworzModul('sprzedaz')">📊 Sprzedaż</div>
+                <div class="tile" onclick="otworzModul('grafik')">📅 Grafik</div>
+                <div class="tile" onclick="otworzModul('sprzatanie')" style="grid-column: span 2;">🧹 Sprzątanie i Kontrola Półek</div>
+                <div class="tile" onclick="otworzModul('pracownicy')" id="tile-pracownicy" style="grid-column: span 2; display:none;">👥 Panel Pracowników</div>
+                <div class="tile disabled">💰 Premia</div>
+                <div class="tile disabled" style="grid-column: span 2;">💬 Wiadomości</div>
+            </div>
+        </div>
+        
+        <!-- MODUŁ SPRZEDAŻY -->
+        <div id="modul-sprzedaz" class="hidden">
+            <button class="back-btn" onclick="powrotDoMenu()">⬅ Powrót do menu</button>
+            
+            <div id="view-monthly">
+                <h3>📊 Podsumowanie Miesięczne Sprzedaży</h3>
+                <label for="wybrany-miesiac">Wybierz miesiąc:</label>
+                <input type="month" id="wybrany-miesiac" onchange="zaladujMiesiacTabela()">
+                <div id="monthly-table-container">Ładowanie tabeli...</div>
+                
+                <button onclick="przejdzDoDnia(new Date().toISOString().split('T')[0])" style="margin-top: 15px; background: #28a745;">+ Uzupełnij / Edytuj dzisiejszy dzień</button>
+                
+                <div id="admin-daily-section" class="hidden">
+                    <hr style="margin: 20px 0;">
+                    <h4>Ostatnie Raporty (Dziennik)</h4>
+                    <div id="reports-list">Ładowanie raportów...</div>
+                </div>
+            </div>
+
+            <div id="view-daily" class="hidden">
+                <button class="back-btn" onclick="powrotDoMiesiaca()" style="background: #6c757d;">⬅ Powrót do tabeli miesiąca</button>
+                <h3 id="daily-title">Raport Dzienny</h3>
+                
+                <label for="raport-data">Data raportu:</label>
+                <input type="date" id="raport-data" onchange="zmienDateWFormularzu()">
+
+                <div class="field-group">
+                    <label>☕ KAWA</label>
+                    <input type="number" id="kawa-ilosc" placeholder="Ilość (szt.)">
+                    <input type="number" step="0.01" id="kawa-wartosc" placeholder="Wartość (zł)">
+                </div>
+
+                <div class="field-group">
+                    <label>🔋 HD</label>
+                    <input type="number" id="hd-ilosc" placeholder="Ilość (szt.)">
+                    <input type="number" step="0.01" id="hd-wartosc" placeholder="Wartość (zł)">
+                </div>
+
+                <div class="field-group">
+                    <label>🛒 SKLEP</label>
+                    <input type="number" step="0.01" id="sklep-wartosc" placeholder="Wartość całkowita (zł)">
+                </div>
+
+                <button onclick="zapiszSprzedaz()">Zapisz / Aktualizuj Raport</button>
+            </div>
+        </div>
+
+        <!-- MODUŁ GRAFIK -->
+        <div id="modul-grafik" class="hidden">
+            <button class="back-btn" onclick="powrotDoMenu()">⬅ Powrót do menu</button>
+            <h3>📅 Grafik</h3>
+            
+            <div style="margin-bottom: 15px;">
+                <label for="grafik-miesiac">Wybierz miesiąc:</label>
+                <input type="month" id="grafik-miesiac" onchange="zaladujGrafikObrazkowy()">
+            </div>
+
+            <!-- Panel Kierownika -->
+            <div id="admin-grafik-panel" class="field-group hidden">
+                <h4>⚙️ Panel Kierownika: Zarządzaj Grafikiem</h4>
+                
+                <label style="font-size:0.9em;">Wybierz grafik (z galerii, aparatu lub plików):</label>
+                <input type="file" id="grafik-file-input" accept="image/*" style="padding:8px;">
+
+                <div style="display: flex; gap: 10px; margin-top: 5px;">
+                    <button onclick="zapiszGrafikObrazkowy()" style="background: #28a745; margin:0;">📤 Opublikuj / Nadpisz Grafik</button>
+                    <button onclick="usunGrafikObrazkowy()" style="background: #dc3545; margin:0;">🗑️ Usuń Grafik</button>
+                </div>
+            </div>
+
+            <!-- Podgląd grafiku -->
+            <div class="grafik-preview-box" id="grafik-preview-container">
+                <p>Brak opublikowanego grafiku dla tego miesiąca.</p>
+            </div>
+
+            <hr style="margin: 25px 0;">
+
+            <!-- Sekcja próśb o zmiany -->
+            <h4>💬 Prośby i Uwagi dot. Zmian</h4>
+            <div class="field-group">
+                <textarea id="nowa-prosba-tekst" rows="3" placeholder="Wpisz swoją prośbę o zmianę (np. Proszę o wolne 15 września, zamienię się z...)"></textarea>
+                <button onclick="wyslijProsbe()" style="background: #17a2b8; margin-top:5px;">Wyślij prośbę o zmianę</button>
+            </div>
+
+            <div id="prośby-lista-container">Ładowanie próśb...</div>
+        </div>
+
+        <!-- MODUŁ SPRZĄTANIE / KONTROLA PÓŁEK -->
+        <div id="modul-sprzatanie" class="hidden">
+            <button class="back-btn" onclick="powrotDoMenu()">⬅ Powrót do menu</button>
+            <h3>🧹 Kontrola Półek i Czystości</h3>
+            
+            <div class="field-group" style="display: flex; gap: 10px; align-items: flex-end;">
+                <div style="flex: 1;">
+                    <label for="sprzatanie-miesiac">Wybierz miesiąc:</label>
+                    <input type="month" id="sprzatanie-miesiac" onchange="zaladujSprzatanie()">
+                </div>
+                <div style="flex: 1;">
+                    <label for="sprzatanie-okres">Okres:</label>
+                    <select id="sprzatanie-okres" onchange="zaladujSprzatanie()">
+                        <option value="1-15">Od 1 do 15 dnia miesiąca</option>
+                        <option value="16-koniec">Od 16 do końca miesiąca</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="info-tryb-pracy" style="font-size: 0.9em; margin-bottom: 10px; font-weight: bold;"></div>
+            <div id="sprzatanie-container">Ładowanie listy...</div>
+        </div>
+
+        <!-- MODAL SZCZEGÓŁÓW PÓŁKI -->
+        <div id="modal-polka" class="modal-overlay hidden">
+            <div class="modal-content" style="border: 2px solid #007bff;">
+                <h4 id="modal-polka-tytuł" style="margin-top:0; color:#007bff;">Szczegóły Półki</h4>
+                <input type="hidden" id="modal-polka-index">
+
+                <div class="field-group">
+                    <label style="display: flex; align-items: center; gap: 10px; font-size: 0.95em; cursor: pointer;">
+                        <input type="checkbox" id="m-czystosc" style="width: 20px; height: 20px; margin:0;"> **Czystość** (Umyte / uporządkowane)
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 10px; font-size: 0.95em; cursor: pointer; margin-top: 10px;">
+                        <input type="checkbox" id="m-daty" style="width: 20px; height: 20px; margin:0;"> **Daty ważności** (Sprawdzone)
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 10px; font-size: 0.95em; cursor: pointer; margin-top: 10px;">
+                        <input type="checkbox" id="m-planogram" style="width: 20px; height: 20px; margin:0;"> **Planogram** (Zgodny z układem)
+                    </label>
+                </div>
+
+                <label>Komentarz / Uwagi:</label>
+                <textarea id="m-komentarz" rows="3" placeholder="Wpisz uwagi..."></textarea>
+
+                <label style="margin-top: 10px;">Zdjęcie kontrolne (opcjonalnie):</label>
+                <input type="file" id="m-zdjecie" accept="image/*" style="padding: 8px;">
+                <div id="m-zdjecie-preview" style="margin-top: 10px; text-align: center;"></div>
+
+                <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 20px;" id="modal-buttons-container">
+                    <button onclick="zapiszSzczegolyPolki()" style="background: #28a745; margin:0;" id="btn-zapisz-polka">💾 Zapisz</button>
+                    <button onclick="usunPotwierdzeniePolki()" style="background: #dc3545; margin:0; display:none;" id="btn-usun-polka">🗑️ Usuń potwierdzenie (Reset półki)</button>
+                    <button onclick="zamknijModalPolki()" style="background: #6c757d; margin:0;">Zamknij / Powrót</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL PEŁNOEKRANOWY ZDJĘCIA Z ZOOMEM -->
+        <div id="modal-zoom-zdjecia" class="modal-image-overlay hidden">
+            <button class="close-zoom-btn" onclick="zamknijZoomZdjecia()">✕</button>
+            <div class="zoomable-image-container" id="zoom-container">
+                <img id="zoom-image-element" src="" alt="Powiększone zdjęcie">
+            </div>
+        </div>
+
+        <!-- MODAL USTAWIEN WYGLĄDU (MOTYW I CZCIONKA) -->
+        <div id="modal-ustawienia" class="modal-overlay hidden">
+            <div class="modal-content" style="border: 2px solid #007bff;">
+                <h4 style="margin-top:0; color:#007bff;">⚙️ Ustawienia Wyglądu</h4>
+                
+                <label for="wybor-motywu" style="font-weight:bold; margin-top:10px; display:block;">Motyw:</label>
+                <select id="wybor-motywu" onchange="zmienMotyw(this.value)">
+                    <option value="light">Jasny</option>
+                    <option value="dark">Ciemny</option>
+                </select>
+
+                <label for="wybor-czcionki" style="font-weight:bold; margin-top:15px; display:block;">Wielkość czcionki:</label>
+                <select id="wybor-czcionki" onchange="zmienCzcionke(this.value)">
+                    <option value="small">Mała</option>
+                    <option value="normal">Standardowa</option>
+                    <option value="large">Duża</option>
+                    <option value="xlarge">Bardzo duża</option>
+                </select>
+
+                <div style="margin-top: 20px;">
+                    <button onclick="zamknijModalUstawienia()" style="background: #6c757d; margin:0;">Zamknij</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PANEL PRACOWNIKÓW -->
+        <div id="modul-pracownicy" class="hidden">
+            <button class="back-btn" onclick="powrotDoMenu()">⬅ Powrót do menu</button>
+            <h3>👥 Panel Zarządzania Pracownikami</h3>
+            
+            <div class="field-group">
+                <h4>Dodaj nowego pracownika</h4>
+                <input type="text" id="new-p-imie" placeholder="Imię i nazwisko">
+                <input type="text" id="new-p-login" placeholder="Login (np. emil)">
+                <input type="password" id="new-p-haslo" placeholder="Hasło początkowe">
+                <select id="new-p-rola">
+                    <option value="pracownik">Pracownik</option>
+                    <option value="admin">Administrator (Kierownik)</option>
+                </select>
+                <select id="new-p-umowa" onchange="toggleEtatPole('new')">
+                    <option value="UoP">Umowa o pracę (UoP)</option>
+                    <option value="Zlecenie">Umowa Zlecenie</option>
+                </select>
+                <div id="new-etat-box">
+                    <label style="font-size:0.9em; margin-top:5px;">Wymiar etatu:</label>
+                    <select id="new-p-etat" onchange="checkEtatCustom('new')">
+                        <option value="1/1">1/1 (Pełny etat)</option>
+                        <option value="3/4">3/4 etatu</option>
+                        <option value="1/2">1/2 etatu</option>
+                        <option value="1/4">1/4 etatu</option>
+                        <option value="inny">Inny (wpisz ręcznie)</option>
+                    </select>
+                    <input type="text" id="new-p-etat-custom" class="hidden" placeholder="Wpisz etat np. 3/5" style="margin-top:4px;">
+                </div>
+                <button onclick="dodajPracownika()" style="background: #28a745; margin-top:10px;">Dodaj pracownika w systemie</button>
+            </div>
+
+            <h4>Aktualna lista pracowników (Kliknij, aby edytować)</h4>
+            <div id="pracownicy-list-container">Ładowanie listy...</div>
+        </div>
+
+        <!-- MODAL EDYCJI PRACOWNIKA -->
+        <div id="modal-szczegoly-pracownika" class="modal-overlay hidden">
+            <div class="modal-content" style="border: 2px solid #007bff;">
+                <h4 style="margin-top:0; color:#007bff;">✏️ Edycja Pracownika</h4>
+                <input type="hidden" id="edit-p-id">
+                
+                <label>Imię i nazwisko:</label>
+                <input type="text" id="edit-p-imie">
+                
+                <label>Login:</label>
+                <input type="text" id="edit-p-login">
+                
+                <label>Rola:</label>
+                <select id="edit-p-rola">
+                    <option value="pracownik">Pracownik</option>
+                    <option value="admin">Administrator (Kierownik)</option>
+                </select>
+                
+                <label>Forma zatrudnienia:</label>
+                <select id="edit-p-umowa" onchange="toggleEtatPole('edit')">
+                    <option value="UoP">Umowa o pracę (UoP)</option>
+                    <option value="Zlecenie">Umowa Zlecenie</option>
+                </select>
+                
+                <div id="edit-etat-box">
+                    <label style="font-size:0.9em; margin-top:5px;">Wymiar etatu:</label>
+                    <select id="edit-p-etat" onchange="checkEtatCustom('edit')">
+                        <option value="1/1">1/1 (Pełny etat)</option>
+                        <option value="3/4">3/4 etatu</option>
+                        <option value="1/2">1/2 etatu</option>
+                        <option value="1/4">1/4 etatu</option>
+                        <option value="inny">Inny (wpisz ręcznie)</option>
+                    </select>
+                    <input type="text" id="edit-p-etat-custom" class="hidden" placeholder="Wpisz etat np. 3/5" style="margin-top:4px;">
+                </div>
+                
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button onclick="zapiszEdycjePracownika()" style="background: #28a745; margin:0;">Zapisz zmiany</button>
+                    <button onclick="zamknijEdycjePracownika()" style="background: #6c757d; margin:0;">Anuluj</button>
+                </div>
+            </div>
+        </div>
+        
+        <button onclick="wyloguj()" style="background: #dc3545; margin-top: 25px;">Wyloguj się</button>
+    </div>
+
+    <!-- SKRYPTY FIREBASE -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, deleteDoc, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+          apiKey: "AIzaSyCQV47LSO2xxYu2l4aINXlZNvX62QSoZvE",
+          authDomain: "sp580bol.firebaseapp.com",
+          projectId: "sp580bol",
+          storageBucket: "sp580bol.firebasestorage.app",
+          messagingSenderId: "132998692538",
+          appId: "1:132998692538:web:4170ec76d2eeae21d38c83"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUserData = null;
+        let aktualneDaneSprzatania = {};
+
+        const POLKI_LISTA = [
+            "Akcesoria", "Alkohol", "Chemia", "Kasa 1: 5 półek", "Kasa 1: 9 półek", 
+            "Kasa 2: 5 półek", "Kasa 2: 9 półek", "Kawy / Sosy", "Lodówka mała", 
+            "Lodówka Napoje", "Lodówka Piwo", "Oleje", "Piwo", "Soki i Woda", "Strefa zakasowa"
+        ];
+
+        // --- OBSŁUGA ZOOMU I GESTÓW ZDJĘCIA ---
+        let scale = 1;
+        let panning = false;
+        let pointX = 0;
+        let pointY = 0;
+        let startX = 0;
+        let startY = 0;
+        let initialDistance = null;
+
+        window.otworzZoomZdjecia = function(src) {
+            const img = document.getElementById('zoom-image-element');
+            img.src = src;
+            scale = 1;
+            pointX = 0;
+            pointY = 0;
+            updateImageTransform();
+            document.getElementById('modal-zoom-zdjecia').classList.remove('hidden');
+        }
+
+        window.zamknijZoomZdjecia = function() {
+            document.getElementById('modal-zoom-zdjecia').classList.add('hidden');
+        }
+
+        function updateImageTransform() {
+            const img = document.getElementById('zoom-image-element');
+            img.style.transform = `translate(${pointX}px, ${pointY}px) scale(${scale})`;
+        }
+
+        const zoomContainer = document.getElementById('zoom-container');
+        const zoomImage = document.getElementById('zoom-image-element');
+
+        zoomContainer.onmousedown = function (e) {
+            e.preventDefault();
+            startX = e.clientX - pointX;
+            startY = e.clientY - pointY;
+            panning = true;
+        };
+
+        zoomContainer.onmouseup = function () {
+            panning = false;
+        };
+
+        zoomContainer.onmousemove = function (e) {
+            e.preventDefault();
+            if (!panning) return;
+            pointX = e.clientX - startX;
+            pointY = e.clientY - startY;
+            updateImageTransform();
+        };
+
+        zoomContainer.onwheel = function (e) {
+            e.preventDefault();
+            const xs = (e.clientX - pointX) / scale;
+            const ys = (e.clientY - pointY) / scale;
+            if (e.deltaY < 0) {
+                scale *= 1.1;
+            } else {
+                scale /= 1.1;
+                if (scale < 1) scale = 1;
+            }
+            pointX = e.clientX - xs * scale;
+            pointY = e.clientY - ys * scale;
+            if (scale === 1) { pointX = 0; pointY = 0; }
+            updateImageTransform();
+        };
+
+        zoomContainer.ontouchstart = function (e) {
+            if (e.touches.length === 1) {
+                panning = true;
+                startX = e.touches[0].clientX - pointX;
+                startY = e.touches[0].clientY - pointY;
+                initialDistance = null;
+            } else if (e.touches.length === 2) {
+                panning = false;
+                initialDistance = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+            }
+        };
+
+        zoomContainer.ontouchmove = function (e) {
+            e.preventDefault();
+            if (panning && e.touches.length === 1) {
+                pointX = e.touches[0].clientX - startX;
+                pointY = e.touches[0].clientY - startY;
+                updateImageTransform();
+            } else if (e.touches.length === 2 && initialDistance) {
+                const currentDistance = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+                const factor = currentDistance / initialDistance;
+                initialDistance = currentDistance;
+                scale *= factor;
+                if (scale < 1) scale = 1;
+                if (scale > 5) scale = 5;
+                updateImageTransform();
+            }
+        };
+
+        zoomContainer.ontouchend = function () {
+            panning = false;
+            initialDistance = null;
+            if (scale < 1) { scale = 1; pointX = 0; pointY = 0; updateImageTransform(); }
+        };
+
+        let lastTap = 0;
+        zoomContainer.onclick = function (e) {
+            const now = new Date().getTime();
+            if (now - lastTap < 300) {
+                if (scale > 1) {
+                    scale = 1; pointX = 0; pointY = 0;
+                } else {
+                    scale = 2.5;
+                }
+                updateImageTransform();
+            }
+            lastTap = now;
+        };
+
+
+        // --- ZARZĄDZANIE MOTYWEM I CZCIONKĄ ---
+        window.zmienMotyw = function(tryb) {
+            localStorage.setItem("sklep_motyw", tryb);
+            zastosujMotyw(tryb);
+        }
+
+        function zastosujMotyw(tryb) {
+            const htmlTag = document.documentElement;
+            if (tryb === "dark") {
+                htmlTag.setAttribute("data-theme", "dark");
+            } else {
+                htmlTag.removeAttribute("data-theme");
+            }
+        }
+
+        window.zmienCzcionke = function(rozmiar) {
+            localStorage.setItem("sklep_czcionka", rozmiar);
+            zastosujCzcionke(rozmiar);
+        }
+
+        function zastosujCzcionke(rozmiar) {
+            const htmlTag = document.documentElement;
+            if (rozmiar && rozmiar !== "normal") {
+                htmlTag.setAttribute("data-fontsize", rozmiar);
+            } else {
+                htmlTag.removeAttribute("data-fontsize");
+            }
+        }
+
+        // Inicjalizacja motywu i czcionki przy starcie
+        const zapisanyMotyw = localStorage.getItem("sklep_motyw") || "light";
+        document.getElementById("wybor-motywu").value = zapisanyMotyw;
+        zastosujMotyw(zapisanyMotyw);
+
+        const zapisanaCzcionka = localStorage.getItem("sklep_czcionka") || "normal";
+        document.getElementById("wybor-czcionki").value = zapisanaCzcionka;
+        zastosujCzcionke(zapisanaCzcionka);
+
+        window.otworzModalUstawienia = function() {
+            document.getElementById('modal-ustawienia').classList.remove('hidden');
+        }
+
+        window.zamknijModalUstawienia = function() {
+            document.getElementById('modal-ustawienia').classList.add('hidden');
+        }
+
+        // --- POMOCNICZE FUNKCJE DATY ---
+        function pobierzBiezacyOkresSystemowy() {
+            const teraz = new Date();
+            const rok = teraz.getFullYear();
+            const miesiac = String(teraz.getMonth() + 1).padStart(2, '0');
+            const dzien = teraz.getDate();
+            const okres = dzien <= 15 ? "1-15" : "16-koniec";
+            return {
+                miesiacStr: `${rok}-${miesiac}`,
+                okresStr: okres
+            };
+        }
+
+        // --- STABILNA NAWIGACJA HASHOWA ---
+        window.addEventListener("hashchange", () => {
+            const hash = window.location.hash;
+
+            document.getElementById('modul-sprzedaz').classList.add('hidden');
+            document.getElementById('modul-grafik').classList.add('hidden');
+            document.getElementById('modul-pracownicy').classList.add('hidden');
+            document.getElementById('modul-sprzatanie').classList.add('hidden');
+            document.getElementById('menu-tiles').classList.add('hidden');
+
+            if (hash === "#menu" || hash === "") {
+                document.getElementById('menu-tiles').classList.remove('hidden');
+            } else if (hash === "#sprzedaz") {
+                document.getElementById('modul-sprzedaz').classList.remove('hidden');
+                pokazWidokMiesieczny();
+            } else if (hash === "#grafik") {
+                document.getElementById('modul-grafik').classList.remove('hidden');
+                const dzis = new Date().toISOString().slice(0, 7);
+                const miesiacInput = document.getElementById('grafik-miesiac');
+                if(!miesiacInput.value) miesiacInput.value = dzis;
+                
+                if (currentUserData && currentUserData.rola === 'admin') {
+                    document.getElementById('admin-grafik-panel').classList.remove('hidden');
+                } else {
+                    document.getElementById('admin-grafik-panel').classList.add('hidden');
+                }
+                zaladujGrafikObrazkowy();
+            } else if (hash === "#sprzatanie") {
+                document.getElementById('modul-sprzatanie').classList.remove('hidden');
+                
+                const biezacy = pobierzBiezacyOkresSystemowy();
+                const miesiacInput = document.getElementById('sprzatanie-miesiac');
+                const okresSelect = document.getElementById('sprzatanie-okres');
+                
+                if(!miesiacInput.value) miesiacInput.value = biezacy.miesiacStr;
+                if(!okresSelect.value) okresSelect.value = biezacy.okresStr;
+
+                zaladujSprzatanie();
+            } else if (hash === "#pracownicy") {
+                document.getElementById('modul-pracownicy').classList.remove('hidden');
+                zaladujlistePracownikow();
+            } else if (hash === "#dzien") {
+                document.getElementById('modul-sprzedaz').classList.remove('hidden');
+                document.getElementById('view-monthly').classList.add('hidden');
+                document.getElementById('view-daily').classList.remove('hidden');
+            }
+        });
+
+        window.otworzModul = function(nazwa) {
+            window.location.hash = "#" + nazwa;
+        }
+
+        window.powrotDoMenu = function() {
+            window.location.hash = "#menu";
+        }
+
+        window.toggleEtatPole = function(prefix) {
+            const umowa = document.getElementById(`${prefix}-p-umowa`).value;
+            const etatBox = document.getElementById(`${prefix}-etat-box`);
+            if (umowa === 'Zlecenie') {
+                etatBox.style.display = 'none';
+            } else {
+                etatBox.style.display = 'block';
+            }
+        }
+
+        window.checkEtatCustom = function(prefix) {
+            const etatVal = document.getElementById(`${prefix}-p-etat`).value;
+            const customInput = document.getElementById(`${prefix}-p-etat-custom`);
+            if (etatVal === 'inny') {
+                customInput.classList.remove('hidden');
+            } else {
+                customInput.classList.add('hidden');
+            }
+        }
+
+        // --- MODUŁ SPRZĄTANIE / KONTROLA PÓŁEK ---
+        window.zaladujSprzatanie = async function() {
+            const miesiac = document.getElementById('sprzatanie-miesiac').value;
+            const okres = document.getElementById('sprzatanie-okres').value;
+            const container = document.getElementById('sprzatanie-container');
+            const infoTryb = document.getElementById('info-tryb-pracy');
+            if (!miesiac) return;
+
+            const biezacy = pobierzBiezacyOkresSystemowy();
+            const czyAdmin = currentUserData && currentUserData.rola === 'admin';
+            const czyBiezacyOkres = (miesiac === biezacy.miesiacStr && okres === biezacy.okresStr);
+
+            if (!czyAdmin && !czyBiezacyOkres) {
+                infoTryb.innerHTML = `<span style="color: #dc3545;">🔒 Archiwum: Starsze lub przyszłe okresy możesz jedynie przeglądać (brak uprawnień do edycji).</span>`;
+            } else if (czyAdmin) {
+                infoTryb.innerHTML = `<span style="color: #28a745;">⚙️ Tryb kierownika: Masz pełne uprawnienia do edycji i usuwania wpisów w dowolnym okresie.</span>`;
+            } else {
+                infoTryb.innerHTML = `<span style="color: #007bff;">✏️ Bieżący okres: Możesz wypełniać i aktualizować dzisiejsze zadania.</span>`;
+            }
+
+            container.innerHTML = "Pobieranie listy...";
+            const docId = `${miesiac}_${okres}`;
+
+            try {
+                const docRef = doc(db, "sprzatanie", docId);
+                const docSnap = await getDoc(docRef);
+                aktualneDaneSprzatania = docSnap.exists() ? docSnap.data().półki || {} : {};
+
+                let html = `<table class="cleaning-table">
+                    <tr>
+                        <th>Półka / Strefa</th>
+                        <th>Status</th>
+                        <th>Ostatnio sprawdzał</th>
+                    </tr>`;
+
+                POLKI_LISTA.forEach((polka, index) => {
+                    const pData = aktualneDaneSprzatania[index] || { czystosc: false, daty: false, planogram: false, podpis: "-" };
+                    const zrobione = pData.czystosc && pData.daty && pData.planogram;
+                    
+                    let statusBadge = zrobione ? `<span class="badge-done">✔ Zrobione</span>` : `<span class="badge-pending">⏳ Do zrobienia</span>`;
+                    
+                    if (zrobione && pData.komentarz && pData.komentarz.trim() !== "") {
+                        statusBadge += `<br><span class="badge-warning">⚠️ Są uwagi</span>`;
+                    }
+                    if (pData.zdjecie && pData.zdjecie.trim() !== "") {
+                        statusBadge += `<br><span class="badge-photo">📷 Jest zdjęcie</span>`;
+                    }
+
+                    html += `<tr class="cleaning-row" onclick="otworzModalPolki(${index})">
+                        <td><strong>${polka}</strong></td>
+                        <td align="center">${statusBadge}</td>
+                        <td style="font-size: 0.85em; color: #555;">${pData.podpis !== "-" ? pData.podpis + " (" + (pData.dataSprawdzenia || '') + ")" : "-"}</td>
+                    </tr>`;
+                });
+
+                html += `</table>`;
+                container.innerHTML = html;
+            } catch (e) {
+                console.error(e);
+                container.innerHTML = "Błąd pobierania danych.";
+            }
+        }
+
+        window.otworzModalPolki = function(index) {
+            const polkaNazwa = POLKI_LISTA[index];
+            const pData = aktualneDaneSprzatania[index] || { czystosc: false, daty: false, planogram: false, komentarz: "", zdjecie: "" };
+            const zrobione = pData.czystosc && pData.daty && pData.planogram;
+            const czyAdmin = currentUserData && currentUserData.rola === 'admin';
+            
+            const miesiac = document.getElementById('sprzatanie-miesiac').value;
+            const okres = document.getElementById('sprzatanie-okres').value;
+            const biezacy = pobierzBiezacyOkresSystemowy();
+            const czyBiezacyOkres = (miesiac === biezacy.miesiacStr && okres === biezacy.okresStr);
+
+            document.getElementById('modal-polka-tytuł').innerText = `Sprawdź półkę: ${polkaNazwa}`;
+            document.getElementById('modal-polka-index').value = index;
+            
+            const czCheck = document.getElementById('m-czystosc');
+            const datCheck = document.getElementById('m-daty');
+            const planCheck = document.getElementById('m-planogram');
+            const komText = document.getElementById('m-komentarz');
+            const fileInput = document.getElementById('m-zdjecie');
+            const btnZapisz = document.getElementById('btn-zapisz-polka');
+            const btnUsun = document.getElementById('btn-usun-polka');
+
+            czCheck.checked = pData.czystosc || false;
+            datCheck.checked = pData.daty || false;
+            planCheck.checked = pData.planogram || false;
+            komText.value = pData.komentarz || '';
+            fileInput.value = "";
+
+            let tylkoDoOdczytu = false;
+            if (!czyAdmin) {
+                if (!czyBiezacyOkres || zrobione) {
+                    tylkoDoOdczytu = true;
+                }
+            }
+
+            if (tylkoDoOdczytu) {
+                czCheck.disabled = true;
+                datCheck.disabled = true;
+                planCheck.disabled = true;
+                komText.disabled = true;
+                fileInput.disabled = true;
+                btnZapisz.style.display = 'none';
+            } else {
+                czCheck.disabled = false;
+                datCheck.disabled = false;
+                planCheck.disabled = false;
+                komText.disabled = false;
+                fileInput.disabled = false;
+                btnZapisz.style.display = 'block';
+            }
+
+            if (czyAdmin && pData.podpis !== "-") {
+                btnUsun.style.display = 'block';
+            } else {
+                btnUsun.style.display = 'none';
+            }
+
+            const previewDiv = document.getElementById('m-zdjecie-preview');
+            if (pData.zdjecie) {
+                previewDiv.innerHTML = `<p style="font-size:0.85em; color:#28a745;">Załączone zdjęcie (kliknij, aby powiększyć):</p><img src="${pData.zdjecie}" onclick="otworzZoomZdjecia('${pData.zdjecie}')" style="max-height: 150px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); cursor: pointer;" title="Kliknij, aby powiększyć">`;
+            } else {
+                previewDiv.innerHTML = `<p style="font-size:0.85em; color:#6c757d;">Brak zdjęcia</p>`;
+            }
+
+            document.getElementById('modal-polka').classList.remove('hidden');
+        }
+
+        window.zamknijModalPolki = function() {
+            document.getElementById('modal-polka').classList.add('hidden');
+        }
+
+        window.zapiszSzczegolyPolki = async function() {
+            const index = document.getElementById('modal-polka-index').value;
+            const miesiac = document.getElementById('sprzatanie-miesiac').value;
+            const okres = document.getElementById('sprzatanie-okres').value;
+            const docId = `${miesiac}_${okres}`;
+
+            const czystosc = document.getElementById('m-czystosc').checked;
+            const daty = document.getElementById('m-daty').checked;
+            const planogram = document.getElementById('m-planogram').checked;
+            const komentarz = document.getElementById('m-komentarz').value.trim();
+            const fileInput = document.getElementById('m-zdjecie');
+
+            const imieAktualne = currentUserData ? currentUserData.imie : "Pracownik";
+            const teraz = new Date().toLocaleString();
+            let stareDane = aktualneDaneSprzatania[index] || {};
+
+            let zapiszDaneDoBazy = async (base64Img) => {
+                let zdjecieFinalne = base64Img || stareDane.zdjecie || "";
+
+                aktualneDaneSprzatania[index] = {
+                    nazwa: POLKI_LISTA[index],
+                    czystosc: czystosc,
+                    daty: daty,
+                    planogram: planogram,
+                    komentarz: komentarz,
+                    zdjecie: zdjecieFinalne,
+                    podpis: imieAktualne,
+                    dataSprawdzenia: teraz
+                };
+
+                try {
+                    await setDoc(doc(db, "sprzatanie", docId), {
+                        miesiac: miesiac,
+                        okres: okres,
+                        półki: aktualneDaneSprzatania,
+                        ostatniaModyfikacja: `${teraz} (${imieAktualne})`
+                    });
+                    alert("Zapisano kontrolę półki!");
+                    zamknijModalPolki();
+                    zaladujSprzatanie();
+                } catch (e) {
+                    alert("Błąd podczas zapisu danych półki.");
+                }
+            };
+
+            if (fileInput.files.length > 0) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    zapiszDaneDoBazy(e.target.result);
+                };
+                reader.readAsDataURL(fileInput.files[0]);
+            } else {
+                zapiszDaneDoBazy(null);
+            }
+        }
+
+        window.usunPotwierdzeniePolki = async function() {
+            if (!confirm("Czy na pewno chcesz usunąć to potwierdzenie i zresetować półkę? Zostaną usunięte także załączone zdjęcia i uwagi.")) {
+                return;
+            }
+
+            const index = document.getElementById('modal-polka-index').value;
+            const miesiac = document.getElementById('sprzatanie-miesiac').value;
+            const okres = document.getElementById('sprzatanie-okres').value;
+            const docId = `${miesiac}_${okres}`;
+            const imieAktualne = currentUserData ? currentUserData.imie : "Kierownik";
+            const teraz = new Date().toLocaleString();
+
+            aktualneDaneSprzatania[index] = {
+                nazwa: POLKI_LISTA[index],
+                czystosc: false,
+                daty: false,
+                planogram: false,
+                komentarz: "",
+                zdjecie: "",
+                podpis: "-",
+                dataSprawdzenia: ""
+            };
+
+            try {
+                await setDoc(doc(db, "sprzatanie", docId), {
+                    miesiac: miesiac,
+                    okres: okres,
+                    półki: aktualneDaneSprzatania,
+                    ostatniaModyfikacja: `${teraz} (Reset przez ${imieAktualne})`
+                });
+                alert("Potwierdzenie zostało pomyślnie usunięte (półka zresetowana).");
+                zamknijModalPolki();
+                zaladujSprzatanie();
+            } catch (e) {
+                alert("Błąd podczas usuwania potwierdzenia.");
+            }
+        }
+
+        // --- ZARZĄDZANIE PRACOWNIKAMI ---
+        window.dodajPracownika = async function() {
+            const imie = document.getElementById('new-p-imie').value.trim();
+            const login = document.getElementById('new-p-login').value.trim();
+            const haslo = document.getElementById('new-p-haslo').value;
+            const rola = document.getElementById('new-p-rola').value;
+            const umowa = document.getElementById('new-p-umowa').value;
+            
+            let etat = "1/1";
+            if (umowa === 'UoP') {
+                const etatSel = document.getElementById('new-p-etat').value;
+                etat = (etatSel === 'inny') ? document.getElementById('new-p-etat-custom').value.trim() : etatSel;
+            } else {
+                etat = "-";
+            }
+
+            if (!imie || !login || !haslo) {
+                alert("Wypełnij imię, login i hasło pracownika!");
+                return;
+            }
+
+            const email = `${login}@sp580.pl`;
+
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, haslo);
+                const uid = userCredential.user.uid;
+
+                await setDoc(doc(db, "uzytkownicy", uid), {
+                    imie: imie,
+                    login: login,
+                    rola: rola,
+                    umowa: umowa,
+                    etat: etat
+                });
+
+                alert(`Pracownik ${imie} został dodany pomyślnie!`);
+                document.getElementById('new-p-imie').value = "";
+                document.getElementById('new-p-login').value = "";
+                document.getElementById('new-p-haslo').value = "";
+                zaladujlistePracownikow();
+            } catch (error) {
+                alert("Błąd podczas dodawania pracownika: " + error.message);
+            }
+        }
+
+        async function zaladujlistePracownikow() {
+            const container = document.getElementById('pracownicy-list-container');
+            container.innerHTML = "Pobieranie listy...";
+            try {
+                const querySnapshot = await getDocs(collection(db, "uzytkownicy"));
+                let table = `<table class="standard-table"><tr><th>Imię i nazwisko</th><th>Login</th><th>Rola</th><th>Umowa / Etat</th><th>Akcje</th></tr>`;
+                querySnapshot.forEach(docSnap => {
+                    const p = docSnap.data();
+                    const id = docSnap.id;
+                    const umowaInfo = p.umowa === 'Zlecenie' ? 'Umowa Zlecenie' : `${p.umowa || 'UoP'} (${p.etat || '1/1'})`;
+                    table += `<tr>
+                        <td>${p.imie}</td>
+                        <td>${p.login || '-'}</td>
+                        <td>${p.rola}</td>
+                        <td>${umowaInfo}</td>
+                        <td>
+                            <button onclick="pokazSzczegolyPracownika('${id}', '${p.imie}', '${p.login || ''}', '${p.rola}', '${p.umowa || 'UoP'}', '${p.etat || '1/1'}')" style="padding:4px 8px; font-size:0.8em; margin:0; background:#007bff;">Edytuj</button>
+                            <button onclick="usunPracownika('${id}', '${p.imie}')" style="padding:4px 8px; font-size:0.8em; margin:0; background:#dc3545; margin-top:4px;">Usuń</button>
+                        </td>
+                    </tr>`;
+                });
+                table += `</table>`;
+                container.innerHTML = table;
+            } catch (e) {
+                container.innerHTML = "Błąd pobierania listy pracowników.";
+            }
+        }
+
+        window.pokazSzczegolyPracownika = function(id, imie, login, rola, umowa, etat) {
+            document.getElementById('edit-p-id').value = id;
+            document.getElementById('edit-p-imie').value = imie;
+            document.getElementById('edit-p-login').value = login;
+            document.getElementById('edit-p-rola').value = rola;
+            document.getElementById('edit-p-umowa').value = umowa;
+            
+            toggleEtatPole('edit');
+
+            if (umowa === 'UoP') {
+                const etatSelect = document.getElementById('edit-p-etat');
+                const etatCustom = document.getElementById('edit-p-etat-custom');
+                let found = false;
+                for (let opt of etatSelect.options) {
+                    if (opt.value === etat) {
+                        etatSelect.value = etat;
+                        etatCustom.classList.add('hidden');
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    etatSelect.value = 'inny';
+                    etatCustom.value = etat;
+                    etatCustom.classList.remove('hidden');
+                }
+            }
+
+            document.getElementById('modal-szczegoly-pracownika').classList.remove('hidden');
+        }
+
+        window.zamknijEdycjePracownika = function() {
+            document.getElementById('modal-szczegoly-pracownika').classList.add('hidden');
+        }
+
+        window.zapiszEdycjePracownika = async function() {
+            const id = document.getElementById('edit-p-id').value;
+            const imie = document.getElementById('edit-p-imie').value.trim();
+            const login = document.getElementById('edit-p-login').value.trim();
+            const rola = document.getElementById('edit-p-rola').value;
+            const umowa = document.getElementById('edit-p-umowa').value;
+
+            let etat = "-";
+            if (umowa === 'UoP') {
+                const etatSel = document.getElementById('edit-p-etat').value;
+                etat = (etatSel === 'inny') ? document.getElementById('edit-p-etat-custom').value.trim() : etatSel;
+            }
+
+            if (!imie) {
+                alert("Imię nie może być puste!");
+                return;
+            }
+
+            try {
+                await setDoc(doc(db, "uzytkownicy", id), {
+                    imie: imie,
+                    login: login,
+                    rola: rola,
+                    umowa: umowa,
+                    etat: etat
+                }, { merge: true });
+
+                alert("Zaktualizowano dane pracownika!");
+                zamknijEdycjePracownika();
+                zaladujlistePracownikow();
+            } catch (e) {
+                alert("Błąd podczas zapisu zmian pracownika.");
+            }
+        }
+
+        window.usunPracownika = async function(id, imie) {
+            if (confirm(`Czy na pewno chcesz usunąć pracownika: ${imie}?`)) {
+                try {
+                    await deleteDoc(doc(db, "uzytkownicy", id));
+                    alert("Usunięto pracownika z bazy danych.");
+                    zaladujlistePracownikow();
+                } catch (e) {
+                    alert("Błąd podczas usuwania pracownika.");
+                }
+            }
+        }
+
+        // --- GRAFIK OBRAZKOWY I PROŚBY ---
+        window.zaladujGrafikObrazkowy = async function() {
+            const wybranyMiesiac = document.getElementById('grafik-miesiac').value;
+            const previewContainer = document.getElementById('grafik-preview-container');
+            if (!wybranyMiesiac) return;
+
+            previewContainer.innerHTML = "Pobieranie grafiku...";
+
+            try {
+                const docRef = doc(db, "grafik_obrazy", wybranyMiesiac);
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists() && docSnap.data().zdjecie) {
+                    const imgData = docSnap.data().zdjecie;
+                    previewContainer.innerHTML = `<img src="${imgData}" alt="Grafik pracy">`;
+                } else {
+                    previewContainer.innerHTML = `<p style="color: #6c757d;">Brak opublikowanego grafiku w formie obrazka dla wybranego miesiąca.</p>`;
+                }
+
+                zaladujProśby(wybranyMiesiac);
+            } catch (e) {
+                console.error(e);
+                previewContainer.innerHTML = "Błąd ładowania grafiku.";
+            }
+        }
+
+        window.zapiszGrafikObrazkowy = async function() {
+            const wybranyMiesiac = document.getElementById('grafik-miesiac').value;
+            const fileInput = document.getElementById('grafik-file-input');
+            
+            if (!wybranyMiesiac) { alert("Wybierz miesiąc!"); return; }
+            if (fileInput.files.length === 0) { alert("Wybierz plik, zdjęcie lub zrób fotkę grafiku!"); return; }
+
+            const wybranyPlik = fileInput.files[0];
+            const reader = new FileReader();
+
+            reader.onload = async function(e) {
+                const base64Image = e.target.result;
+                try {
+                    await setDoc(doc(db, "grafik_obrazy", wybranyMiesiac), {
+                        zdjecie: base64Image,
+                        zaktualizowal: currentUserData ? currentUserData.imie : "Kierownik",
+                        dataAktualizacji: new Date().toLocaleString()
+                    });
+                    alert("Grafik został pomyślnie opublikowany!");
+                    fileInput.value = "";
+                    zaladujGrafikObrazkowy();
+                } catch (err) {
+                    alert("Błąd podczas przesyłania grafiku: " + err.message);
+                }
+            };
+            reader.readAsDataURL(wybranyPlik);
+        }
+
+        window.usunGrafikObrazkowy = async function() {
+            const wybranyMiesiac = document.getElementById('grafik-miesiac').value;
+            if (!wybranyMiesiac) return;
+
+            if (confirm("Czy na pewno chcesz usunąć grafik dla tego miesiąca?")) {
+                try {
+                    await deleteDoc(doc(db, "grafik_obrazy", wybranyMiesiac));
+                    alert("Usunięto grafik.");
+                    zaladujGrafikObrazkowy();
+                } catch (e) {
+                    alert("Błąd podczas usuwania grafiku.");
+                }
+            }
+        }
+
+        window.wyslijProsbe = async function() {
+            const wybranyMiesiac = document.getElementById('grafik-miesiac').value;
+            const tekst = document.getElementById('nowa-prosba-tekst').value.trim();
+            if (!wybranyMiesiac) { alert("Wybierz miesiąc!"); return; }
+            if (!tekst) { alert("Wpisz treść prośby!"); return; }
+
+            try {
+                await addDoc(collection(db, "prosby_o_zmiany"), {
+                    miesiac: wybranyMiesiac,
+                    autor: currentUserData ? currentUserData.imie : "Pracownik",
+                    rola: currentUserData ? currentUserData.rola : "pracownik",
+                    tekst: tekst,
+                    status: "oczekujace",
+                    data: new Date().toLocaleString()
+                });
+
+                document.getElementById('nowa-prosba-tekst').value = "";
+                alert("Wysłano prośbę do kierownika!");
+                zaladujProśby(wybranyMiesiac);
+            } catch (e) {
+                alert("Błąd podczas wysyłania prośby.");
+            }
+        }
+
+        window.zmienStatusProsby = async function(id, nowyStatus) {
+            const wybranyMiesiac = document.getElementById('grafik-miesiac').value;
+            try {
+                await setDoc(doc(db, "prosby_o_zmiany", id), {
+                    status: nowyStatus
+                }, { merge: true });
+                zaladujProśby(wybranyMiesiac);
+            } catch (e) {
+                alert("Błąd zmiany statusu.");
+            }
+        }
+
+        window.usunProsbe = async function(id) {
+            if (confirm("Czy na pewno chcesz usunąć tę prośbę?")) {
+                const wybranyMiesiac = document.getElementById('grafik-miesiac').value;
+                try {
+                    await deleteDoc(doc(db, "prosby_o_zmiany", id));
+                    alert("Usunięto prośbę.");
+                    zaladujProśby(wybranyMiesiac);
+                } catch (e) {
+                    alert("Błąd podczas usuwania prośby.");
+                }
+            }
+        }
+
+        async function zaladujProśby(miesiac) {
+            const listaContainer = document.getElementById('prośby-lista-container');
+            listaContainer.innerHTML = "Pobieranie próśb...";
+            try {
+                const querySnapshot = await getDocs(collection(db, "prosby_o_zmiany"));
+                let html = "";
+                const prosby = [];
+                querySnapshot.forEach(docSnap => {
+                    const data = docSnap.data();
+                    if (data.miesiac === miesiac) {
+                        prosby.push({ id: docSnap.id, ...data });
+                    }
+                });
+
+                if (prosby.length === 0) {
+                    listaContainer.innerHTML = "<p style='font-size:0.9em; color:#6c757d;'>Brak próśb lub uwag dla tego miesiąca.</p>";
+                    return;
+                }
+
+                prosby.reverse().forEach(p => {
+                    let statusBadge = "";
+                    if (p.status === "zatwierdzone") {
+                        statusBadge = `<span style="background: #28a745; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.8em;">👍 Zatwierdzone</span>`;
+                    } else if (p.status === "odrzucone") {
+                        statusBadge = `<span style="background: #dc3545; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.8em;">👎 Odrzucone</span>`;
+                    } else {
+                        statusBadge = `<span style="background: #ffc107; color: black; padding: 2px 6px; border-radius: 4px; font-size: 0.8em;">⏳ Oczekuje</span>`;
+                    }
+
+                    let adminActions = "";
+                    let deleteButton = "";
+
+                    const czyAdmin = currentUserData && currentUserData.rola === 'admin';
+                    const czyWlasciciel = currentUserData && currentUserData.imie === p.autor;
+
+                    if (czyAdmin) {
+                        adminActions = `<div style="margin-top: 6px; display: flex; gap: 6px;">
+                            <button onclick="zmienStatusProsby('${p.id}', 'zatwierdzone')" style="background: #28a745; padding: 4px 8px; font-size: 0.8em; margin:0; width:auto;">👍 Zatwierdź</button>
+                            <button onclick="zmienStatusProsby('${p.id}', 'odrzucone')" style="background: #dc3545; padding: 4px 8px; font-size: 0.8em; margin:0; width:auto;">👎 Odrzuć</button>
+                        </div>`;
+                    }
+
+                    if (czyAdmin || czyWlasciciel) {
+                        deleteButton = `<button onclick="usunProsbe('${p.id}')" style="background: #6c757d; padding: 4px 8px; font-size: 0.8em; margin-top: 6px; width: auto;">🗑️ Usuń prośbę</button>`;
+                    }
+
+                    html += `<div class="request-item">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <strong>👤 ${p.autor}</strong>
+                            ${statusBadge}
+                        </div>
+                        <div style="font-size: 0.8em; color: #6c757d; margin-bottom: 4px;">(${p.data})</div>
+                        <div>${p.tekst}</div>
+                        ${adminActions}
+                        ${deleteButton}
+                    </div>`;
+                });
+                listaContainer.innerHTML = html;
+            } catch (e) {
+                listaContainer.innerHTML = "Błąd pobierania próśb.";
+            }
+        }
+
+        // --- SPRZEDAŻ I LOGOWANIE ---
+        window.pokazWidokMiesieczny = function() {
+            document.getElementById('view-monthly').classList.remove('hidden');
+            document.getElementById('view-daily').classList.add('hidden');
+            const dzis = new Date().toISOString().slice(0, 7);
+            const miesiacInput = document.getElementById('wybrany-miesiac');
+            if(!miesiacInput.value) miesiacInput.value = dzis;
+            zaladujMiesiacTabela();
+
+            if (currentUserData && currentUserData.rola === 'admin') {
+                document.getElementById('admin-daily-section').classList.remove('hidden');
+                pobierzRaportyDlaAdmina();
+            }
+        }
+
+        window.przejdzDoDnia = function(dataStr) {
+            window.location.hash = "#dzien";
+            document.getElementById('view-monthly').classList.add('hidden');
+            document.getElementById('view-daily').classList.remove('hidden');
+            const dataInput = document.getElementById('raport-data');
+            dataInput.value = dataStr;
+            sprawdzWczytajDaneDlaDaty();
+        }
+
+        window.powrotDoMiesiaca = function() {
+            window.location.hash = "#sprzedaz";
+        }
+
+        window.zmienDateWFormularzu = function() {
+            sprawdzWczytajDaneDlaDaty();
+        }
+
+        async function sprawdzWczytajDaneDlaDaty() {
+            const dataRaportu = document.getElementById('raport-data').value;
+            if (!dataRaportu) return;
+            try {
+                const docRef = doc(db, "sprzedaz", dataRaportu);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    document.getElementById('kawa-ilosc').value = data.kawa?.ilosc || '';
+                    document.getElementById('kawa-wartosc').value = data.kawa?.wartosc || '';
+                    document.getElementById('hd-ilosc').value = data.hd?.ilosc || '';
+                    document.getElementById('hd-wartosc').value = data.hd?.wartosc || '';
+                    document.getElementById('sklep-wartosc').value = data.sklep?.wartosc || '';
+                } else {
+                    document.getElementById('kawa-ilosc').value = '';
+                    document.getElementById('kawa-wartosc').value = '';
+                    document.getElementById('hd-ilosc').value = '';
+                    document.getElementById('hd-wartosc').value = '';
+                    document.getElementById('sklep-wartosc').value = '';
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        window.zaloguj = async function() {
+            const login = document.getElementById('login-input').value.trim();
+            const haslo = document.getElementById('password-input').value;
+            const err = document.getElementById('error-msg');
+            err.innerText = "";
+            const fakeEmail = `${login}@sp580.pl`;
+            try {
+                await signInWithEmailAndPassword(auth, fakeEmail, haslo);
+            } catch (error) {
+                err.innerText = "Błąd logowania: Nieprawidłowy login lub hasło.";
+            }
+        }
+
+        window.wyloguj = function() {
+            signOut(auth);
+        }
+
+        window.zapiszSprzedaz = async function() {
+            const user = auth.currentUser;
+            const dataRaportu = document.getElementById('raport-data').value;
+            const kawaIlosc = Number(document.getElementById('kawa-ilosc').value) || 0;
+            const kawaWartosc = Number(document.getElementById('kawa-wartosc').value) || 0;
+            const hdIlosc = Number(document.getElementById('hd-ilosc').value) || 0;
+            const hdWartosc = Number(document.getElementById('hd-wartosc').value) || 0;
+            const sklepWartosc = Number(document.getElementById('sklep-wartosc').value) || 0;
+
+            if (!dataRaportu) { alert("Wybierz datę raportu!"); return; }
+
+            if(user) {
+                const docRef = doc(db, "sprzedaz", dataRaportu);
+                const docSnap = await getDoc(docRef);
+                const imieAktualne = currentUserData ? currentUserData.imie : "Użytkownik";
+                const teraz = new Date().toLocaleString();
+
+                let daneZapisu = {
+                    data: dataRaportu,
+                    kawa: { ilosc: kawaIlosc, wartosc: kawaWartosc },
+                    hd: { ilosc: hdIlosc, wartosc: hdWartosc },
+                    sklep: { wartosc: sklepWartosc }
+                };
+
+                if (docSnap.exists()) {
+                    const stary = docSnap.data();
+                    daneZapisu.utworzyl = stary.utworzyl;
+                    daneZapisu.dataUtworzenia = stary.dataUtworzenia;
+                    daneZapisu.zmodyfikowal = imieAktualne;
+                    daneZapisu.dataModyfikacji = teraz;
+                } else {
+                    daneZapisu.utworzyl = imieAktualne;
+                    daneZapisu.dataUtworzenia = teraz;
+                }
+
+                await setDoc(docRef, daneZapisu);
+                alert("Zapisano raport!");
+                window.location.hash = "#sprzedaz";
+            }
+        }
+
+        async function pobierzRaportyDlaAdmina() {
+            const reportsListDiv = document.getElementById('reports-list');
+            reportsListDiv.innerHTML = "Pobieranie raportów...";
+            try {
+                const querySnapshot = await getDocs(collection(db, "sprzedaz"));
+                let html = "";
+                const raporty = [];
+                querySnapshot.forEach(doc => raporty.push(doc.data()));
+                raporty.sort((a, b) => new Date(b.data) - new Date(a.data));
+
+                raporty.forEach(data => {
+                    let audit = `Utworzył: <strong>${data.utworzyl || 'Nieznany'}</strong> (${data.dataUtworzenia || ''})`;
+                    if (data.zmodyfikowal) audit += `<br>Korekta: ${data.zmodyfikowal} (${data.dataModyfikacji})`;
+                    html += `<div class="report-box" style="cursor:pointer;" onclick="przejdzDoDnia('${data.data}')">
+                        <strong>📅 ${data.data}</strong> (Kliknij edytuj)<br>
+                        Kawa: ${data.kawa.ilosc} / ${data.kawa.wartosc} zł | HD: ${data.hd.ilosc} / ${data.hd.wartosc} zł | Sklep: ${data.sklep.wartosc} zł
+                        <div class="audit-info">${audit}</div>
+                    </div>`;
+                });
+                reportsListDiv.innerHTML = html || "Brak raportów.";
+            } catch (e) {
+                reportsListDiv.innerHTML = "Błąd pobierania raportów.";
+            }
+        }
+
+        window.zaladujMiesiacTabela = async function() {
+            const container = document.getElementById('monthly-table-container');
+            const wybranyMiesiac = document.getElementById('wybrany-miesiac').value;
+            if (!wybranyMiesiac) return;
+            container.innerHTML = "Pobieranie...";
+            try {
+                const querySnapshot = await getDocs(collection(db, "sprzedaz"));
+                let raporty = [];
+                querySnapshot.forEach(doc => {
+                    if (doc.data().data?.startsWith(wybranyMiesiac)) raporty.push(doc.data());
+                });
+                raporty.sort((a, b) => new Date(a.data) - new Date(b.data));
+
+                if (raporty.length === 0) {
+                    container.innerHTML = "<p style='text-align:center;'>Brak raportów w miesiącu.</p>";
+                    return;
+                }
+
+                let sKawaI = 0, sKawaW = 0, sHdI = 0, sHdW = 0, sSklepW = 0;
+                let table = `<table class="month-table"><tr><th>Dzień</th><th>Kawa (szt/zł)</th><th>HD (szt/zł)</th><th>Sklep (zł)</th></tr>`;
+                raporty.forEach(r => {
+                    sKawaI += Number(r.kawa?.ilosc)||0; sKawaW += Number(r.kawa?.wartosc)||0;
+                    sHdI += Number(r.hd?.ilosc)||0; sHdW += Number(r.hd?.wartosc)||0;
+                    sSklepW += Number(r.sklep?.wartosc)||0;
+                    table += `<tr class="clickable-row" onclick="przejdzDoDnia('${r.data}')"><td><strong>${r.data.slice(8)}</strong></td><td>${r.kawa?.ilosc} / ${r.kawa?.wartosc}</td><td>${r.hd?.ilosc} / ${r.hd?.wartosc}</td><td>${r.sklep?.wartosc}</td></tr>`;
+                });
+                table += `<tr class="sum-row"><td>SUMA</td><td>${sKawaI} / ${sKawaW.toFixed(2)}</td><td>${sHdI} / ${sHdW.toFixed(2)}</td><td>${sSklepW.toFixed(2)}</td></tr></table>`;
+                container.innerHTML = table;
+            } catch(e) { container.innerHTML = "Błąd tabeli."; }
+        }
+
+        onAuthStateChanged(auth, async (user) => {
+            const loginScreen = document.getElementById('login-screen');
+            const appScreen = document.getElementById('app-screen');
+            const tilePracownicy = document.getElementById('tile-pracownicy');
+
+            if (user) {
+                loginScreen.classList.add('hidden');
+                appScreen.classList.remove('hidden');
+                document.getElementById('modul-sprzedaz').classList.add('hidden');
+                document.getElementById('modul-grafik').classList.add('hidden');
+                document.getElementById('modul-pracownicy').classList.add('hidden');
+                document.getElementById('modul-sprzatanie').classList.add('hidden');
+                document.getElementById('menu-tiles').classList.remove('hidden');
+                
+                if (!window.location.hash || window.location.hash === "#login") {
+                    window.location.hash = "#menu";
+                }
+
+                const userDoc = await getDoc(doc(db, "uzytkownicy", user.uid));
+                const roleContainer = document.getElementById('role-container');
+                if (userDoc.exists()) {
+                    currentUserData = userDoc.data();
+                    document.getElementById('user-name').innerText = currentUserData.imie;
+                    if (currentUserData.rola === 'admin') {
+                        roleContainer.innerHTML = `<span class="admin-badge">PANEL KIEROWNIKA (Krzysztof)</span>`;
+                        tilePracownicy.style.display = "block";
+                    } else {
+                        roleContainer.innerHTML = `<p>Rola: Pracownik</p>`;
+                        tilePracownicy.style.display = "none";
+                    }
+                }
+            } else {
+                currentUserData = null;
+                appScreen.classList.add('hidden');
+                loginScreen.classList.remove('hidden');
+                document.getElementById('login-input').value = "";
+                document.getElementById('password-input').value = "";
+                document.getElementById('error-msg').innerText = "";
+            }
+        });
+    </script>
+</body>
+</html>
