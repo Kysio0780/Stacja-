@@ -38,29 +38,37 @@
 
         body { font-family: Arial, sans-serif; font-size: var(--base-font-size); background: var(--bg-color); margin: 0; padding: 10px; color: var(--text-color); transition: background 0.3s, color 0.3s; }
         .card { background: var(--card-bg); padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); max-width: 950px; margin: auto; margin-bottom: 20px; transition: background 0.3s; position: relative; }
-        input, select, button, textarea { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid var(--border-color); border-radius: 4px; box-sizing: border-box; font-family: inherit; font-size: inherit; background: var(--input-bg); color: var(--input-text); }
-        button { background: #007bff; color: white; border: none; font-weight: bold; cursor: pointer; }
+        
+        input:not([type="checkbox"]), select, textarea { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid var(--border-color); border-radius: 4px; box-sizing: border-box; font-family: inherit; font-size: inherit; background: var(--input-bg); color: var(--input-text); }
+        
+        input[type="checkbox"] {
+            width: 20px; height: 20px; margin: 0; padding: 0; vertical-align: middle; accent-color: #007bff; cursor: pointer; flex-shrink: 0;
+        }
+
+        button { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid var(--border-color); border-radius: 4px; box-sizing: border-box; font-family: inherit; font-size: inherit; background: #007bff; color: white; border: none; font-weight: bold; cursor: pointer; }
         button:hover { background: #0056b3; }
         .hidden { display: none !important; }
-        .error { color: red; font-size: 1em; }
+        .error { color: red; font-size: 1em; margin-top: 5px; }
         .admin-badge { background: #28a745; color: white; padding: 5px 10px; border-radius: 4px; display: inline-block; font-size: 0.85em; margin-bottom: 10px; }
         .report-box { background: var(--group-bg); padding: 12px; border-left: 4px solid #007bff; margin: 12px 0; font-size: 0.95em; border-radius: 4px; }
         .field-group { background: var(--group-bg); padding: 10px; border-radius: 4px; margin-bottom: 10px; }
         .field-group label { font-weight: bold; font-size: 0.9em; display: block; margin-bottom: 3px; color: var(--group-label); }
         .audit-info { font-size: 0.8em; color: #6c757d; margin-top: 6px; border-top: 1px dashed var(--border-color); padding-top: 4px; }
         
-        /* Kolorowanie wartości planów */
         .val-red { color: #dc3545; font-weight: bold; }
         .val-green { color: #28a745; font-weight: bold; }
 
-        /* Kafelki i menu */
         .tiles-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 20px 0; }
-        .tile { background: var(--card-bg); border: 2px solid #007bff; padding: 20px 10px; text-align: center; border-radius: 8px; font-weight: bold; color: #007bff; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .tile { background: var(--card-bg); border: 2px solid #007bff; padding: 20px 10px; text-align: center; border-radius: 8px; font-weight: bold; color: #007bff; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.05); position: relative; display: flex; align-items: center; justify-content: center; min-height: 65px; box-sizing: border-box; }
         .tile:hover { background: #007bff; color: white; }
         .tile.disabled { border-color: var(--border-color); color: #aaa; cursor: not-allowed; background: var(--group-bg); }
         .tile.disabled:hover { background: var(--group-bg); color: #aaa; }
+        .tile-full { grid-column: span 2; }
         
-        /* Tabele */
+        .notification-badge {
+            position: absolute; top: -8px; right: -8px; background: #dc3545; color: white; border-radius: 50%; padding: 4px 8px; font-size: 0.75em; font-weight: bold; border: 2px solid var(--card-bg);
+        }
+        
         table.month-table, table.standard-table, table.cleaning-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.95em; background: var(--card-bg); color: var(--text-color); }
         table.month-table th, table.month-table td, table.standard-table th, table.standard-table td, table.cleaning-table th, table.cleaning-table td { border: 1px solid var(--border-color); padding: 8px; text-align: center; }
         table.month-table th, table.standard-table th, table.cleaning-table th { background: #007bff; color: white; font-size: 0.85em; }
@@ -72,137 +80,42 @@
         .badge-warning { background: #ff9800; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.75em; margin-top: 3px; display: inline-block; }
         .badge-photo { background: #17a2b8; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.75em; margin-top: 3px; display: inline-block; }
 
-        /* Ikona ustawień w prawym górnym rogu */
-        .settings-icon-btn {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: none;
-            border: none;
-            font-size: 22px;
-            cursor: pointer;
-            width: auto;
-            padding: 5px;
-            margin: 0;
-            color: var(--text-color);
-        }
-        .settings-icon-btn:hover {
-            color: #007bff;
-            background: none;
-        }
+        .collapsible-header { background: #007bff; color: white; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; display: flex; justify-content: space-between; align-items: center; user-select: none; }
+        .collapsible-header:hover { background: #0056b3; }
+        .collapsible-content { display: none; margin-top: 10px; padding: 12px; background: var(--group-bg); border-radius: 6px; }
+        .collapsible-content.open { display: block; }
 
-        /* Styl dla okienek modalnych */
+        .settings-icon-btn {
+            position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 22px; cursor: pointer; width: auto; padding: 5px; margin: 0; color: var(--text-color);
+        }
+        .settings-icon-btn:hover { color: #007bff; background: none; }
+
         .modal-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            display: flex; justify-content: center; align-items: center;
-            z-index: 1000;
-            padding: 15px;
-            box-sizing: border-box;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); display: flex; justify-content: center; align-items: center; z-index: 1000; padding: 15px; box-sizing: border-box;
         }
         .modal-content {
-            background: var(--card-bg);
-            color: var(--text-color);
-            padding: 20px;
-            border-radius: 8px;
-            max-width: 600px;
-            width: 100%;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            background: var(--card-bg); color: var(--text-color); padding: 20px; border-radius: 8px; max-width: 600px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
 
-        /* Modal pełnoekranowy do powiększania zdjęcia z zoomem */
         .modal-image-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.9);
-            display: flex; justify-content: center; align-items: center;
-            z-index: 2000;
-            overflow: hidden;
-            touch-action: none;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.9); display: flex; justify-content: center; align-items: center; z-index: 2000; overflow: hidden; touch-action: none;
         }
-        .zoomable-image-container {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-            position: relative;
-        }
-        .zoomable-image-container img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-            cursor: grab;
-            transform-origin: center center;
-            transition: transform 0.05s ease-out;
-        }
-        .zoomable-image-container img:active {
-            cursor: grabbing;
-        }
+        .zoomable-image-container { width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; overflow: hidden; position: relative; }
+        .zoomable-image-container img { max-width: 100%; max-height: 100%; object-fit: contain; cursor: grab; transform-origin: center center; transition: transform 0.05s ease-out; }
+        .zoomable-image-container img:active { cursor: grabbing; }
         .close-zoom-btn {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            border: none;
-            font-size: 24px;
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            cursor: pointer;
-            z-index: 2010;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            position: absolute; top: 20px; right: 20px; background: rgba(255, 255, 255, 0.2); color: white; border: none; font-size: 24px; width: 45px; height: 45px; border-radius: 50%; cursor: pointer; z-index: 2010; display: flex; align-items: center; justify-content: center;
         }
-        .close-zoom-btn:hover {
-            background: rgba(255, 255, 255, 0.4);
-        }
+        .close-zoom-btn:hover { background: rgba(255, 255, 255, 0.4); }
 
-        /* Styl dla galerii zdjęć w planogramach */
-        .planogram-gallery {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-            gap: 10px;
-            margin-top: 10px;
-        }
-        .planogram-thumb-box {
-            position: relative;
-            background: var(--preview-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            padding: 5px;
-            text-align: center;
-        }
-        .planogram-thumb-box img {
-            width: 100%;
-            height: 110px;
-            object-fit: cover;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .del-photo-btn {
-            background: #dc3545;
-            color: white;
-            border: none;
-            font-size: 0.75em;
-            padding: 3px 6px;
-            border-radius: 3px;
-            cursor: pointer;
-            margin-top: 4px;
-            width: 100%;
-        }
+        .planogram-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; margin-top: 10px; }
+        .planogram-thumb-box { position: relative; background: var(--preview-bg); border: 1px solid var(--border-color); border-radius: 6px; padding: 5px; text-align: center; }
+        .planogram-thumb-box img { width: 100%; height: 110px; object-fit: cover; border-radius: 4px; cursor: pointer; }
+        .del-photo-btn { background: #dc3545; color: white; border: none; font-size: 0.75em; padding: 3px 6px; border-radius: 3px; cursor: pointer; margin-top: 4px; width: 100%; }
 
-        /* Styl dla podglądu grafiku obrazkowego */
         .grafik-preview-box { text-align: center; margin-top: 15px; border: 2px dashed var(--border-color); padding: 15px; border-radius: 6px; background: var(--preview-bg); }
         .grafik-preview-box img { max-width: 100%; height: auto; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
         
-        /* Prośby o zmiany */
         .request-item { background: var(--group-bg); border-left: 4px solid #ffc107; padding: 10px; margin-bottom: 10px; border-radius: 4px; font-size: 0.95em; text-align: left; }
     </style>
 </head>
@@ -219,7 +132,7 @@
 
     <!-- PANEL GŁÓWNY (KAFELKI) -->
     <div id="app-screen" class="card hidden" style="max-width: 950px;">
-        <button class="settings-icon-btn" onclick="otworzModalUstawienia()" title="Ustawienia wyglądu">⚙️</button>
+        <button class="settings-icon-btn" onclick="otworzModalUstawienia()" title="Ustawienia systemu">⚙️</button>
         <h2>Witaj, <span id="user-name"></span>!</h2>
         <div id="role-container"></div>
         
@@ -230,11 +143,15 @@
             <div class="tiles-grid">
                 <div class="tile" onclick="otworzModul('sprzedaz')">📊 Sprzedaż</div>
                 <div class="tile" onclick="otworzModul('grafik')">📅 Grafik</div>
-                <div class="tile" onclick="otworzModul('sprzatanie')" style="grid-column: span 2;">🧹 Sprzątanie i Kontrola Półek</div>
-                <div class="tile" onclick="otworzModul('planogram')" style="grid-column: span 2;">📋 Planogramy</div>
-                <div class="tile" onclick="otworzModul('pracownicy')" id="tile-pracownicy" style="grid-column: span 2; display:none;">👥 Panel Pracowników</div>
-                <div class="tile disabled">💰 Premia</div>
-                <div class="tile disabled" style="grid-column: span 2;">💬 Wiadomości</div>
+                <div class="tile tile-full" onclick="otworzModul('sprzatanie')">🧹 Sprzątanie i Kontrola Półek</div>
+                <div class="tile tile-full" onclick="otworzModul('planogram')">📋 Planogramy</div>
+                <div class="tile" onclick="otworzModul('misje')" style="border-color: #17a2b8; color: #17a2b8; background: #e8f4fd;">
+                    🎯 Misje
+                    <span id="misje-badge" class="notification-badge hidden">0</span>
+                </div>
+                <div class="tile" onclick="otworzModul('pracownicy')" id="tile-pracownicy">👥 Panel Pracowników</div>
+                <div class="tile" style="opacity: 0.6; cursor: not-allowed;">💰 Premia</div>
+                <div class="tile" style="opacity: 0.6; cursor: not-allowed;">💬 Wiadomości</div>
             </div>
         </div>
         
@@ -245,8 +162,16 @@
                 <label for="wybrany-miesiac">Wybierz miesiąc:</label>
                 <input type="month" id="wybrany-miesiac" onchange="zaladujMiesiacTabela()">
                 
-                <!-- ANALIZA PLANÓW -->
-                <div id="plans-container" style="margin-top: 15px;"></div>
+                <!-- ANALIZA PLANÓW (ROZWIJANA) -->
+                <div style="margin-top: 15px;">
+                    <div class="collapsible-header" onclick="toggleCollapsible('plans-content', 'plans-arrow')">
+                        <span>🎯 Analiza Planów Miesięcznych</span>
+                        <span id="plans-arrow">▼ Rozwiń</span>
+                    </div>
+                    <div id="plans-content" class="collapsible-content">
+                        <div id="plans-container">Ładowanie planów...</div>
+                    </div>
+                </div>
 
                 <div id="monthly-table-container" style="margin-top: 20px;">Ładowanie tabeli...</div>
                 
@@ -288,6 +213,86 @@
                 </div>
 
                 <button onclick="zapiszSprzedaz()">Zapisz / Aktualizuj Raport</button>
+            </div>
+        </div>
+
+        <!-- MODUŁ MISJE -->
+        <div id="modul-misje" class="hidden">
+            <h3>🎯 Misje i Zadania Indywidualne</h3>
+            
+            <div id="admin-misje-wrapper" class="hidden" style="margin-bottom: 20px;">
+                <div class="collapsible-header" onclick="toggleCollapsible('admin-misje-content', 'admin-misje-arrow')" style="background: #28a745;">
+                    <span>⚙️ Panel Admina: Wyznacz nowe zadanie</span>
+                    <span id="admin-misje-arrow">▼ Rozwiń</span>
+                </div>
+                <div id="admin-misje-content" class="collapsible-content" style="border: 2px dashed #28a745; background: var(--card-bg);">
+                    <label>Pracownik:</label>
+                    <select id="misja-pracownik-select">
+                        <option value="">Wczytuję pracowników...</option>
+                    </select>
+
+                    <label>Zadanie:</label>
+                    <textarea id="misja-tresc" rows="2" placeholder="Wpisz treść zadania..."></textarea>
+
+                    <label>Do kiedy:</label>
+                    <input type="date" id="misja-termin">
+
+                    <button onclick="dodajMisje()" style="background: #28a745; margin-top:5px;">➕ Utwórz i wyślij misję</button>
+                </div>
+            </div>
+
+            <h4>Aktywne i archiwalne misje</h4>
+            <div id="misje-lista-container">Ładowanie misji...</div>
+        </div>
+
+        <!-- MODAL SZCZEGÓŁÓW/EDYCJI MISJI (UNIWERSALNY DLA PRACOWNIKA I ADMINA) -->
+        <div id="modal-uniwersalna-misja" class="modal-overlay hidden">
+            <div class="modal-content" style="border: 2px solid #17a2b8; max-width: 500px;">
+                <h4 style="margin-top:0; color:#17a2b8;" id="modal-misja-tytul">🎯 Szczegóły Zadania</h4>
+                <input type="hidden" id="m-edit-misja-id">
+
+                <div id="admin-edit-misja-sekcja" class="hidden">
+                    <label>Pracownik:</label>
+                    <select id="m-edit-misja-pracownik">
+                        <option value="">Wczytuję...</option>
+                    </select>
+
+                    <label>Treść zadania:</label>
+                    <textarea id="m-edit-misja-tresc-admin" rows="2"></textarea>
+
+                    <label>Termin wykonania (Do kiedy):</label>
+                    <input type="date" id="m-edit-misja-termin-admin">
+                </div>
+
+                <div id="pracownik-view-misja-sekcja">
+                    <div class="field-group">
+                        <label>Treść zadania:</label>
+                        <p id="m-edit-misja-tresc-pracownik" style="margin: 0; font-weight: bold;"></p>
+                    </div>
+
+                    <div class="field-group">
+                        <label>Termin wykonania:</label>
+                        <p id="m-edit-misja-termin-pracownik" style="margin: 0;"></p>
+                    </div>
+                </div>
+
+                <label>Status zadania:</label>
+                <select id="m-edit-misja-status">
+                    <option value="nowe">nowe</option>
+                    <option value="odebrane">odebrane</option>
+                    <option value="zrobione">zrobione</option>
+                    <option value="zaliczone">zaliczone</option>
+                    <option value="do wyjaśnienia">do wyjaśnienia</option>
+                </select>
+
+                <label>Uwagi / Komentarz:</label>
+                <textarea id="m-edit-misja-uwagi" rows="3" placeholder="Wpisz uwagi lub komentarz do zadania..."></textarea>
+
+                <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 15px;">
+                    <button onclick="zapiszUniwersalnaMisja()" style="background: #28a745; margin:0;">💾 Zapisz zmiany</button>
+                    <button id="btn-usun-misja-admin" onclick="usunMisjeZModala()" style="background: #dc3545; margin:0; display:none;">🗑️ Usuń to zadanie</button>
+                    <button onclick="zamknijModalUniwersalnaMisja()" style="background: #6c757d; margin:0;">Zamknij</button>
+                </div>
             </div>
         </div>
 
@@ -430,10 +435,10 @@
             </div>
         </div>
 
-        <!-- MODAL USTAWIEN WYGLĄDU (MOTYW I CZCIONKA) -->
+        <!-- MODAL USTAWIEN WYGLĄDU I HASŁA -->
         <div id="modal-ustawienia" class="modal-overlay hidden">
             <div class="modal-content" style="border: 2px solid #007bff;">
-                <h4 style="margin-top:0; color:#007bff;">⚙️ Ustawienia Wyglądu</h4>
+                <h4 style="margin-top:0; color:#007bff;">⚙️ Ustawienia Systemu</h4>
                 
                 <label for="wybor-motywu" style="font-weight:bold; margin-top:10px; display:block;">Motyw:</label>
                 <select id="wybor-motywu" onchange="zmienMotyw(this.value)">
@@ -449,8 +454,35 @@
                     <option value="xlarge">Bardzo duża</option>
                 </select>
 
+                <hr style="margin: 20px 0; border: 0; border-top: 1px solid var(--border-color);">
+                <button onclick="otworzModalZmianyHasla()" style="background: #17a2b8; margin: 0 0 10px 0;">🔑 Zmień hasło do konta</button>
+                <button onclick="wyloguj()" style="background: #dc3545; margin: 0;">🚪 Wyloguj się z systemu</button>
+
                 <div style="margin-top: 20px;">
                     <button onclick="zamknijModalUstawienia()" style="background: #6c757d; margin:0;">Zamknij</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL ZMIANY HASŁA -->
+        <div id="modal-zmien-haslo" class="modal-overlay hidden" style="z-index: 1500;">
+            <div class="modal-content" style="border: 2px solid #17a2b8; max-width: 450px;">
+                <h4 style="margin-top:0; color:#17a2b8;">🔑 Zmiana Hasła</h4>
+                
+                <label style="font-size:0.9em;">Aktualne hasło:</label>
+                <input type="password" id="stare-haslo" placeholder="Wpisz obecne hasło">
+                
+                <label style="font-size:0.9em;">Nowe hasło:</label>
+                <input type="password" id="nowe-haslo-1" placeholder="Wpisz nowe hasło (min. 6 znaków)">
+
+                <label style="font-size:0.9em;">Powtórz nowe hasło:</label>
+                <input type="password" id="nowe-haslo-2" placeholder="Wpisz ponownie nowe hasło">
+                
+                <button onclick="zmienWlasneHasloPotwierdz()" style="background: #28a745; margin-top: 10px;">Zapisz nowe hasło</button>
+                <p id="haslo-msg" class="error" style="font-size: 0.9em; text-align: center;"></p>
+
+                <div style="margin-top: 15px;">
+                    <button onclick="zamknijModalZmianyHasla()" style="background: #6c757d; margin:0;">Anuluj</button>
                 </div>
             </div>
         </div>
@@ -532,14 +564,12 @@
                 </div>
             </div>
         </div>
-        
-        <button onclick="wyloguj()" style="background: #dc3545; margin-top: 25px;">Wyloguj się</button>
     </div>
 
     <!-- SKRYPTY FIREBASE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc, deleteDoc, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -564,314 +594,176 @@
             "Lodówka Napoje", "Lodówka Piwo", "Oleje", "Piwo", "Soki i Woda", "Strefa zakasowa"
         ];
 
+        window.toggleCollapsible = function(id, arrowId) {
+            const content = document.getElementById(id);
+            const arrow = document.getElementById(arrowId);
+            content.classList.toggle('open');
+            arrow.innerText = content.classList.contains('open') ? "▲ Zwiń" : "▼ Rozwiń";
+        };
+
         // --- OBSŁUGA KLAWISZA ESC I PRAWEGO PRZYCISKU MYSZY DLA KOMPUTERÓW ---
         window.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
-                // Jeśli otwarte jest jakieś okno modalne / podgląd zoom, zamknij je najpierw
-                const zoomModal = document.getElementById('modal-zoom-zdjecia');
-                const polkaModal = document.getElementById('modal-polka');
-                const planogramModal = document.getElementById('modal-planogram-szczegoly');
-                const ustawieniaModal = document.getElementById('modal-ustawienia');
-                const pracownikModal = document.getElementById('modal-szczegoly-pracownika');
-
-                if (!zoomModal.classList.contains('hidden')) {
-                    zamknijZoomZdjecia();
-                    return;
+                const modals = ['modal-zoom-zdjecia', 'modal-polka', 'modal-planogram-szczegoly', 'modal-zmien-haslo', 'modal-ustawienia', 'modal-uniwersalna-misja', 'modal-szczegoly-pracownika'];
+                for (let mId of modals) {
+                    const el = document.getElementById(mId);
+                    if (el && !el.classList.contains('hidden')) {
+                        el.classList.add('hidden');
+                        return;
+                    }
                 }
-                if (!polkaModal.classList.contains('hidden')) {
-                    zamknijModalPolki();
-                    return;
-                }
-                if (!planogramModal.classList.contains('hidden')) {
-                    zamknijModalPlanogramu();
-                    return;
-                }
-                if (!ustawieniaModal.classList.contains('hidden')) {
-                    zamknijModalUstawienia();
-                    return;
-                }
-                if (!pracownikModal.classList.contains('hidden')) {
-                    zamknijEdycjePracownika();
-                    return;
-                }
-
-                // W przeciwnym razie zachowaj się jak przycisk wstecz
                 const hash = window.location.hash;
-                if (hash === '#dzien') {
-                    window.location.hash = '#sprzedaz';
-                } else if (hash && hash !== '#menu') {
-                    window.location.hash = '#menu';
-                }
+                if (hash === '#dzien') window.location.hash = '#sprzedaz';
+                else if (hash && hash !== '#menu') window.location.hash = '#menu';
             }
         });
 
         window.addEventListener('contextmenu', (e) => {
-            // Prawy przycisk myszy symulujący wstecz (jeśli nie klikamy w edytowalny tekst/input/textarea)
             const tag = e.target.tagName.toLowerCase();
-            if (tag === 'input' || tag === 'textarea' || tag === 'select') {
-                return; // Pozwól na domyślne menu kontekstowe w polach tekstowych
-            }
-
-            e.preventDefault(); // Zablokuj standardowe menu kontekstowe przeglądarki
+            if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
+            e.preventDefault();
             
-            // Zamknij ewentualne otwarte modale
-            const zoomModal = document.getElementById('modal-zoom-zdjecia');
-            const polkaModal = document.getElementById('modal-polka');
-            const planogramModal = document.getElementById('modal-planogram-szczegoly');
-            const ustawieniaModal = document.getElementById('modal-ustawienia');
-            const pracownikModal = document.getElementById('modal-szczegoly-pracownika');
-
-            if (!zoomModal.classList.contains('hidden')) {
-                zamknijZoomZdjecia();
-                return;
+            const modals = ['modal-zoom-zdjecia', 'modal-polka', 'modal-planogram-szczegoly', 'modal-zmien-haslo', 'modal-ustawienia', 'modal-uniwersalna-misja', 'modal-szczegoly-pracownika'];
+            for (let mId of modals) {
+                const el = document.getElementById(mId);
+                if (el && !el.classList.contains('hidden')) {
+                    el.classList.add('hidden');
+                    return;
+                }
             }
-            if (!polkaModal.classList.contains('hidden')) {
-                zamknijModalPolki();
-                return;
-            }
-            if (!planogramModal.classList.contains('hidden')) {
-                zamknijModalPlanogramu();
-                return;
-            }
-            if (!ustawieniaModal.classList.contains('hidden')) {
-                zamknijModalUstawienia();
-                return;
-            }
-            if (!pracownikModal.classList.contains('hidden')) {
-                zamknijEdycjePracownika();
-                return;
-            }
-
             const hash = window.location.hash;
-            if (hash === '#dzien') {
-                window.location.hash = '#sprzedaz';
-            } else if (hash && hash !== '#menu') {
-                window.location.hash = '#menu';
-            }
+            if (hash === '#dzien') window.location.hash = '#sprzedaz';
+            else if (hash && hash !== '#menu') window.location.hash = '#menu';
         });
 
-        // --- OBSŁUGA ZOOMU I GESTÓW ZDJĘCIA ---
-        let scale = 1;
-        let panning = false;
-        let pointX = 0;
-        let pointY = 0;
-        let startX = 0;
-        let startY = 0;
-        let initialDistance = null;
+        // --- ZOOM ZDJĘCIA ---
+        let scale = 1, panning = false, pointX = 0, pointY = 0, startX = 0, startY = 0;
 
         window.otworzZoomZdjecia = function(src) {
             const img = document.getElementById('zoom-image-element');
             img.src = src;
-            scale = 1;
-            pointX = 0;
-            pointY = 0;
+            scale = 1; pointX = 0; pointY = 0;
             updateImageTransform();
             document.getElementById('modal-zoom-zdjecia').classList.remove('hidden');
         }
 
-        window.zamknijZoomZdjecia = function() {
-            document.getElementById('modal-zoom-zdjecia').classList.add('hidden');
-        }
+        window.zamknijZoomZdjecia = () => document.getElementById('modal-zoom-zdjecia').classList.add('hidden');
 
         function updateImageTransform() {
-            const img = document.getElementById('zoom-image-element');
-            img.style.transform = `translate(${pointX}px, ${pointY}px) scale(${scale})`;
+            document.getElementById('zoom-image-element').style.transform = `translate(${pointX}px, ${pointY}px) scale(${scale})`;
         }
 
         const zoomContainer = document.getElementById('zoom-container');
-
-        zoomContainer.onmousedown = function (e) {
-            e.preventDefault();
-            startX = e.clientX - pointX;
-            startY = e.clientY - pointY;
-            panning = true;
-        };
-
-        zoomContainer.onmouseup = function () {
-            panning = false;
-        };
-
-        zoomContainer.onmousemove = function (e) {
+        zoomContainer.onmousedown = (e) => { e.preventDefault(); startX = e.clientX - pointX; startY = e.clientY - pointY; panning = true; };
+        zoomContainer.onmouseup = () => { panning = false; };
+        zoomContainer.onmousemove = (e) => {
             e.preventDefault();
             if (!panning) return;
-            pointX = e.clientX - startX;
-            pointY = e.clientY - startY;
+            pointX = e.clientX - startX; pointY = e.clientY - startY;
             updateImageTransform();
         };
-
-        zoomContainer.onwheel = function (e) {
+        zoomContainer.onwheel = (e) => {
             e.preventDefault();
-            const xs = (e.clientX - pointX) / scale;
-            const ys = (e.clientY - pointY) / scale;
-            if (e.deltaY < 0) {
-                scale *= 1.1;
-            } else {
-                scale /= 1.1;
-                if (scale < 1) scale = 1;
-            }
-            pointX = e.clientX - xs * scale;
-            pointY = e.clientY - ys * scale;
+            const xs = (e.clientX - pointX) / scale, ys = (e.clientY - pointY) / scale;
+            scale = e.deltaY < 0 ? scale * 1.1 : Math.max(1, scale / 1.1);
+            pointX = e.clientX - xs * scale; pointY = e.clientY - ys * scale;
             if (scale === 1) { pointX = 0; pointY = 0; }
             updateImageTransform();
         };
 
-        zoomContainer.ontouchstart = function (e) {
-            if (e.touches.length === 1) {
-                panning = true;
-                startX = e.touches[0].clientX - pointX;
-                startY = e.touches[0].clientY - pointY;
-                initialDistance = null;
-            } else if (e.touches.length === 2) {
-                panning = false;
-                initialDistance = Math.hypot(
-                    e.touches[0].clientX - e.touches[1].clientX,
-                    e.touches[0].clientY - e.touches[1].clientY
-                );
-            }
-        };
-
-        zoomContainer.ontouchmove = function (e) {
-            e.preventDefault();
-            if (panning && e.touches.length === 1) {
-                pointX = e.touches[0].clientX - startX;
-                pointY = e.touches[0].clientY - startY;
-                updateImageTransform();
-            } else if (e.touches.length === 2 && initialDistance) {
-                const currentDistance = Math.hypot(
-                    e.touches[0].clientX - e.touches[1].clientX,
-                    e.touches[0].clientY - e.touches[1].clientY
-                );
-                const factor = currentDistance / initialDistance;
-                initialDistance = currentDistance;
-                scale *= factor;
-                if (scale < 1) scale = 1;
-                if (scale > 5) scale = 5;
-                updateImageTransform();
-            }
-        };
-
-        zoomContainer.ontouchend = function () {
-            panning = false;
-            initialDistance = null;
-            if (scale < 1) { scale = 1; pointX = 0; pointY = 0; updateImageTransform(); }
-        };
-
-        let lastTap = 0;
-        zoomContainer.onclick = function (e) {
-            const now = new Date().getTime();
-            if (now - lastTap < 300) {
-                if (scale > 1) {
-                    scale = 1; pointX = 0; pointY = 0;
-                } else {
-                    scale = 2.5;
-                }
-                updateImageTransform();
-            }
-            lastTap = now;
-        };
-
-
-        // --- ZARZĄDZANIE MOTYWEM I CZCIONKĄ ---
-        window.zmienMotyw = function(tryb) {
-            localStorage.setItem("sklep_motyw", tryb);
-            zastosujMotyw(tryb);
-        }
-
+        // --- MOTYW I CZCIONKA ---
+        window.zmienMotyw = (tryb) => { localStorage.setItem("sklep_motyw", tryb); zastosujMotyw(tryb); };
         function zastosujMotyw(tryb) {
-            const htmlTag = document.documentElement;
-            if (tryb === "dark") {
-                htmlTag.setAttribute("data-theme", "dark");
-            } else {
-                htmlTag.removeAttribute("data-theme");
-            }
+            if (tryb === "dark") document.documentElement.setAttribute("data-theme", "dark");
+            else document.documentElement.removeAttribute("data-theme");
         }
-
-        window.zmienCzcionke = function(rozmiar) {
-            localStorage.setItem("sklep_czcionka", rozmiar);
-            zastosujCzcionke(rozmiar);
-        }
-
+        window.zmienCzcionke = (rozmiar) => { localStorage.setItem("sklep_czcionka", rozmiar); zastosujCzcionke(rozmiar); };
         function zastosujCzcionke(rozmiar) {
-            const htmlTag = document.documentElement;
-            if (rozmiar && rozmiar !== "normal") {
-                htmlTag.setAttribute("data-fontsize", rozmiar);
-            } else {
-                htmlTag.removeAttribute("data-fontsize");
+            if (rozmiar && rozmiar !== "normal") document.documentElement.setAttribute("data-fontsize", rozmiar);
+            else document.documentElement.removeAttribute("data-fontsize");
+        }
+
+        zastosujMotyw(localStorage.getItem("sklep_motyw") || "light");
+        zastosujCzcionke(localStorage.getItem("sklep_czcionka") || "normal");
+
+        window.otworzModalUstawienia = () => document.getElementById('modal-ustawienia').classList.remove('hidden');
+        window.zamknijModalUstawienia = () => document.getElementById('modal-ustawienia').classList.add('hidden');
+
+        // --- ZMIANA HASŁA ---
+        window.otworzModalZmianyHasla = function() {
+            document.getElementById('stare-haslo').value = "";
+            document.getElementById('nowe-haslo-1').value = "";
+            document.getElementById('nowe-haslo-2').value = "";
+            document.getElementById('haslo-msg').innerText = "";
+            document.getElementById('modal-zmien-haslo').classList.remove('hidden');
+        }
+        window.zamknijModalZmianyHasla = () => document.getElementById('modal-zmien-haslo').classList.add('hidden');
+
+        window.zmienWlasneHasloPotwierdz = async function() {
+            const stareHaslo = document.getElementById('stare-haslo').value;
+            const h1 = document.getElementById('nowe-haslo-1').value;
+            const h2 = document.getElementById('nowe-haslo-2').value;
+            const msg = document.getElementById('haslo-msg');
+            msg.style.color = "red"; msg.innerText = "";
+
+            if (!stareHaslo || !h1 || !h2) { msg.innerText = "Wypełnij wszystkie pola!"; return; }
+            if (h1 !== h2) { msg.innerText = "Hasła się nie zgadzają!"; return; }
+            if (h1.length < 6) { msg.innerText = "Nowe hasło musi mieć min. 6 znaków!"; return; }
+
+            const user = auth.currentUser;
+            if (!user) return;
+
+            try {
+                const credential = EmailAuthProvider.credential(user.email, stareHaslo);
+                await reauthenticateWithCredential(user, credential);
+                await updatePassword(user, h1);
+                msg.style.color = "green";
+                msg.innerText = "Hasło zostało pomyślnie zmienione!";
+                setTimeout(() => { zamknijModalZmianyHasla(); zamknijModalUstawienia(); }, 1500);
+            } catch (error) {
+                msg.innerText = (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') ? "Błąd: Podano niepoprawne aktualne hasło." : "Błąd: " + error.message;
             }
-        }
+        };
 
-        const zapisanyMotyw = localStorage.getItem("sklep_motyw") || "light";
-        document.getElementById("wybor-motywu").value = zapisanyMotyw;
-        zastosujMotyw(zapisanyMotyw);
-
-        const zapisanaCzcionka = localStorage.getItem("sklep_czcionka") || "normal";
-        document.getElementById("wybor-czcionki").value = zapisanaCzcionka;
-        zastosujCzcionke(zapisanaCzcionka);
-
-        window.otworzModalUstawienia = function() {
-            document.getElementById('modal-ustawienia').classList.remove('hidden');
-        }
-
-        window.zamknijModalUstawienia = function() {
-            document.getElementById('modal-ustawienia').classList.add('hidden');
-        }
-
-        // --- POMOCNICZE FUNKCJE DATY ---
         function pobierzBiezacyOkresSystemowy() {
             const teraz = new Date();
-            const rok = teraz.getFullYear();
-            const miesiac = String(teraz.getMonth() + 1).padStart(2, '0');
-            const dzien = teraz.getDate();
-            const okres = dzien <= 15 ? "1-15" : "16-koniec";
             return {
-                miesiacStr: `${rok}-${miesiac}`,
-                okresStr: okres
+                miesiacStr: `${teraz.getFullYear()}-${String(teraz.getMonth() + 1).padStart(2, '0')}`,
+                okresStr: teraz.getDate() <= 15 ? "1-15" : "16-koniec"
             };
         }
 
-        // --- STABILNA NAWIGACJA HASHOWA ---
+        // --- ROUTING ---
         window.addEventListener("hashchange", () => {
             const hash = window.location.hash;
-
-            document.getElementById('modul-sprzedaz').classList.add('hidden');
-            document.getElementById('modul-grafik').classList.add('hidden');
-            document.getElementById('modul-pracownicy').classList.add('hidden');
-            document.getElementById('modul-sprzatanie').classList.add('hidden');
-            document.getElementById('modul-planogram').classList.add('hidden');
-            document.getElementById('menu-tiles').classList.add('hidden');
+            ['modul-sprzedaz', 'modul-grafik', 'modul-pracownicy', 'modul-sprzatanie', 'modul-planogram', 'modul-misje', 'menu-tiles'].forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
 
             if (hash === "#menu" || hash === "") {
                 document.getElementById('menu-tiles').classList.remove('hidden');
+                if (currentUserData) sprawdzPowiadomieniaMisje(currentUserData.imie, currentUserData.rola === 'admin');
             } else if (hash === "#sprzedaz") {
                 document.getElementById('modul-sprzedaz').classList.remove('hidden');
                 pokazWidokMiesieczny();
             } else if (hash === "#grafik") {
                 document.getElementById('modul-grafik').classList.remove('hidden');
-                const dzis = new Date().toISOString().slice(0, 7);
-                const miesiacInput = document.getElementById('grafik-miesiac');
-                if(!miesiacInput.value) miesiacInput.value = dzis;
-                
-                if (currentUserData && currentUserData.rola === 'admin') {
-                    document.getElementById('admin-grafik-panel').classList.remove('hidden');
-                } else {
-                    document.getElementById('admin-grafik-panel').classList.add('hidden');
-                }
+                if(!document.getElementById('grafik-miesiac').value) document.getElementById('grafik-miesiac').value = new Date().toISOString().slice(0, 7);
+                document.getElementById('admin-grafik-panel').classList.toggle('hidden', !(currentUserData && currentUserData.rola === 'admin'));
                 zaladujGrafikObrazkowy();
+            } else if (hash === "#misje") {
+                document.getElementById('modul-misje').classList.remove('hidden');
+                document.getElementById('admin-misje-wrapper').classList.toggle('hidden', !(currentUserData && currentUserData.rola === 'admin'));
+                zaladujMisje();
             } else if (hash === "#sprzatanie") {
                 document.getElementById('modul-sprzatanie').classList.remove('hidden');
-                
-                const biezacy = pobierzBiezacyOkresSystemowy();
-                document.getElementById('sprzatanie-miesiac').value = biezacy.miesiacStr;
-                document.getElementById('sprzatanie-okres').value = biezacy.okresStr;
-
+                const b = pobierzBiezacyOkresSystemowy();
+                document.getElementById('sprzatanie-miesiac').value = b.miesiacStr;
+                document.getElementById('sprzatanie-okres').value = b.okresStr;
                 zaladujSprzatanie();
             } else if (hash === "#planogram") {
                 document.getElementById('modul-planogram').classList.remove('hidden');
-                if (currentUserData && currentUserData.rola === 'admin') {
-                    document.getElementById('admin-planogram-kategoria-panel').classList.remove('hidden');
-                } else {
-                    document.getElementById('admin-planogram-kategoria-panel').classList.add('hidden');
-                }
+                document.getElementById('admin-planogram-kategoria-panel').classList.toggle('hidden', !(currentUserData && currentUserData.rola === 'admin'));
                 zaladujPlanogramyMenu();
             } else if (hash === "#pracownicy") {
                 document.getElementById('modul-pracownicy').classList.remove('hidden');
@@ -883,306 +775,304 @@
             }
         });
 
-        window.otworzModul = function(nazwa) {
-            window.location.hash = "#" + nazwa;
-        }
+        window.otworzModul = (nazwa) => { window.location.hash = "#" + nazwa; };
 
         window.toggleEtatPole = function(prefix) {
             const umowa = document.getElementById(`${prefix}-p-umowa`).value;
-            const etatBox = document.getElementById(`${prefix}-etat-box`);
-            if (umowa === 'Zlecenie') {
-                etatBox.style.display = 'none';
-            } else {
-                etatBox.style.display = 'block';
-            }
+            document.getElementById(`${prefix}-etat-box`).style.display = (umowa === 'Zlecenie') ? 'none' : 'block';
         }
 
         window.checkEtatCustom = function(prefix) {
             const etatVal = document.getElementById(`${prefix}-p-etat`).value;
-            const customInput = document.getElementById(`${prefix}-p-etat-custom`);
-            if (etatVal === 'inny') {
-                customInput.classList.remove('hidden');
+            document.getElementById(`${prefix}-p-etat-custom`).classList.toggle('hidden', etatVal !== 'inny');
+        }
+
+        // --- POWIADOMIENIA MISJI ---
+        async function sprawdzPowiadomieniaMisje(imie, czyAdmin) {
+            try {
+                const snap = await getDocs(collection(db, "misje"));
+                let noweCnt = 0;
+                snap.forEach(d => {
+                    const data = d.data();
+                    if (czyAdmin) { if (data.status === "nowe") noweCnt++; }
+                    else { if (data.pracownik === imie && data.status === "nowe") noweCnt++; }
+                });
+                const badge = document.getElementById('misje-badge');
+                if (noweCnt > 0) { badge.innerText = noweCnt; badge.classList.remove('hidden'); }
+                else { badge.classList.add('hidden'); }
+            } catch (e) { console.error(e); }
+        }
+
+        // --- MODUŁ MISJE ---
+        async function wypelnijSelectPracownikow(selectId) {
+            const sel = document.getElementById(selectId);
+            try {
+                const snap = await getDocs(collection(db, "uzytkownicy"));
+                let html = `<option value="">Wybierz pracownika</option>`;
+                snap.forEach(d => { html += `<option value="${d.data().imie}">${d.data().imie}</option>`; });
+                sel.innerHTML = html;
+            } catch (e) { sel.innerHTML = `<option value="">Błąd ładowania</option>`; }
+        }
+
+        window.dodajMisje = async function() {
+            const pracownik = document.getElementById('misja-pracownik-select').value;
+            const zadanie = document.getElementById('misja-tresc').value.trim();
+            const doKiedy = document.getElementById('misja-termin').value;
+            if (!pracownik || !zadanie || !doKiedy) return alert("Wypełnij wszystkie pola misji!");
+            try {
+                await addDoc(collection(db, "misje"), { pracownik, zadanie, doKiedy, status: "nowe", uwagi: "", dataUtworzenia: new Date().toLocaleString() });
+                alert("Misja przypisana!");
+                document.getElementById('misja-tresc').value = "";
+                document.getElementById('misja-termin').value = "";
+                zaladujMisje();
+            } catch (e) { alert("Błąd zapisu."); }
+        }
+
+        async function zaladujMisje() {
+            const container = document.getElementById('misje-lista-container');
+            container.innerHTML = "Pobieranie misji...";
+            if (currentUserData && currentUserData.rola === 'admin') wypelnijSelectPracownikow('misja-pracownik-select');
+            try {
+                const snap = await getDocs(collection(db, "misje"));
+                let html = `<table class="standard-table"><tr><th>Pracownik</th><th>Zadanie</th><th>Do kiedy</th><th>Status</th><th>Uwagi</th></tr>`;
+                let count = 0, czyAdmin = currentUserData && currentUserData.rola === 'admin', mojeImie = currentUserData ? currentUserData.imie : "";
+                let noweDlaMnie = 0, dzisiajStr = new Date().toISOString().slice(0, 10);
+
+                for (const docSnap of snap.docs) {
+                    const id = docSnap.id, d = docSnap.data();
+                    if (!czyAdmin && d.pracownik !== mojeImie) continue;
+                    
+                    let aktualnyStatus = d.status;
+                    if (d.doKiedy && d.doKiedy < dzisiajStr && !['zrobione', 'zaliczone', 'po czasie'].includes(aktualnyStatus)) {
+                        aktualnyStatus = 'po czasie';
+                        await setDoc(doc(db, "misje", id), { status: 'po czasie' }, { merge: true });
+                    }
+
+                    count++;
+                    if ((!czyAdmin && d.pracownik === mojeImie && aktualnyStatus === "nowe") || (czyAdmin && aktualnyStatus === "nowe")) noweDlaMnie++;
+
+                    let kolory = { 'zrobione': '#28a745', 'zaliczone': '#28a745', 'po czasie': '#dc3545', 'do wyjaśnienia': '#dc3545', 'odebrane': '#17a2b8', 'nowe': '#ffc107' };
+                    let statusBadge = `<span style="background: ${kolory[aktualnyStatus]||'#ffc107'}; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.85em;">${aktualnyStatus}</span>`;
+                    
+                    // Cały wiersz po kliknięciu otwiera modal szczegółów (zgodnie z poleceniem usunięto osobną kolumnę akcji)
+                    let bezpiecznaTresc = encodeURIComponent(d.zadanie);
+                    let bezpieczneUwagi = encodeURIComponent(d.uwagi || '');
+                    html += `<tr class="cleaning-row" onclick="otworzModalUniwersalnaMisja('${id}', '${d.pracownik}', '${bezpiecznaTresc}', '${d.doKiedy}', '${aktualnyStatus}', '${bezpieczneUwagi}')">
+                        <td><strong>${d.pracownik}</strong></td>
+                        <td style="text-align:left;">${d.zadanie}</td>
+                        <td align="center">${d.doKiedy}</td>
+                        <td align="center">${statusBadge}</td>
+                        <td>${d.uwagi||'-'}</td>
+                    </tr>`;
+                }
+
+                if (noweDlaMnie > 0) {
+                    let msgAlerty = czyAdmin ? `⚠️ W systemie jest ${noweDlaMnie} nowych zadań oczekujących na podjęcie!` : `⚠️ Masz ${noweDlaMnie} nowe zadanie(-a)!`;
+                    container.innerHTML = `<div style="background: #fff3cd; color: #856404; padding: 10px; border-radius: 4px; margin-bottom: 15px; font-weight: bold;">${msgAlerty}</div>` + (count === 0 ? "<p style='color:#6c757d;'>Brak misji.</p>" : html + `</table>`);
+                } else {
+                    container.innerHTML = count === 0 ? "<p style='color:#6c757d;'>Brak misji.</p>" : html + `</table>`;
+                }
+                sprawdzPowiadomieniaMisje(mojeImie, czyAdmin);
+            } catch (e) { container.innerHTML = "Błąd pobierania."; }
+        }
+
+        window.otworzModalUniwersalnaMisja = async function(id, pracownik, zadanie, doKiedy, status, uwagi) {
+            document.getElementById('m-edit-misja-id').value = id;
+            const czyAdmin = currentUserData && currentUserData.rola === 'admin';
+            
+            const adminSekcja = document.getElementById('admin-edit-misja-sekcja');
+            const pracownikSekcja = document.getElementById('pracownik-view-misja-sekcja');
+            const btnUsun = document.getElementById('btn-usun-misja-admin');
+
+            if (czyAdmin) {
+                adminSekcja.classList.remove('hidden');
+                pracownikSekcja.classList.add('hidden');
+                btnUsun.style.display = 'block';
+                await wypelnijSelectPracownikow('m-edit-misja-pracownik');
+                document.getElementById('m-edit-misja-pracownik').value = pracownik;
+                document.getElementById('m-edit-misja-tresc-admin').value = decodeURIComponent(zadanie);
+                document.getElementById('m-edit-misja-termin-admin').value = doKiedy;
             } else {
-                customInput.classList.add('hidden');
+                adminSekcja.classList.add('hidden');
+                pracownikSekcja.classList.remove('hidden');
+                btnUsun.style.display = 'none';
+                document.getElementById('m-edit-misja-tresc-pracownik').innerText = decodeURIComponent(zadanie);
+                document.getElementById('m-edit-misja-termin-pracownik').innerText = doKiedy;
+            }
+
+            // Status "po czasie" nie może być wybrany ręcznie, więc jest ukrywany lub blokowany w selektorze
+            const statusSel = document.getElementById('m-edit-misja-status');
+            statusSel.value = status;
+            
+            document.getElementById('m-edit-misja-uwagi').value = decodeURIComponent(uwagi);
+            document.getElementById('modal-uniwersalna-misja').classList.remove('hidden');
+        }
+
+        window.zamknijModalUniwersalnaMisja = () => document.getElementById('modal-uniwersalna-misja').classList.add('hidden');
+
+        window.zapiszUniwersalnaMisja = async function() {
+            const id = document.getElementById('m-edit-misja-id').value;
+            const status = document.getElementById('m-edit-misja-status').value;
+            const uwagi = document.getElementById('m-edit-misja-uwagi').value.trim();
+            const czyAdmin = currentUserData && currentUserData.rola === 'admin';
+
+            let daneZapisu = { status, uwagi };
+            if (czyAdmin) {
+                daneZapisu.pracownik = document.getElementById('m-edit-misja-pracownik').value;
+                daneZapisu.zadanie = document.getElementById('m-edit-misja-tresc-admin').value.trim();
+                daneZapisu.doKiedy = document.getElementById('m-edit-misja-termin-admin').value;
+            }
+
+            try {
+                await setDoc(doc(db, "misje", id), daneZapisu, { merge: true });
+                zamknijModalUniwersalnaMisja();
+                alert("Zaktualizowano zadanie!");
+                zaladujMisje();
+            } catch (e) { alert("Błąd zapisu zadania."); }
+        }
+
+        window.usunMisjeZModala = async function() {
+            if (confirm("Czy na pewno chcesz usunąć tę misję?")) {
+                const id = document.getElementById('m-edit-misja-id').value;
+                try {
+                    await deleteDoc(doc(db, "misje", id));
+                    zamknijModalUniwersalnaMisja();
+                    alert("Usunięto misję.");
+                    zaladujMisje();
+                } catch (e) { alert("Błąd usuwania misji."); }
             }
         }
 
-        // --- MODUŁ PLANOGRAMY ---
+        // --- PLANOGRAMY ---
         async function pobierzListePolokDlaPlanogramu() {
             try {
-                const docRef = doc(db, "system_ustawienia", "planogramy_kategorie");
-                const docSnap = await getDoc(docRef);
-                if (docSnap.exists() && docSnap.data().lista) {
-                    return docSnap.data().lista;
-                } else {
-                    await setDoc(docRef, { lista: DOMYSLNE_POLKI });
-                    return DOMYSLNE_POLKI;
-                }
-            } catch (e) {
-                console.error(e);
+                const docSnap = await getDoc(doc(db, "system_ustawienia", "planogramy_kategorie"));
+                if (docSnap.exists() && docSnap.data().lista) return docSnap.data().lista;
+                await setDoc(doc(db, "system_ustawienia", "planogramy_kategorie"), { lista: DOMYSLNE_POLKI });
                 return DOMYSLNE_POLKI;
-            }
+            } catch (e) { return DOMYSLNE_POLKI; }
         }
 
         async function zaladujPlanogramyMenu() {
             const container = document.getElementById('planogramy-lista-container');
             container.innerHTML = "Pobieranie listy półek...";
-
             try {
                 const listaPolok = await pobierzListePolokDlaPlanogramu();
                 const querySnapshot = await getDocs(collection(db, "planogramy"));
                 const danePlanogramow = {};
-                querySnapshot.forEach(docSnap => {
-                    danePlanogramow[docSnap.id] = docSnap.data();
-                });
+                querySnapshot.forEach(docSnap => { danePlanogramow[docSnap.id] = docSnap.data(); });
 
-                let html = `<table class="cleaning-table">
-                    <tr>
-                        <th>Nazwa półki / strefy</th>
-                        <th>Data modyfikacji</th>
-                        <th>Status / Liczba zdjęć</th>`;
-                
+                let html = `<table class="cleaning-table"><tr><th>Nazwa półki / strefy</th><th>Data modyfikacji</th><th>Status / Liczba zdjęć</th>`;
                 const czyAdmin = currentUserData && currentUserData.rola === 'admin';
-                if (czyAdmin) {
-                    html += `<th>Akcja</th>`;
-                }
+                if (czyAdmin) html += `<th>Akcja</th>`;
                 html += `</tr>`;
 
                 listaPolok.forEach((polka) => {
                     const pData = danePlanogramow[polka];
                     let statusBadge = `<span class="badge-pending">Brak planogramu</span>`;
                     let dataUmieszczenia = "-";
-
                     if (pData) {
                         if (pData.zdjęcia && pData.zdjęcia.length > 0) {
                             dataUmieszczenia = pData.dataUmieszczenia || "-";
-                            statusBadge = `<span class="badge-done">📷 ${pData.zdjęcia.length} ${pData.zdjęcia.length === 1 ? 'zdjęcie' : (pData.zdjęcia.length < 5 ? 'zdjęcia' : 'zdjęć')}</span>`;
+                            statusBadge = `<span class="badge-done">📷 ${pData.zdjęcia.length} zdjęć</span>`;
                         } else if (pData.plik) {
                             dataUmieszczenia = pData.dataUmieszczenia || "-";
                             statusBadge = `<span class="badge-done">📷 1 zdjęcie</span>`;
                         }
                     }
-
-                    html += `<tr class="cleaning-row">
-                        <td onclick="otworzModalPlanogramu('${polka}')"><strong>${polka}</strong></td>
-                        <td align="center" onclick="otworzModalPlanogramu('${polka}')">${dataUmieszczenia}</td>
-                        <td align="center" onclick="otworzModalPlanogramu('${polka}')">${statusBadge}</td>`;
-                    
-                    if (czyAdmin) {
-                        html += `<td><button onclick="usunPolkeZListyPlanogramu('${polka}')" style="background: #dc3545; padding: 4px 8px; font-size: 0.8em; margin:0; width:auto;" title="Usuń półkę z listy">🗑️ Usuń</button></td>`;
-                    }
+                    html += `<tr class="cleaning-row"><td onclick="otworzModalPlanogramu('${polka}')"><strong>${polka}</strong></td><td align="center" onclick="otworzModalPlanogramu('${polka}')">${dataUmieszczenia}</td><td align="center" onclick="otworzModalPlanogramu('${polka}')">${statusBadge}</td>`;
+                    if (czyAdmin) html += `<td><button onclick="usunPolkeZListyPlanogramu('${polka}')" style="background: #dc3545; padding: 4px 8px; font-size: 0.8em; margin:0; width:auto;">🗑️ Usuń</button></td>`;
                     html += `</tr>`;
                 });
-
-                html += `</table>`;
-                container.innerHTML = html;
-            } catch (e) {
-                console.error(e);
-                container.innerHTML = "Błąd ładowania planogramów.";
-            }
+                container.innerHTML = html + `</table>`;
+            } catch (e) { container.innerHTML = "Błąd ładowania."; }
         }
 
         window.dodajNowaPolkeDoListy = async function() {
-            const input = document.getElementById('nowa-polka-nazwa');
-            const nazwa = input.value.trim();
-            if (!nazwa) {
-                alert("Wpisz nazwę nowej półki lub strefy!");
-                return;
-            }
-
+            const nazwa = document.getElementById('nowa-polka-nazwa').value.trim();
+            if (!nazwa) return alert("Wpisz nazwę strefy!");
             try {
-                const lista = await pobierzListePolokDlaPlanogramu();
-                if (lista.includes(nazwa)) {
-                    alert("Taka półka lub strefa już istnieje na liście!");
-                    return;
-                }
-
-                lista.push(nazwa);
-                lista.sort();
-
-                await setDoc(doc(db, "system_ustawienia", "planogramy_kategorie"), { lista: lista });
-                alert(`Dodano nową strefę: ${nazwa}`);
-                input.value = "";
+                let lista = await pobierzListePolokDlaPlanogramu();
+                if (lista.includes(nazwa)) return alert("Taka strefa już istnieje!");
+                lista.push(nazwa); lista.sort();
+                await setDoc(doc(db, "system_ustawienia", "planogramy_kategorie"), { lista });
+                document.getElementById('nowa-polka-nazwa').value = "";
                 zaladujPlanogramyMenu();
-            } catch (e) {
-                alert("Błąd podczas dodawania półki do listy.");
-            }
+            } catch (e) { alert("Błąd."); }
         }
 
         window.usunPolkeZListyPlanogramu = async function(polkaNazwa) {
-            if (!confirm(`Czy na pewno chcesz usunąć strefę "${polkaNazwa}" z listy? Spowoduje to również usunięcie przypisanych do niej planogramów.`)) {
-                return;
-            }
-
+            if (!confirm(`Usunąć strefę "${polkaNazwa}" z listy?`)) return;
             try {
-                let lista = await pobierzListePolokDlaPlanogramu();
-                lista = lista.filter(p => p !== polkaNazwa);
-
-                await setDoc(doc(db, "system_ustawienia", "planogramy_kategorie"), { lista: lista });
+                let lista = (await pobierzListePolokDlaPlanogramu()).filter(p => p !== polkaNazwa);
+                await setDoc(doc(db, "system_ustawienia", "planogramy_kategorie"), { lista });
                 await deleteDoc(doc(db, "planogramy", polkaNazwa));
-
-                alert("Usunięto strefę z listy.");
                 zaladujPlanogramyMenu();
-            } catch (e) {
-                alert("Błąd podczas usuwania strefy.");
-            }
+            } catch (e) { alert("Błąd."); }
         }
 
         let wymawiajacyPolkaPlanogram = "";
-
         window.otworzModalPlanogramu = async function(polkaNazwa) {
             wymawiajacyPolkaPlanogram = polkaNazwa;
             document.getElementById('modal-planogram-tytul').innerText = `Planogram: ${polkaNazwa}`;
             const trescDiv = document.getElementById('modal-planogram-tresc');
-            const adminPanel = document.getElementById('admin-planogram-edycja');
-            document.getElementById('admin-planogram-file').value = "";
-
             trescDiv.innerHTML = "Pobieranie zdjęć...";
             document.getElementById('modal-planogram-szczegoly').classList.remove('hidden');
-
-            if (currentUserData && currentUserData.rola === 'admin') {
-                adminPanel.classList.remove('hidden');
-            } else {
-                adminPanel.classList.add('hidden');
-            }
+            document.getElementById('admin-planogram-edycja').classList.toggle('hidden', !(currentUserData && currentUserData.rola === 'admin'));
 
             try {
-                const docRef = doc(db, "planogramy", polkaNazwa);
-                const docSnap = await getDoc(docRef);
-
+                const docSnap = await getDoc(doc(db, "planogramy", polkaNazwa));
                 if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    let listaZdjec = [];
-                    
-                    if (data.zdjęcia && Array.isArray(data.zdjęcia)) {
-                        listaZdjec = data.zdjęcia;
-                    } else if (data.plik) {
-                        listaZdjec = [data.plik];
-                    }
-
+                    let listaZdjec = docSnap.data().zdjęcia || (docSnap.data().plik ? [docSnap.data().plik] : []);
                     if (listaZdjec.length > 0) {
-                        let galleryHtml = `<p style="font-size: 0.9em; margin-bottom: 8px;">Ostatnia modyfikacja: <strong>${data.dataUmieszczenia || '-'}</strong> | Autor: <strong>${data.autor || 'Admin'}</strong></p>
-                        <p style="font-size: 0.85em; color: #28a745;">Kliknij na miniaturę, aby powiększyć zdjęcie:</p>
-                        <div class="planogram-gallery">`;
-
+                        let galleryHtml = `<p style="font-size: 0.9em; margin-bottom: 8px;">Ostatnia modyfikacja: <strong>${docSnap.data().dataUmieszczenia || '-'}</strong></p><div class="planogram-gallery">`;
                         listaZdjec.forEach((imgSrc, idx) => {
-                            galleryHtml += `<div class="planogram-thumb-box">
-                                <img src="${imgSrc}" onclick="otworzZoomZdjecia('${imgSrc}')" title="Kliknij, aby powiększyć">`;
-                            
-                            if (currentUserData && currentUserData.rola === 'admin') {
-                                galleryHtml += `<button class="del-photo-btn" onclick="usunPojedynczeZdjeciePlanogramu(${idx})">🗑️ Usuń</button>`;
-                            }
+                            galleryHtml += `<div class="planogram-thumb-box"><img src="${imgSrc}" onclick="otworzZoomZdjecia('${imgSrc}')">`;
+                            if (currentUserData && currentUserData.rola === 'admin') galleryHtml += `<button class="del-photo-btn" onclick="usunPojedynczeZdjeciePlanogramu(${idx})">🗑️ Usuń</button>`;
                             galleryHtml += `</div>`;
                         });
-
-                        galleryHtml += `</div>`;
-                        trescDiv.innerHTML = galleryHtml;
-                    } else {
-                        trescDiv.innerHTML = `<p style="color: #6c757d; text-align: center; padding: 20px;">Brak załączonych zdjęć planogramu dla tej półki.</p>`;
-                    }
-                } else {
-                    trescDiv.innerHTML = `<p style="color: #6c757d; text-align: center; padding: 20px;">Brak załączonych zdjęć planogramu dla tej półki.</p>`;
-                }
-            } catch (e) {
-                console.error(e);
-                trescDiv.innerHTML = "Błąd pobierania planogramu.";
-            }
+                        trescDiv.innerHTML = galleryHtml + `</div>`;
+                    } else { trescDiv.innerHTML = `<p style="color: #6c757d; text-align: center; padding: 20px;">Brak zdjęć.</p>`; }
+                } else { trescDiv.innerHTML = `<p style="color: #6c757d; text-align: center; padding: 20px;">Brak zdjęć.</p>`; }
+            } catch (e) { trescDiv.innerHTML = "Błąd pobierania."; }
         }
 
-        window.zamknijModalPlanogramu = function() {
-            document.getElementById('modal-planogram-szczegoly').classList.add('hidden');
-        }
+        window.zamknijModalPlanogramu = () => document.getElementById('modal-planogram-szczegoly').classList.add('hidden');
 
         window.dodajZdjeciaDoPlanogramu = async function() {
             const fileInput = document.getElementById('admin-planogram-file');
-            if (fileInput.files.length === 0) {
-                alert("Wybierz przynajmniej jedno zdjęcie do wgrania!");
-                return;
-            }
-
+            if (fileInput.files.length === 0) return alert("Wybierz zdjęcia!");
             const files = Array.from(fileInput.files);
-            let wczytaneBase64 = [];
-
-            let readerPromises = files.map(file => {
-                return new Promise((resolve) => {
-                    const reader = new FileReader();
-                    reader.onload = (e) => resolve(e.target.result);
-                    reader.readAsDataURL(file);
-                });
-            });
-
-            wczytaneBase64 = await Promise.all(readerPromises);
-
+            const wczytaneBase64 = await Promise.all(files.map(file => new Promise(resolve => {
+                const reader = new FileReader();
+                reader.onload = e => resolve(e.target.result);
+                reader.readAsDataURL(file);
+            })));
             try {
                 const docRef = doc(db, "planogramy", wymawiajacyPolkaPlanogram);
                 const docSnap = await getDoc(docRef);
-                let istniejaceZdjecia = [];
-
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    if (data.zdjęcia && Array.isArray(data.zdjęcia)) {
-                        istniejaceZdjecia = data.zdjęcia;
-                    } else if (data.plik) {
-                        istniejaceZdjecia = [data.plik];
-                    }
-                }
-
-                const laczneZdjecia = istniejaceZdjecia.concat(wczytaneBase64);
-                const teraz = new Date().toLocaleString();
-                const imieAktualne = currentUserData ? currentUserData.imie : "Admin";
-
-                await setDoc(docRef, {
-                    polka: wymawiajacyPolkaPlanogram,
-                    zdjęcia: laczneZdjecia,
-                    dataUmieszczenia: teraz,
-                    autor: imieAktualne
-                });
-
-                alert("Dodano nowe zdjęcia do planogramu!");
+                let istniejace = docSnap.exists() ? (docSnap.data().zdjęcia || (docSnap.data().plik ? [docSnap.data().plik] : [])) : [];
+                await setDoc(docRef, { polka: wymawiajacyPolkaPlanogram, zdjęcia: istniejace.concat(wczytaneBase64), dataUmieszczenia: new Date().toLocaleString(), autor: currentUserData ? currentUserData.imie : "Admin" });
                 fileInput.value = "";
                 otworzModalPlanogramu(wymawiajacyPolkaPlanogram);
                 zaladujPlanogramyMenu();
-            } catch (err) {
-                alert("Błąd podczas zapisywania zdjęć: " + err.message);
-            }
+            } catch (err) { alert("Błąd zapisu."); }
         }
 
         window.usunPojedynczeZdjeciePlanogramu = async function(index) {
-            if (!confirm("Czy na pewno chcesz usunąć to konkretne zdjęcie?")) return;
-
+            if (!confirm("Usunąć to zdjęcie?")) return;
             try {
                 const docRef = doc(db, "planogramy", wymawiajacyPolkaPlanogram);
-                const docSnap = await getDoc(docRef);
-
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    let istniejaceZdjecia = data.zdjęcia || (data.plik ? [data.plik] : []);
-                    
-                    istniejaceZdjecia.splice(index, 1);
-                    const teraz = new Date().toLocaleString();
-                    const imieAktualne = currentUserData ? currentUserData.imie : "Admin";
-
-                    if (istniejaceZdjecia.length > 0) {
-                        await setDoc(docRef, {
-                            polka: wymawiajacyPolkaPlanogram,
-                            zdjęcia: istniejaceZdjecia,
-                            dataUmieszczenia: teraz,
-                            autor: imieAktualne
-                        });
-                    } else {
-                        await deleteDoc(docRef);
-                    }
-
-                    alert("Usunięto zdjęcie.");
-                    otworzModalPlanogramu(wymawiajacyPolkaPlanogram);
-                    zaladujPlanogramyMenu();
-                }
-            } catch (e) {
-                alert("Błąd podczas usuwania zdjęcia.");
-            }
+                let istniejace = (await getDoc(docRef)).data().zdjęcia || [];
+                istniejace.splice(index, 1);
+                if (istniejace.length > 0) await setDoc(docRef, { zdjęcia: istniejace, dataUmieszczenia: new Date().toLocaleString() }, { merge: true });
+                else await deleteDoc(docRef);
+                otworzModalPlanogramu(wymawiajacyPolkaPlanogram);
+                zaladujPlanogramyMenu();
+            } catch (e) { alert("Błąd."); }
         }
 
-        // --- MODUŁ SPRZĄTANIE / KONTROLA PÓŁEK ---
+        // --- SPRZĄTANIE ---
         window.zaladujSprzatanie = async function() {
             const miesiac = document.getElementById('sprzatanie-miesiac').value;
             const okres = document.getElementById('sprzatanie-okres').value;
@@ -1194,55 +1084,27 @@
             const czyAdmin = currentUserData && currentUserData.rola === 'admin';
             const czyBiezacyOkres = (miesiac === biezacy.miesiacStr && okres === biezacy.okresStr);
 
-            if (!czyAdmin && !czyBiezacyOkres) {
-                infoTryb.innerHTML = `<span style="color: #dc3545;">🔒 Archiwum: Starsze lub przyszłe okresy możesz jedynie przeglądać (brak uprawnień do edycji).</span>`;
-            } else if (czyAdmin) {
-                infoTryb.innerHTML = `<span style="color: #28a745;">⚙️ Tryb kierownika: Masz pełne uprawnienia do edycji i usuwania wpisów w dowolnym okresie.</span>`;
-            } else {
-                infoTryb.innerHTML = `<span style="color: #007bff;">✏️ Bieżący okres: Możesz wypełniać i aktualizować dzisiejsze zadania.</span>`;
-            }
+            if (!czyAdmin && !czyBiezacyOkres) infoTryb.innerHTML = `<span style="color: #dc3545;">🔒 Archiwum: Tylko do odczytu.</span>`;
+            else if (czyAdmin) infoTryb.innerHTML = `<span style="color: #28a745;">⚙️ Tryb kierownika: Pełne uprawnienia edycji.</span>`;
+            else infoTryb.innerHTML = `<span style="color: #007bff;">✏️ Bieżący okres: Możesz wypełniać zadania.</span>`;
 
             container.innerHTML = "Pobieranie listy...";
-            const docId = `${miesiac}_${okres}`;
-
             try {
-                const docRef = doc(db, "sprzatanie", docId);
-                const docSnap = await getDoc(docRef);
+                const docSnap = await getDoc(doc(db, "sprzatanie", `${miesiac}_${okres}`));
                 aktualneDaneSprzatania = docSnap.exists() ? docSnap.data().półki || {} : {};
 
-                let html = `<table class="cleaning-table">
-                    <tr>
-                        <th>Półka / Strefa</th>
-                        <th>Status</th>
-                        <th>Ostatnio sprawdzał</th>
-                    </tr>`;
-
+                let html = `<table class="cleaning-table"><tr><th>Półka / Strefa</th><th>Status</th><th>Ostatnio sprawdzał</th></tr>`;
                 DOMYSLNE_POLKI.forEach((polka, index) => {
                     const pData = aktualneDaneSprzatania[index] || { czystosc: false, daty: false, planogram: false, podpis: "-" };
                     const zrobione = pData.czystosc && pData.daty && pData.planogram;
-                    
                     let statusBadge = zrobione ? `<span class="badge-done">✔ Zrobione</span>` : `<span class="badge-pending">⏳ Do zrobienia</span>`;
-                    
-                    if (zrobione && pData.komentarz && pData.komentarz.trim() !== "") {
-                        statusBadge += `<br><span class="badge-warning">⚠️ Są uwagi</span>`;
-                    }
-                    if (pData.zdjecie && pData.zdjecie.trim() !== "") {
-                        statusBadge += `<br><span class="badge-photo">📷 Jest zdjęcie</span>`;
-                    }
+                    if (zrobione && pData.komentarz) statusBadge += `<br><span class="badge-warning">⚠️ Uwagi</span>`;
+                    if (pData.zdjecie) statusBadge += `<br><span class="badge-photo">📷 Zdjęcie</span>`;
 
-                    html += `<tr class="cleaning-row" onclick="otworzModalPolki(${index})">
-                        <td><strong>${polka}</strong></td>
-                        <td align="center">${statusBadge}</td>
-                        <td style="font-size: 0.85em; color: #555;">${pData.podpis !== "-" ? pData.podpis + " (" + (pData.dataSprawdzenia || '') + ")" : "-"}</td>
-                    </tr>`;
+                    html += `<tr class="cleaning-row" onclick="otworzModalPolki(${index})"><td><strong>${polka}</strong></td><td align="center">${statusBadge}</td><td style="font-size:0.85em;">${pData.podpis !== "-" ? pData.podpis + " (" + (pData.dataSprawdzenia || '') + ")" : "-"}</td></tr>`;
                 });
-
-                html += `</table>`;
-                container.innerHTML = html;
-            } catch (e) {
-                console.error(e);
-                container.innerHTML = "Błąd pobierania danych.";
-            }
+                container.innerHTML = html + `</table>`;
+            } catch (e) { container.innerHTML = "Błąd pobierania."; }
         }
 
         window.otworzModalPolki = function(index) {
@@ -1259,228 +1121,97 @@
             document.getElementById('modal-polka-tytuł').innerText = `Sprawdź półkę: ${polkaNazwa}`;
             document.getElementById('modal-polka-index').value = index;
             
-            const czCheck = document.getElementById('m-czystosc');
-            const datCheck = document.getElementById('m-daty');
-            const planCheck = document.getElementById('m-planogram');
-            const komText = document.getElementById('m-komentarz');
-            const fileInput = document.getElementById('m-zdjecie');
-            const btnZapisz = document.getElementById('btn-zapisz-polka');
-            const btnUsun = document.getElementById('btn-usun-polka');
+            document.getElementById('m-czystosc').checked = pData.czystosc || false;
+            document.getElementById('m-daty').checked = pData.daty || false;
+            document.getElementById('m-planogram').checked = pData.planogram || false;
+            document.getElementById('m-komentarz').value = pData.komentarz || '';
+            document.getElementById('m-zdjecie').value = "";
 
-            czCheck.checked = pData.czystosc || false;
-            datCheck.checked = pData.daty || false;
-            planCheck.checked = pData.planogram || false;
-            komText.value = pData.komentarz || '';
-            fileInput.value = "";
+            let tylkoDoOdczytu = !czyAdmin && (!czyBiezacyOkres || zrobione);
+            ['m-czystosc', 'm-daty', 'm-planogram', 'm-komentarz', 'm-zdjecie'].forEach(id => document.getElementById(id).disabled = tylkoDoOdczytu);
+            document.getElementById('btn-zapisz-polka').style.display = tylkoDoOdczytu ? 'none' : 'block';
+            document.getElementById('btn-usun-polka').style.display = (czyAdmin && pData.podpis !== "-") ? 'block' : 'none';
 
-            let tylkoDoOdczytu = false;
-            if (!czyAdmin) {
-                if (!czyBiezacyOkres || zrobione) {
-                    tylkoDoOdczytu = true;
-                }
-            }
-
-            if (tylkoDoOdczytu) {
-                czCheck.disabled = true;
-                datCheck.disabled = true;
-                planCheck.disabled = true;
-                komText.disabled = true;
-                fileInput.disabled = true;
-                btnZapisz.style.display = 'none';
-            } else {
-                czCheck.disabled = false;
-                datCheck.disabled = false;
-                planCheck.disabled = false;
-                komText.disabled = false;
-                fileInput.disabled = false;
-                btnZapisz.style.display = 'block';
-            }
-
-            if (czyAdmin && pData.podpis !== "-") {
-                btnUsun.style.display = 'block';
-            } else {
-                btnUsun.style.display = 'none';
-            }
-
-            const previewDiv = document.getElementById('m-zdjecie-preview');
-            if (pData.zdjecie) {
-                previewDiv.innerHTML = `<p style="font-size:0.85em; color:#28a745;">Załączone zdjęcie (kliknij, aby powiększyć):</p><img src="${pData.zdjecie}" onclick="otworzZoomZdjecia('${pData.zdjecie}')" style="max-height: 150px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); cursor: pointer;" title="Kliknij, aby powiększyć">`;
-            } else {
-                previewDiv.innerHTML = `<p style="font-size:0.85em; color:#6c757d;">Brak zdjęcia</p>`;
-            }
-
+            document.getElementById('m-zdjecie-preview').innerHTML = pData.zdjecie ? `<p style="font-size:0.85em; color:#28a745;">Załączone zdjęcie:</p><img src="${pData.zdjecie}" onclick="otworzZoomZdjecia('${pData.zdjecie}')" style="max-height: 150px; border-radius: 4px; cursor: pointer;">` : `<p style="font-size:0.85em; color:#6c757d;">Brak zdjęcia</p>`;
             document.getElementById('modal-polka').classList.remove('hidden');
         }
 
-        window.zamknijModalPolki = function() {
-            document.getElementById('modal-polka').classList.add('hidden');
-        }
+        window.zamknijModalPolki = () => document.getElementById('modal-polka').classList.add('hidden');
 
         window.zapiszSzczegolyPolki = async function() {
             const index = document.getElementById('modal-polka-index').value;
             const miesiac = document.getElementById('sprzatanie-miesiac').value;
             const okres = document.getElementById('sprzatanie-okres').value;
-            const docId = `${miesiac}_${okres}`;
-
-            const czystosc = document.getElementById('m-czystosc').checked;
-            const daty = document.getElementById('m-daty').checked;
-            const planogram = document.getElementById('m-planogram').checked;
-            const komentarz = document.getElementById('m-komentarz').value.trim();
             const fileInput = document.getElementById('m-zdjecie');
+            const stareDane = aktualneDaneSprzatania[index] || {};
 
-            const imieAktualne = currentUserData ? currentUserData.imie : "Pracownik";
-            const teraz = new Date().toLocaleString();
-            let stareDane = aktualneDaneSprzatania[index] || {};
-
-            let zapiszDaneDoBazy = async (base64Img) => {
-                let zdjecieFinalne = base64Img || stareDane.zdjecie || "";
-
-                aktualneDaneSprzatania[index] = {
-                    nazwa: DOMYSLNE_POLKI[index],
-                    czystosc: czystosc,
-                    daty: daty,
-                    planogram: planogram,
-                    komentarz: komentarz,
-                    zdjecie: zdjecieFinalne,
-                    podpis: imieAktualne,
-                    dataSprawdzenia: teraz
-                };
-
+            let zapiszDoBazy = async (imgSrc) => {
                 try {
-                    await setDoc(doc(db, "sprzatanie", docId), {
-                        miesiac: miesiac,
-                        okres: okres,
-                        półki: aktualneDaneSprzatania,
-                        ostatniaModyfikacja: `${teraz} (${imieAktualne})`
-                    });
-                    alert("Zapisano kontrolę półki!");
+                    aktualneDaneSprzatania[index] = {
+                        nazwa: DOMYSLNE_POLKI[index],
+                        czystosc: document.getElementById('m-czystosc').checked,
+                        daty: document.getElementById('m-daty').checked,
+                        planogram: document.getElementById('m-planogram').checked,
+                        komentarz: document.getElementById('m-komentarz').value.trim(),
+                        zdjecie: imgSrc || stareDane.zdjecie || "",
+                        podpis: currentUserData ? currentUserData.imie : "Pracownik",
+                        dataSprawdzenia: new Date().toLocaleString()
+                    };
+                    await setDoc(doc(db, "sprzatanie", `${miesiac}_${okres}`), { półki: aktualneDaneSprzatania }, { merge: true });
                     zamknijModalPolki();
                     zaladujSprzatanie();
-                } catch (e) {
-                    alert("Błąd podczas zapisu danych półki.");
-                }
+                } catch (e) { alert("Błąd zapisu."); }
             };
 
-            if (fileInput.files.length > 0) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    zapiszDaneDoBazy(e.target.result);
-                };
-                reader.readAsDataURL(fileInput.files[0]);
-            } else {
-                zapiszDaneDoBazy(null);
-            }
+            if (fileInput.files && fileInput.files.length > 0) {
+                const r = new FileReader();
+                r.onload = e => zapiszDoBazy(e.target.result);
+                r.readAsDataURL(fileInput.files[0]);
+            } else { await zapiszDoBazy(null); }
         }
 
         window.usunPotwierdzeniePolki = async function() {
-            if (!confirm("Czy na pewno chcesz usunąć to potwierdzenie i zresetować półkę? Zostaną usunięte także załączone zdjęcia i uwagi.")) {
-                return;
-            }
-
+            if (!confirm("Zresetować tę półkę?")) return;
             const index = document.getElementById('modal-polka-index').value;
             const miesiac = document.getElementById('sprzatanie-miesiac').value;
             const okres = document.getElementById('sprzatanie-okres').value;
-            const docId = `${miesiac}_${okres}`;
-            const imieAktualne = currentUserData ? currentUserData.imie : "Kierownik";
-            const teraz = new Date().toLocaleString();
-
-            aktualneDaneSprzatania[index] = {
-                nazwa: DOMYSLNE_POLKI[index],
-                czystosc: false,
-                daty: false,
-                planogram: false,
-                komentarz: "",
-                zdjecie: "",
-                podpis: "-",
-                dataSprawdzenia: ""
-            };
-
-            try {
-                await setDoc(doc(db, "sprzatanie", docId), {
-                    miesiac: miesiac,
-                    okres: okres,
-                    półki: aktualneDaneSprzatania,
-                    ostatniaModyfikacja: `${teraz} (Reset przez ${imieAktualne})`
-                });
-                alert("Potwierdzenie zostało pomyślnie usunięte (półka zresetowana).");
-                zamknijModalPolki();
-                zaladujSprzatanie();
-            } catch (e) {
-                alert("Błąd podczas usuwania potwierdzenia.");
-            }
+            aktualneDaneSprzatania[index] = { nazwa: DOMYSLNE_POLKI[index], czystosc: false, daty: false, planogram: false, komentarz: "", zdjecie: "", podpis: "-", dataSprawdzenia: "" };
+            await setDoc(doc(db, "sprzatanie", `${miesiac}_${okres}`), { półki: aktualneDaneSprzatania }, { merge: true });
+            zamknijModalPolki();
+            zaladujSprzatanie();
         }
 
-        // --- ZARZĄDZANIE PRACOWNIKAMI ---
+        // --- PRACOWNICY ---
         window.dodajPracownika = async function() {
             const imie = document.getElementById('new-p-imie').value.trim();
             const login = document.getElementById('new-p-login').value.trim();
             const haslo = document.getElementById('new-p-haslo').value;
             const rola = document.getElementById('new-p-rola').value;
             const umowa = document.getElementById('new-p-umowa').value;
-            
-            let etat = "1/1";
-            if (umowa === 'UoP') {
-                const etatSel = document.getElementById('new-p-etat').value;
-                etat = (etatSel === 'inny') ? document.getElementById('new-p-etat-custom').value.trim() : etatSel;
-            } else {
-                etat = "-";
-            }
+            let etat = umowa === 'UoP' ? (document.getElementById('new-p-etat').value === 'inny' ? document.getElementById('new-p-etat-custom').value.trim() : document.getElementById('new-p-etat').value) : "-";
 
-            if (!imie || !login || !haslo) {
-                alert("Wypełnij imię, login i hasło pracownika!");
-                return;
-            }
-
-            const email = `${login}@sp580.pl`;
-
+            if (!imie || !login || !haslo) return alert("Uzupełnij pola pracownika!");
             try {
-                const userCredential = await createUserWithEmailAndPassword(auth, email, haslo);
-                const uid = userCredential.user.uid;
-
-                await setDoc(doc(db, "uzytkownicy", uid), {
-                    imie: imie,
-                    login: login,
-                    rola: rola,
-                    umowa: umowa,
-                    etat: etat
-                });
-
-                alert(`Pracownik ${imie} został dodany pomyślnie!`);
-                document.getElementById('new-p-imie').value = "";
-                document.getElementById('new-p-login').value = "";
-                document.getElementById('new-p-haslo').value = "";
+                const cred = await createUserWithEmailAndPassword(auth, `${login}@sp580.pl`, haslo);
+                await setDoc(doc(db, "uzytkownicy", cred.user.uid), { imie, login, rola, umowa, etat });
+                alert(`Dodano pracownika: ${imie}`);
+                ['new-p-imie', 'new-p-login', 'new-p-haslo'].forEach(id => document.getElementById(id).value = "");
                 zaladujlistePracownikow();
-            } catch (error) {
-                alert("Błąd podczas dodawania pracownika: " + error.message);
-            }
+            } catch (e) { alert("Błąd: " + e.message); }
         }
 
         async function zaladujlistePracownikow() {
             const container = document.getElementById('pracownicy-list-container');
             container.innerHTML = "Pobieranie listy...";
             try {
-                const querySnapshot = await getDocs(collection(db, "uzytkownicy"));
+                const snap = await getDocs(collection(db, "uzytkownicy"));
                 let table = `<table class="standard-table"><tr><th>Imię i nazwisko</th><th>Login</th><th>Rola</th><th>Umowa / Etat</th><th>Akcje</th></tr>`;
-                querySnapshot.forEach(docSnap => {
-                    const p = docSnap.data();
-                    const id = docSnap.id;
-                    const umowaInfo = p.umowa === 'Zlecenie' ? 'Umowa Zlecenie' : `${p.umowa || 'UoP'} (${p.etat || '1/1'})`;
-                    table += `<tr>
-                        <td>${p.imie}</td>
-                        <td>${p.login || '-'}</td>
-                        <td>${p.rola}</td>
-                        <td>${umowaInfo}</td>
-                        <td>
-                            <button onclick="pokazSzczegolyPracownika('${id}', '${p.imie}', '${p.login || ''}', '${p.rola}', '${p.umowa || 'UoP'}', '${p.etat || '1/1'}')" style="padding:4px 8px; font-size:0.8em; margin:0; background:#007bff;">Edytuj</button>
-                            <button onclick="usunPracownika('${id}', '${p.imie}')" style="padding:4px 8px; font-size:0.8em; margin:0; background:#dc3545; margin-top:4px;">Usuń</button>
-                        </td>
-                    </tr>`;
+                snap.forEach(d => {
+                    const p = d.data(), id = d.id;
+                    table += `<tr><td>${p.imie}</td><td>${p.login||'-'}</td><td>${p.rola}</td><td>${p.umowa} (${p.etat})</td><td><button onclick="pokazSzczegolyPracownika('${id}', '${p.imie}', '${p.login||''}', '${p.rola}', '${p.umowa}', '${p.etat}')" style="padding:4px 8px; font-size:0.8em; margin:0; background:#007bff;">Edytuj</button><button onclick="usunPracownika('${id}', '${p.imie}')" style="padding:4px 8px; font-size:0.8em; margin:0; background:#dc3545; margin-top:4px;">Usuń</button></td></tr>`;
                 });
-                table += `</table>`;
-                container.innerHTML = table;
-            } catch (e) {
-                container.innerHTML = "Błąd pobierania listy pracowników.";
-            }
+                container.innerHTML = table + `</table>`;
+            } catch (e) { container.innerHTML = "Błąd."; }
         }
 
         window.pokazSzczegolyPracownika = function(id, imie, login, rola, umowa, etat) {
@@ -1489,34 +1220,16 @@
             document.getElementById('edit-p-login').value = login;
             document.getElementById('edit-p-rola').value = rola;
             document.getElementById('edit-p-umowa').value = umowa;
-            
             toggleEtatPole('edit');
-
             if (umowa === 'UoP') {
-                const etatSelect = document.getElementById('edit-p-etat');
-                const etatCustom = document.getElementById('edit-p-etat-custom');
-                let found = false;
-                for (let opt of etatSelect.options) {
-                    if (opt.value === etat) {
-                        etatSelect.value = etat;
-                        etatCustom.classList.add('hidden');
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found) {
-                    etatSelect.value = 'inny';
-                    etatCustom.value = etat;
-                    etatCustom.classList.remove('hidden');
-                }
+                const etatSelect = document.getElementById('edit-p-etat'), etatCustom = document.getElementById('edit-p-etat-custom');
+                let found = Array.from(etatSelect.options).some(o => o.value === etat);
+                if (found) { etatSelect.value = etat; etatCustom.classList.add('hidden'); }
+                else { etatSelect.value = 'inny'; etatCustom.value = etat; etatCustom.classList.remove('hidden'); }
             }
-
             document.getElementById('modal-szczegoly-pracownika').classList.remove('hidden');
         }
-
-        window.zamknijEdycjePracownika = function() {
-            document.getElementById('modal-szczegoly-pracownika').classList.add('hidden');
-        }
+        window.zamknijEdycjePracownika = () => document.getElementById('modal-szczegoly-pracownika').classList.add('hidden');
 
         window.zapiszEdycjePracownika = async function() {
             const id = document.getElementById('edit-p-id').value;
@@ -1524,309 +1237,142 @@
             const login = document.getElementById('edit-p-login').value.trim();
             const rola = document.getElementById('edit-p-rola').value;
             const umowa = document.getElementById('edit-p-umowa').value;
+            let etat = umowa === 'UoP' ? (document.getElementById('edit-p-etat').value === 'inny' ? document.getElementById('edit-p-etat-custom').value.trim() : document.getElementById('edit-p-etat').value) : "-";
 
-            let etat = "-";
-            if (umowa === 'UoP') {
-                const etatSel = document.getElementById('edit-p-etat').value;
-                etat = (etatSel === 'inny') ? document.getElementById('edit-p-etat-custom').value.trim() : etatSel;
-            }
-
-            if (!imie) {
-                alert("Imię nie może być puste!");
-                return;
-            }
-
+            if (!imie) return alert("Imię nie może być puste!");
             try {
-                await setDoc(doc(db, "uzytkownicy", id), {
-                    imie: imie,
-                    login: login,
-                    rola: rola,
-                    umowa: umowa,
-                    etat: etat
-                }, { merge: true });
-
-                alert("Zaktualizowano dane pracownika!");
+                await setDoc(doc(db, "uzytkownicy", id), { imie, login, rola, umowa, etat }, { merge: true });
                 zamknijEdycjePracownika();
                 zaladujlistePracownikow();
-            } catch (e) {
-                alert("Błąd podczas zapisu zmian pracownika.");
-            }
+            } catch (e) { alert("Błąd zapisu."); }
         }
 
         window.usunPracownika = async function(id, imie) {
-            if (confirm(`Czy na pewno chcesz usunąć pracownika: ${imie}?`)) {
-                try {
-                    await deleteDoc(doc(db, "uzytkownicy", id));
-                    alert("Usunięto pracownika z bazy danych.");
-                    zaladujlistePracownikow();
-                } catch (e) {
-                    alert("Błąd podczas usuwania pracownika.");
-                }
+            if (confirm(`Usunąć pracownika: ${imie}?`)) {
+                try { await deleteDoc(doc(db, "uzytkownicy", id)); zaladujlistePracownikow(); } catch (e) { alert("Błąd."); }
             }
         }
 
-        // --- GRAFIK OBRAZKOWY I PROŚBY ---
+        // --- GRAFIK I PROŚBY ---
         window.zaladujGrafikObrazkowy = async function() {
             const wybranyMiesiac = document.getElementById('grafik-miesiac').value;
             const previewContainer = document.getElementById('grafik-preview-container');
             if (!wybranyMiesiac) return;
-
             previewContainer.innerHTML = "Pobieranie grafiku...";
-
             try {
-                const docRef = doc(db, "grafik_obrazy", wybranyMiesiac);
-                const docSnap = await getDoc(docRef);
-
-                if (docSnap.exists() && docSnap.data().zdjecie) {
-                    const imgData = docSnap.data().zdjecie;
-                    previewContainer.innerHTML = `<img src="${imgData}" alt="Grafik pracy">`;
-                } else {
-                    previewContainer.innerHTML = `<p style="color: #6c757d;">Brak opublikowanego grafiku w formie obrazka dla wybranego miesiąca.</p>`;
-                }
-
-                zaladujProśby(wybranyMiesiac);
-            } catch (e) {
-                console.error(e);
-                previewContainer.innerHTML = "Błąd ładowania grafiku.";
-            }
+                const docSnap = await getDoc(doc(db, "grafik_obrazy", wybranyMiesiac));
+                previewContainer.innerHTML = (docSnap.exists() && docSnap.data().zdjecie) ? `<img src="${docSnap.data().zdjecie}">` : `<p style="color: #6c757d;">Brak grafiku.</p>`;
+                zaladujProsby(wybranyMiesiac);
+            } catch (e) { previewContainer.innerHTML = "Błąd."; }
         }
 
         window.zapiszGrafikObrazkowy = async function() {
             const wybranyMiesiac = document.getElementById('grafik-miesiac').value;
             const fileInput = document.getElementById('grafik-file-input');
-            
-            if (!wybranyMiesiac) { alert("Wybierz miesiąc!"); return; }
-            if (fileInput.files.length === 0) { alert("Wybierz plik, zdjęcie lub zrób fotkę grafiku!"); return; }
-
-            const wybranyPlik = fileInput.files[0];
+            if (!wybranyMiesiac || fileInput.files.length === 0) return alert("Wybierz miesiąc i plik!");
             const reader = new FileReader();
-
-            reader.onload = async function(e) {
-                const base64Image = e.target.result;
-                try {
-                    await setDoc(doc(db, "grafik_obrazy", wybranyMiesiac), {
-                        zdjecie: base64Image,
-                        zaktualizowal: currentUserData ? currentUserData.imie : "Kierownik",
-                        dataAktualizacji: new Date().toLocaleString()
-                    });
-                    alert("Grafik został pomyślnie opublikowany!");
-                    fileInput.value = "";
-                    zaladujGrafikObrazkowy();
-                } catch (err) {
-                    alert("Błąd podczas przesyłania grafiku: " + err.message);
-                }
+            reader.onload = async e => {
+                await setDoc(doc(db, "grafik_obrazy", wybranyMiesiac), { zdjecie: e.target.result, zaktualizowal: currentUserData?.imie || "Kierownik" });
+                fileInput.value = "";
+                zaladujGrafikObrazkowy();
             };
-            reader.readAsDataURL(wybranyPlik);
+            reader.readAsDataURL(fileInput.files[0]);
         }
 
         window.usunGrafikObrazkowy = async function() {
-            const wybranyMiesiac = document.getElementById('grafik-miesiac').value;
-            if (!wybranyMiesiac) return;
-
-            if (confirm("Czy na pewno chcesz usunąć grafik dla tego miesiąca?")) {
-                try {
-                    await deleteDoc(doc(db, "grafik_obrazy", wybranyMiesiac));
-                    alert("Usunięto grafik.");
-                    zaladujGrafikObrazkowy();
-                } catch (e) {
-                    alert("Błąd podczas usuwania grafiku.");
-                }
-            }
+            if (confirm("Usunąć grafik?")) { await deleteDoc(doc(db, "grafik_obrazy", document.getElementById('grafik-miesiac').value)); zaladujGrafikObrazkowy(); }
         }
 
         window.wyslijProsbe = async function() {
             const wybranyMiesiac = document.getElementById('grafik-miesiac').value;
             const tekst = document.getElementById('nowa-prosba-tekst').value.trim();
-            if (!wybranyMiesiac) { alert("Wybierz miesiąc!"); return; }
-            if (!tekst) { alert("Wpisz treść prośby!"); return; }
-
+            if (!wybranyMiesiac || !tekst) return alert("Uzupełnij miesiąc i treść prośby!");
             try {
-                await addDoc(collection(db, "prosby_o_zmiany"), {
-                    miesiac: wybranyMiesiac,
-                    autor: currentUserData ? currentUserData.imie : "Pracownik",
-                    rola: currentUserData ? currentUserData.rola : "pracownik",
-                    tekst: tekst,
-                    status: "oczekujace",
-                    data: new Date().toLocaleString()
-                });
-
+                await addDoc(collection(db, "prosby_o_zmiany"), { miesiac: wybranyMiesiac, autor: currentUserData?.imie || "Pracownik", tekst, status: "oczekujace", data: new Date().toLocaleString() });
                 document.getElementById('nowa-prosba-tekst').value = "";
-                alert("Wysłano prośbę do kierownika!");
-                zaladujProśby(wybranyMiesiac);
-            } catch (e) {
-                alert("Błąd podczas wysyłania prośby.");
-            }
+                zaladujProsby(wybranyMiesiac);
+            } catch (e) { alert("Błąd."); }
         }
 
-        window.zmienStatusProsby = async function(id, nowyStatus) {
-            const wybranyMiesiac = document.getElementById('grafik-miesiac').value;
-            try {
-                await setDoc(doc(db, "prosby_o_zmiany", id), {
-                    status: nowyStatus
-                }, { merge: true });
-                zaladujProśby(wybranyMiesiac);
-            } catch (e) {
-                alert("Błąd zmiany statusu.");
-            }
+        window.zmienStatusProsby = async function(id, status) {
+            await setDoc(doc(db, "prosby_o_zmiany", id), { status }, { merge: true });
+            zaladujProsby(document.getElementById('grafik-miesiac').value);
         }
 
         window.usunProsbe = async function(id) {
-            if (confirm("Czy na pewno chcesz usunąć tę prośbę?")) {
-                const wybranyMiesiac = document.getElementById('grafik-miesiac').value;
-                try {
-                    await deleteDoc(doc(db, "prosby_o_zmiany", id));
-                    alert("Usunięto prośbę.");
-                    zaladujProśby(wybranyMiesiac);
-                } catch (e) {
-                    alert("Błąd podczas usuwania prośby.");
-                }
-            }
+            if (confirm("Usunąć prośbę?")) { await deleteDoc(doc(db, "prosby_o_zmiany", id)); zaladujProsby(document.getElementById('grafik-miesiac').value); }
         }
 
-        async function zaladujProśby(miesiac) {
+        async function zaladujProsby(miesiac) {
             const listaContainer = document.getElementById('prośby-lista-container');
             listaContainer.innerHTML = "Pobieranie próśb...";
             try {
-                const querySnapshot = await getDocs(collection(db, "prosby_o_zmiany"));
-                let html = "";
-                const prosby = [];
-                querySnapshot.forEach(docSnap => {
-                    const data = docSnap.data();
-                    if (data.miesiac === miesiac) {
-                        prosby.push({ id: docSnap.id, ...data });
-                    }
-                });
-
-                if (prosby.length === 0) {
-                    listaContainer.innerHTML = "<p style='font-size:0.9em; color:#6c757d;'>Brak próśb lub uwag dla tego miesiąca.</p>";
-                    return;
-                }
+                const snap = await getDocs(collection(db, "prosby_o_zmiany"));
+                let html = "", prosby = [];
+                snap.forEach(d => { if (d.data().miesiac === miesiac) prosby.push({ id: d.id, ...d.data() }); });
+                if (prosby.length === 0) { listaContainer.innerHTML = "<p style='font-size:0.9em; color:#6c757d;'>Brak próśb.</p>"; return; }
 
                 prosby.reverse().forEach(p => {
-                    let statusBadge = "";
-                    if (p.status === "zatwierdzone") {
-                        statusBadge = `<span style="background: #28a745; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.8em;">👍 Zatwierdzone</span>`;
-                    } else if (p.status === "odrzucone") {
-                        statusBadge = `<span style="background: #dc3545; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.8em;">👎 Odrzucone</span>`;
-                    } else {
-                        statusBadge = `<span style="background: #ffc107; color: black; padding: 2px 6px; border-radius: 4px; font-size: 0.8em;">⏳ Oczekuje</span>`;
-                    }
+                    let badge = p.status === "zatwierdzone" ? `<span style="background:#28a745; color:white; padding:2px 6px; border-radius:4px; font-size:0.8em;">👍 Zatwierdzone</span>` : (p.status === "odrzucone" ? `<span style="background:#dc3545; color:white; padding:2px 6px; border-radius:4px; font-size:0.8em;">👎 Odrzucone</span>` : `<span style="background:#ffc107; color:black; padding:2px 6px; border-radius:4px; font-size:0.8em;">⏳ Oczekuje</span>`);
+                    let actions = (currentUserData?.rola === 'admin') ? `<div style="margin-top:6px; display:flex; gap:6px;"><button onclick="zmienStatusProsby('${p.id}', 'zatwierdzone')" style="background:#28a745; padding:4px; font-size:0.8em; width:auto;">👍 Zatwierdź</button><button onclick="zmienStatusProsby('${p.id}', 'odrzucone')" style="background:#dc3545; padding:4px; font-size:0.8em; width:auto;">👎 Odrzuć</button></div>` : "";
+                    let delBtn = (currentUserData?.rola === 'admin' || currentUserData?.imie === p.autor) ? `<button onclick="usunProsbe('${p.id}')" style="background:#6c757d; padding:4px; font-size:0.8em; margin-top:6px; width:auto;">🗑️ Usuń</button>` : "";
 
-                    let adminActions = "";
-                    let deleteButton = "";
-
-                    const czyAdmin = currentUserData && currentUserData.rola === 'admin';
-                    const czyWlasciciel = currentUserData && currentUserData.imie === p.autor;
-
-                    if (czyAdmin) {
-                        adminActions = `<div style="margin-top: 6px; display: flex; gap: 6px;">
-                            <button onclick="zmienStatusProsby('${p.id}', 'zatwierdzone')" style="background: #28a745; padding: 4px 8px; font-size: 0.8em; margin:0; width:auto;">👍 Zatwierdź</button>
-                            <button onclick="zmienStatusProsby('${p.id}', 'odrzucone')" style="background: #dc3545; padding: 4px 8px; font-size: 0.8em; margin:0; width:auto;">👎 Odrzuć</button>
-                        </div>`;
-                    }
-
-                    if (czyAdmin || czyWlasciciel) {
-                        deleteButton = `<button onclick="usunProsbe('${p.id}')" style="background: #6c757d; padding: 4px 8px; font-size: 0.8em; margin-top: 6px; width: auto;">🗑️ Usuń prośbę</button>`;
-                    }
-
-                    html += `<div class="request-item">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <strong>👤 ${p.autor}</strong>
-                            ${statusBadge}
-                        </div>
-                        <div style="font-size: 0.8em; color: #6c757d; margin-bottom: 4px;">(${p.data})</div>
-                        <div>${p.tekst}</div>
-                        ${adminActions}
-                        ${deleteButton}
-                    </div>`;
+                    html += `<div class="request-item"><div style="display:flex; justify-content:space-between;"><strong>👤 ${p.autor}</strong>${badge}</div><div style="font-size:0.8em; color:#6c757d;">(${p.data})</div><div>${p.tekst}</div>${actions}${delBtn}</div>`;
                 });
                 listaContainer.innerHTML = html;
-            } catch (e) {
-                listaContainer.innerHTML = "Błąd pobierania próśb.";
-            }
+            } catch (e) { listaContainer.innerHTML = "Błąd."; }
         }
 
-        // --- SPRZEDAŻ I LOGOWANIE ---
+        // --- SPRZEDAŻ ---
         window.pokazWidokMiesieczny = function() {
             document.getElementById('view-monthly').classList.remove('hidden');
             document.getElementById('view-daily').classList.add('hidden');
-            const dzis = new Date().toISOString().slice(0, 7);
-            const miesiacInput = document.getElementById('wybrany-miesiac');
-            if(!miesiacInput.value) miesiacInput.value = dzis;
+            if(!document.getElementById('wybrany-miesiac').value) document.getElementById('wybrany-miesiac').value = new Date().toISOString().slice(0, 7);
             zaladujMiesiacTabela();
-
             if (currentUserData && currentUserData.rola === 'admin') {
                 document.getElementById('admin-daily-section').classList.remove('hidden');
                 pobierzRaportyDlaAdmina();
             }
         }
 
-        window.przejdzDoDnia = function(dataStr) {
+        window.przejdzDoDnia = function(ds) {
             window.location.hash = "#dzien";
             document.getElementById('view-monthly').classList.add('hidden');
             document.getElementById('view-daily').classList.remove('hidden');
-            const dataInput = document.getElementById('raport-data');
-            dataInput.value = dataStr;
+            document.getElementById('raport-data').value = ds;
             sprawdzWczytajDaneDlaDaty();
         }
 
-        window.zmienDateWFormularzu = function() {
-            sprawdzWczytajDaneDlaDaty();
-        }
+        window.zmienDateWFormularzu = () => sprawdzWczytajDaneDlaDaty();
 
-        async function pobierzPracownikowDoCheckboxow(zaznaczeniPracownicy = []) {
+        async function pobierzPracownikowDoCheckboxow(zaznaczeni = []) {
             const container = document.getElementById('sprzedawcy-checkboxes-container');
-            container.innerHTML = "Pobieranie listy pracowników...";
             try {
-                const querySnapshot = await getDocs(collection(db, "uzytkownicy"));
+                const snap = await getDocs(collection(db, "uzytkownicy"));
                 let html = "";
-                let count = 0;
-                querySnapshot.forEach(docSnap => {
-                    const p = docSnap.data();
-                    const imie = p.imie;
-                    const isChecked = zaznaczeniPracownicy.includes(imie) ? "checked" : "";
-                    html += `<label style="display: flex; align-items: center; gap: 8px; margin: 4px 0; cursor: pointer; font-size: 0.95em;">
-                        <input type="checkbox" name="sprzedawca-chk" value="${imie}" ${isChecked} style="width: 18px; height: 18px; margin: 0;"> ${imie}
-                    </label>`;
-                    count++;
+                snap.forEach(d => {
+                    let imie = d.data().imie;
+                    html += `<label style="display:flex; align-items:center; gap:8px; margin:4px 0; cursor:pointer;"><input type="checkbox" name="sprzedawca-chk" value="${imie}" ${zaznaczeni.includes(imie)?'checked':''} style="width:18px; height:18px;"> ${imie}</label>`;
                 });
-
-                if (count === 0) {
-                    container.innerHTML = "Brak pracowników w bazie.";
-                } else {
-                    container.innerHTML = html;
-                }
-            } catch (e) {
-                container.innerHTML = "Błąd pobierania pracowników.";
-            }
+                container.innerHTML = html || "Brak pracowników.";
+            } catch (e) { container.innerHTML = "Błąd."; }
         }
 
         async function sprawdzWczytajDaneDlaDaty() {
-            const dataRaportu = document.getElementById('raport-data').value;
-            if (!dataRaportu) return;
-            try {
-                const docRef = doc(db, "sprzedaz", dataRaportu);
-                const docSnap = await getDoc(docRef);
-                let wybraneOsoby = [];
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    document.getElementById('kawa-ilosc').value = data.kawa?.ilosc || '';
-                    document.getElementById('kawa-wartosc').value = data.kawa?.wartosc || '';
-                    document.getElementById('hd-ilosc').value = data.hd?.ilosc || '';
-                    document.getElementById('hd-wartosc').value = data.hd?.wartosc || '';
-                    document.getElementById('sklep-wartosc').value = data.sklep?.wartosc || '';
-                    wybraneOsoby = data.sprzedawcy || [];
-                } else {
-                    document.getElementById('kawa-ilosc').value = '';
-                    document.getElementById('kawa-wartosc').value = '';
-                    document.getElementById('hd-ilosc').value = '';
-                    document.getElementById('hd-wartosc').value = '';
-                    document.getElementById('sklep-wartosc').value = '';
-                }
-                await pobierzPracownikowDoCheckboxow(wybraneOsoby);
-            } catch (e) {
-                console.error(e);
+            const d = document.getElementById('raport-data').value;
+            if (!d) return;
+            const snap = await getDoc(doc(db, "sprzedaz", d));
+            let wybrane = snap.exists() ? (snap.data().sprzedawcy || []) : [];
+            if (snap.exists()) {
+                document.getElementById('kawa-ilosc').value = snap.data().kawa?.ilosc || '';
+                document.getElementById('kawa-wartosc').value = snap.data().kawa?.wartosc || '';
+                document.getElementById('hd-ilosc').value = snap.data().hd?.ilosc || '';
+                document.getElementById('hd-wartosc').value = snap.data().hd?.wartosc || '';
+                document.getElementById('sklep-wartosc').value = snap.data().sklep?.wartosc || '';
+            } else {
+                ['kawa-ilosc', 'kawa-wartosc', 'hd-ilosc', 'hd-wartosc', 'sklep-wartosc'].forEach(id => document.getElementById(id).value = '');
             }
+            await pobierzPracownikowDoCheckboxow(wybrane);
         }
 
         window.zaloguj = async function() {
@@ -1834,280 +1380,144 @@
             const haslo = document.getElementById('password-input').value;
             const err = document.getElementById('error-msg');
             err.innerText = "";
-            const fakeEmail = `${login}@sp580.pl`;
             try {
-                await signInWithEmailAndPassword(auth, fakeEmail, haslo);
-            } catch (error) {
-                err.innerText = "Błąd logowania: Nieprawidłowy login lub hasło.";
-            }
+                await signInWithEmailAndPassword(auth, `${login}@sp580.pl`, haslo);
+            } catch (error) { err.innerText = "Błąd: Nieprawidłowy login lub hasło."; }
         }
 
-        window.wyloguj = function() {
-            signOut(auth);
-        }
+        window.wyloguj = () => signOut(auth);
 
         window.zapiszSprzedaz = async function() {
-            const user = auth.currentUser;
-            const dataRaportu = document.getElementById('raport-data').value;
-            const kawaIlosc = Number(document.getElementById('kawa-ilosc').value) || 0;
-            const kawaWartosc = Number(document.getElementById('kawa-wartosc').value) || 0;
-            const hdIlosc = Number(document.getElementById('hd-ilosc').value) || 0;
-            const hdWartosc = Number(document.getElementById('hd-wartosc').value) || 0;
-            const sklepWartosc = Number(document.getElementById('sklep-wartosc').value) || 0;
+            const data = document.getElementById('raport-data').value;
+            const sprzedawcy = Array.from(document.querySelectorAll('input[name="sprzedawca-chk"]:checked')).map(cb => cb.value);
+            if (!data || sprzedawcy.length === 0) return alert("Wybierz datę i min. 1 sprzedawcę!");
 
-            if (!dataRaportu) { alert("Wybierz datę raportu!"); return; }
+            const docRef = doc(db, "sprzedaz", data);
+            const docSnap = await getDoc(docRef);
+            const imieAkt = currentUserData ? currentUserData.imie : "Użytkownik";
 
-            const checkboxes = document.querySelectorAll('input[name="sprzedawca-chk"]:checked');
-            const wybraniSprzedawcy = Array.from(checkboxes).map(cb => cb.value);
+            let dane = {
+                data, sprzedawcy,
+                kawa: { ilosc: Number(document.getElementById('kawa-ilosc').value)||0, wartosc: Number(document.getElementById('kawa-wartosc').value)||0 },
+                hd: { ilosc: Number(document.getElementById('hd-ilosc').value)||0, wartosc: Number(document.getElementById('hd-wartosc').value)||0 },
+                sklep: { wartosc: Number(document.getElementById('sklep-wartosc').value)||0 }
+            };
 
-            if (wybraniSprzedawcy.length === 0) {
-                alert("Musisz wybrać przynajmniej jednego sprzedawcę odpowiedzialnego za ten wynik!");
-                return;
+            if (docSnap.exists()) {
+                dane.utworzyl = docSnap.data().utworzyl;
+                dane.dataUtworzenia = docSnap.data().dataUtworzenia;
+                dane.zmodyfikowal = imieAkt;
+                dane.dataModyfikacji = new Date().toLocaleString();
+            } else {
+                dane.utworzyl = imieAkt;
+                dane.dataUtworzenia = new Date().toLocaleString();
             }
 
-            if(user) {
-                const docRef = doc(db, "sprzedaz", dataRaportu);
-                const docSnap = await getDoc(docRef);
-                const imieAktualne = currentUserData ? currentUserData.imie : "Użytkownik";
-                const teraz = new Date().toLocaleString();
-
-                let daneZapisu = {
-                    data: dataRaportu,
-                    sprzedawcy: wybraniSprzedawcy,
-                    kawa: { ilosc: kawaIlosc, wartosc: kawaWartosc },
-                    hd: { ilosc: hdIlosc, wartosc: hdWartosc },
-                    sklep: { wartosc: sklepWartosc }
-                };
-
-                if (docSnap.exists()) {
-                    const stary = docSnap.data();
-                    daneZapisu.utworzyl = stary.utworzyl;
-                    daneZapisu.dataUtworzenia = stary.dataUtworzenia;
-                    daneZapisu.zmodyfikowal = imieAktualne;
-                    daneZapisu.dataModyfikacji = teraz;
-                } else {
-                    daneZapisu.utworzyl = imieAktualne;
-                    daneZapisu.dataUtworzenia = teraz;
-                }
-
-                await setDoc(docRef, daneZapisu);
-                alert("Zapisano raport!");
-                window.location.hash = "#sprzedaz";
-            }
+            await setDoc(docRef, dane);
+            window.location.hash = "#sprzedaz";
         }
 
         async function pobierzRaportyDlaAdmina() {
-            const reportsListDiv = document.getElementById('reports-list');
-            reportsListDiv.innerHTML = "Pobieranie raportów...";
+            const listDiv = document.getElementById('reports-list');
             try {
-                const querySnapshot = await getDocs(collection(db, "sprzedaz"));
-                let html = "";
-                const raporty = [];
-                querySnapshot.forEach(doc => raporty.push(doc.data()));
+                const snap = await getDocs(collection(db, "sprzedaz"));
+                let html = "", raporty = [];
+                snap.forEach(d => raporty.push(d.data()));
                 raporty.sort((a, b) => new Date(b.data) - new Date(a.data));
 
-                raporty.forEach(data => {
-                    let audit = `Utworzył: <strong>${data.utworzyl || 'Nieznany'}</strong> (${data.dataUtworzenia || ''})`;
-                    if (data.zmodyfikowal) audit += `<br>Korekta: ${data.zmodyfikowal} (${data.dataModyfikacji})`;
-                    const sprzedawcyStr = data.sprzedawcy ? data.sprzedawcy.join(", ") : "Brak danych";
-                    html += `<div class="report-box" style="cursor:pointer;" onclick="przejdzDoDnia('${data.data}')">
-                        <strong>📅 ${data.data}</strong> | Sprzedawcy: <strong>${sprzedawcyStr}</strong> (Kliknij edytuj)<br>
-                        Kawa: ${data.kawa.ilosc} / ${data.kawa.wartosc} zł | HD: ${data.hd.ilosc} / ${data.hd.wartosc} zł | Sklep: ${data.sklep.wartosc} zł
-                        <div class="audit-info">${audit}</div>
-                    </div>`;
+                raporty.forEach(r => {
+                    let audit = `Utworzył: <strong>${r.utworzyl || 'Nieznany'}</strong> (${r.dataUtworzenia || ''})`;
+                    if (r.zmodyfikowal) audit += `<br>Korekta: ${r.zmodyfikowal} (${r.dataModyfikacji})`;
+                    html += `<div class="report-box" onclick="przejdzDoDnia('${r.data}')"><strong>📅 ${r.data}</strong> | Sprzedawcy: <strong>${r.sprzedawcy?.join(', ')}</strong><br>Kawa: ${r.kawa.ilosc} / ${r.kawa.wartosc} zł | HD: ${r.hd.ilosc} / ${r.hd.wartosc} zł | Sklep: ${r.sklep.wartosc} zł<div class="audit-info">${audit}</div></div>`;
                 });
-                reportsListDiv.innerHTML = html || "Brak raportów.";
-            } catch (e) {
-                reportsListDiv.innerHTML = "Błąd pobierania raportów.";
-            }
+                listDiv.innerHTML = html || "Brak raportów.";
+            } catch (e) { listDiv.innerHTML = "Błąd."; }
         }
 
         window.zapiszPlanyMiesieczne = async function() {
-            const wybranyMiesiac = document.getElementById('wybrany-miesiac').value;
-            if (!wybranyMiesiac) return;
-
-            const planKawa = Number(document.getElementById('input-plan-kawa').value) || 0;
-            const planHd = Number(document.getElementById('input-plan-hd').value) || 0;
-            const planSklep = Number(document.getElementById('input-plan-sklep').value) || 0;
-
-            try {
-                await setDoc(doc(db, "plany_miesieczne", wybranyMiesiac), {
-                    kawa: planKawa,
-                    hd: planHd,
-                    sklep: planSklep
-                });
-                alert("Zapisano plany miesięczne!");
-                zaladujMiesiacTabela();
-            } catch (e) {
-                alert("Błąd zapisu planów: " + e.message);
-            }
+            if (!(currentUserData && currentUserData.rola === 'admin')) return alert("Brak uprawnień. Tylko administrator może zmieniać plany!");
+            const m = document.getElementById('wybrany-miesiac').value;
+            if (!m) return;
+            await setDoc(doc(db, "plany_miesieczne", m), {
+                kawa: Number(document.getElementById('input-plan-kawa').value)||0,
+                hd: Number(document.getElementById('input-plan-hd').value)||0,
+                sklep: Number(document.getElementById('input-plan-sklep').value)||0
+            });
+            alert("Zapisano plany!");
+            zaladujMiesiacTabela();
         }
 
         window.zaladujMiesiacTabela = async function() {
             const container = document.getElementById('monthly-table-container');
             const plansContainer = document.getElementById('plans-container');
-            const wybranyMiesiac = document.getElementById('wybrany-miesiac').value;
-            if (!wybranyMiesiac) return;
-            
+            const m = document.getElementById('wybrany-miesiac').value;
+            if (!m) return;
             container.innerHTML = "Pobieranie...";
-            plansContainer.innerHTML = "Pobieranie planów...";
 
             try {
-                const querySnapshot = await getDocs(collection(db, "sprzedaz"));
-                let raportyMapa = {};
-                querySnapshot.forEach(doc => {
-                    const dataR = doc.data();
-                    if (dataR.data?.startsWith(wybranyMiesiac)) {
-                        raportyMapa[dataR.data] = dataR;
-                    }
-                });
+                const snap = await getDocs(collection(db, "sprzedaz"));
+                let mapa = {};
+                snap.forEach(d => { if (d.data().data?.startsWith(m)) mapa[d.data().data] = d.data(); });
+                
+                let plany = { kawa: 0, hd: 0, sklep: 0 };
+                const pDoc = await getDoc(doc(db, "plany_miesieczne", m));
+                if (pDoc.exists()) plany = pDoc.data();
 
-                // Pobranie zapisanych planów dla miesiąca
-                let planyData = { kawa: 0, hd: 0, sklep: 0 };
-                try {
-                    const planDoc = await getDoc(doc(db, "plany_miesieczne", wybranyMiesiac));
-                    if (planDoc.exists()) {
-                        planyData = planDoc.data();
-                    }
-                } catch(err) { console.error(err); }
-
-                // Generowanie wszystkich dni wybranego miesiąca
-                const [rok, mies] = wybranyMiesiac.split('-').map(Number);
-                const liczbaDni = new Date(rok, mies, 0).getDate();
-
+                const [rok, mies] = m.split('-').map(Number);
+                const dni = new Date(rok, mies, 0).getDate();
                 let sKawaI = 0, sKawaW = 0, sHdI = 0, sHdW = 0, sSklepW = 0;
-                let table = `<table class="month-table"><tr><th>Dzień</th><th>Sprzedawca/cy</th><th>Kawa (szt/zł)</th><th>HD (szt/zł)</th><th>Sklep (zł)</th></tr>`;
+                let table = `<table class="month-table"><tr><th>Dzień</th><th>Sprzedawcy</th><th>Kawa (szt/zł)</th><th>HD (szt/zł)</th><th>Sklep (zł)</th></tr>`;
 
-                for (let d = 1; d <= liczbaDni; d++) {
-                    const dzienStr = String(d).padStart(2, '0');
-                    const pelnaData = `${wybranyMiesiac}-${dzienStr}`;
-                    const r = raportyMapa[pelnaData];
-
+                for (let d = 1; d <= dni; d++) {
+                    let ds = String(d).padStart(2, '0'), pd = `${m}-${ds}`, r = mapa[pd];
                     if (r) {
-                        sKawaI += Number(r.kawa?.ilosc) || 0;
-                        sKawaW += Number(r.kawa?.wartosc) || 0;
-                        sHdI += Number(r.hd?.ilosc) || 0;
-                        sHdW += Number(r.hd?.wartosc) || 0;
-                        sSklepW += Number(r.sklep?.wartosc) || 0;
-
-                        const sprzedawcyStr = r.sprzedawcy ? r.sprzedawcy.join(", ") : "-";
-                        table += `<tr class="cleaning-row" onclick="przejdzDoDnia('${pelnaData}')">
-                            <td><strong>${dzienStr}</strong></td>
-                            <td style="font-size:0.9em;">${sprzedawcyStr}</td>
-                            <td>${r.kawa?.ilosc ?? '-'} / ${r.kawa?.wartosc ?? '-'}</td>
-                            <td>${r.hd?.ilosc ?? '-'} / ${r.hd?.wartosc ?? '-'}</td>
-                            <td>${r.sklep?.wartosc ?? '-'}</td>
-                        </tr>`;
+                        sKawaI += Number(r.kawa?.ilosc)||0; sKawaW += Number(r.kawa?.wartosc)||0;
+                        sHdI += Number(r.hd?.ilosc)||0; sHdW += Number(r.hd?.wartosc)||0;
+                        sSklepW += Number(r.sklep?.wartosc)||0;
+                        table += `<tr class="cleaning-row" onclick="przejdzDoDnia('${pd}')"><td><strong>${ds}</strong></td><td>${r.sprzedawcy?.join(', ')}</td><td>${r.kawa?.ilosc}/${r.kawa?.wartosc}</td><td>${r.hd?.ilosc}/${r.hd?.wartosc}</td><td>${r.sklep?.wartosc}</td></tr>`;
                     } else {
-                        table += `<tr class="cleaning-row" onclick="przejdzDoDnia('${pelnaData}')" style="color: #999;">
-                            <td><strong>${dzienStr}</strong></td>
-                            <td>-</td>
-                            <td>-</td>
-                            <td>-</td>
-                            <td>-</td>
-                        </tr>`;
+                        table += `<tr class="cleaning-row" onclick="przejdzDoDnia('${pd}')" style="color:#999;"><td><strong>${ds}</strong></td><td>-</td><td>-</td><td>-</td><td>-</td></tr>`;
                     }
                 }
-
-                table += `<tr class="sum-row"><td colspan="2">SUMA</td><td>${sKawaI} / ${sKawaW.toFixed(2)}</td><td>${sHdI} / ${sHdW.toFixed(2)}</td><td>${sSklepW.toFixed(2)}</td></tr>`;
-                table += `</table>`;
+                table += `<tr class="sum-row"><td colspan="2">SUMA</td><td>${sKawaI} / ${sKawaW.toFixed(2)}</td><td>${sHdI} / ${sHdW.toFixed(2)}</td><td>${sSklepW.toFixed(2)}</td></tr></table>`;
                 container.innerHTML = table;
 
-                // Sekcja planów na górze
                 const czyAdmin = currentUserData && currentUserData.rola === 'admin';
-                const inputReadonly = czyAdmin ? "" : "readonly";
+                const d68K = sKawaW - (plany.kawa*0.68), d68H = sHdW - (plany.hd*0.68), d68S = sSklepW - (plany.sklep*0.68);
+                const d100K = sKawaW - plany.kawa, d100H = sHdW - plany.hd, d100S = sSklepW - plany.sklep;
 
-                const pKawa = planyData.kawa || 0;
-                const pHd = planyData.hd || 0;
-                const pSklep = planyData.sklep || 0;
-
-                const diff68Kawa = sKawaW - (pKawa * 0.68);
-                const diff68Hd = sHdW - (pHd * 0.68);
-                const diff68Sklep = sSklepW - (pSklep * 0.68);
-
-                const diff100Kawa = sKawaW - pKawa;
-                const diff100Hd = sHdW - pHd;
-                const diff100Sklep = sSklepW - pSklep;
-
-                let plansHtml = `<div style="background: var(--group-bg); padding: 12px; border-radius: 6px;">
-                    <h4 style="margin-top:0; color:#007bff;">🎯 Analiza Planów Miesięcznych</h4>
-                    <table class="month-table" style="margin-top:10px;">
-                        <tr>
-                            <th>Wskaźnik / Aspekt</th>
-                            <th>KAWA (zł)</th>
-                            <th>HD (zł)</th>
-                            <th>SKLEP (zł)</th>
-                        </tr>
-                        <tr>
-                            <td><strong>Plan kwotowy</strong></td>
-                            <td><input type="number" step="0.01" id="input-plan-kawa" value="${pKawa > 0 ? pKawa : ''}" placeholder="Wpisz plan" ${inputReadonly} style="margin:0; text-align:center;"></td>
-                            <td><input type="number" step="0.01" id="input-plan-hd" value="${pHd > 0 ? pHd : ''}" placeholder="Wpisz plan" ${inputReadonly} style="margin:0; text-align:center;"></td>
-                            <td><input type="number" step="0.01" id="input-plan-sklep" value="${pSklep > 0 ? pSklep : ''}" placeholder="Wpisz plan" ${inputReadonly} style="margin:0; text-align:center;"></td>
-                        </tr>
-                        <tr>
-                            <td><strong>Do 68% planu</strong><br><span style="font-size:0.8em; color:#666;">(Sprzedaż - Plan * 68%)</span></td>
-                            <td class="${diff68Kawa >= 0 ? 'val-green' : 'val-red'}">${diff68Kawa.toFixed(2)} zł</td>
-                            <td class="${diff68Hd >= 0 ? 'val-green' : 'val-red'}">${diff68Hd.toFixed(2)} zł</td>
-                            <td class="${diff68Sklep >= 0 ? 'val-green' : 'val-red'}">${diff68Sklep.toFixed(2)} zł</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Do 100% planu</strong><br><span style="font-size:0.8em; color:#666;">(Sprzedaż - Plan)</span></td>
-                            <td class="${diff100Kawa >= 0 ? 'val-green' : 'val-red'}">${diff100Kawa.toFixed(2)} zł</td>
-                            <td class="${diff100Hd >= 0 ? 'val-green' : 'val-red'}">${diff100Hd.toFixed(2)} zł</td>
-                            <td class="${diff100Sklep >= 0 ? 'val-green' : 'val-red'}">${diff100Sklep.toFixed(2)} zł</td>
-                        </tr>
-                    </table>`;
-
-                if (czyAdmin) {
-                    plansHtml += `<button onclick="zapiszPlanyMiesieczne()" style="background: #28a745; margin-top: 10px;">💾 Zapisz plany dla tego miesiąca</button>`;
-                }
-
-                plansHtml += `</div>`;
-                plansContainer.innerHTML = plansHtml;
-
-            } catch(e) { 
-                console.error(e);
-                container.innerHTML = "Błąd tabeli."; 
-                plansContainer.innerHTML = "";
-            }
+                plansContainer.innerHTML = `<table class="month-table" style="margin-top:5px;">
+                    <tr><th>Wskaźnik</th><th>KAWA (zł)</th><th>HD (zł)</th><th>SKLEP (zł)</th></tr>
+                    <tr><td><strong>Plan kwotowy</strong></td><td><input type="number" step="0.01" id="input-plan-kawa" value="${plany.kawa||''}" ${czyAdmin?'':'readonly'} style="margin:0; text-align:center;"></td><td><input type="number" step="0.01" id="input-plan-hd" value="${plany.hd||''}" ${czyAdmin?'':'readonly'} style="margin:0; text-align:center;"></td><td><input type="number" step="0.01" id="input-plan-sklep" value="${plany.sklep||''}" ${czyAdmin?'':'readonly'} style="margin:0; text-align:center;"></td></tr>
+                    <tr><td><strong>Do 68%</strong></td><td class="${d68K>=0?'val-green':'val-red'}">${d68K.toFixed(2)} zł</td><td class="${d68H>=0?'val-green':'val-red'}">${d68H.toFixed(2)} zł</td><td class="${d68S>=0?'val-green':'val-red'}">${d68S.toFixed(2)} zł</td></tr>
+                    <tr><td><strong>Do 100%</strong></td><td class="${d100K>=0?'val-green':'val-red'}">${d100K.toFixed(2)} zł</td><td class="${d100H>=0?'val-green':'val-red'}">${d100H.toFixed(2)} zł</td><td class="${d100S>=0?'val-green':'val-red'}">${d100S.toFixed(2)} zł</td></tr>
+                </table>${czyAdmin?'<button onclick="zapiszPlanyMiesieczne()" style="background:#28a745; margin-top:10px;">💾 Zapisz plany</button>':''}`;
+            } catch (e) { container.innerHTML = "Błąd tabeli."; }
         }
 
+        // --- AUTH ---
         onAuthStateChanged(auth, async (user) => {
-            const loginScreen = document.getElementById('login-screen');
-            const appScreen = document.getElementById('app-screen');
-            const tilePracownicy = document.getElementById('tile-pracownicy');
-
+            const loginScr = document.getElementById('login-screen');
+            const appScr = document.getElementById('app-screen');
             if (user) {
-                loginScreen.classList.add('hidden');
-                appScreen.classList.remove('hidden');
-                document.getElementById('modul-sprzedaz').classList.add('hidden');
-                document.getElementById('modul-grafik').classList.add('hidden');
-                document.getElementById('modul-pracownicy').classList.add('hidden');
-                document.getElementById('modul-sprzatanie').classList.add('hidden');
-                document.getElementById('modul-planogram').classList.add('hidden');
-                document.getElementById('menu-tiles').classList.remove('hidden');
-                
-                if (!window.location.hash || window.location.hash === "#login") {
-                    window.location.hash = "#menu";
-                }
-
-                const userDoc = await getDoc(doc(db, "uzytkownicy", user.uid));
-                const roleContainer = document.getElementById('role-container');
-                if (userDoc.exists()) {
-                    currentUserData = userDoc.data();
-                    document.getElementById('user-name').innerText = currentUserData.imie;
-                    if (currentUserData.rola === 'admin') {
-                        roleContainer.innerHTML = `<span class="admin-badge">PANEL KIEROWNIKA (Krzysztof)</span>`;
-                        tilePracownicy.style.display = "block";
-                    } else {
-                        roleContainer.innerHTML = `<p>Rola: Pracownik</p>`;
-                        tilePracownicy.style.display = "none";
+                loginScr.classList.add('hidden');
+                appScr.classList.remove('hidden');
+                window.location.hash = "#menu"; // Zawsze uruchamiaj stronę główną po zalogowaniu
+                try {
+                    const snap = await getDoc(doc(db, "uzytkownicy", user.uid));
+                    if (snap.exists()) {
+                        currentUserData = snap.data();
+                        document.getElementById('user-name').innerText = currentUserData.imie;
+                        let czyAdmin = currentUserData.rola === 'admin';
+                        document.getElementById('role-container').innerHTML = czyAdmin ? `<span class="admin-badge">PANEL KIEROWNIKA</span>` : `<p>Rola: Pracownik</p>`;
+                        document.getElementById('tile-pracownicy').style.display = czyAdmin ? "flex" : "none";
+                        sprawdzPowiadomieniaMisje(currentUserData.imie, czyAdmin);
                     }
-                }
+                } catch(e) { console.error(e); }
             } else {
                 currentUserData = null;
-                appScreen.classList.add('hidden');
-                loginScreen.classList.remove('hidden');
+                appScr.classList.add('hidden');
+                loginScr.classList.remove('hidden');
                 document.getElementById('login-input').value = "";
                 document.getElementById('password-input').value = "";
                 document.getElementById('error-msg').innerText = "";
@@ -2116,3 +1526,4 @@
     </script>
 </body>
 </html>
+
