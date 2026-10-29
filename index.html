@@ -195,6 +195,7 @@
                 <div class="tile" onclick="otworzModul('sprzedaz')">📊 Sprzedaż</div>
                 <div class="tile" onclick="otworzModul('grafik')">📅 Grafik</div>
                 <div class="tile" onclick="otworzModul('sprzatanie')" style="grid-column: span 2;">🧹 Sprzątanie i Kontrola Półek</div>
+                <div class="tile" onclick="otworzModul('planogram')" style="grid-column: span 2;">📋 Planogramy</div>
                 <div class="tile" onclick="otworzModul('pracownicy')" id="tile-pracownicy" style="grid-column: span 2; display:none;">👥 Panel Pracowników</div>
                 <div class="tile disabled">💰 Premia</div>
                 <div class="tile disabled" style="grid-column: span 2;">💬 Wiadomości</div>
@@ -226,6 +227,13 @@
                 
                 <label for="raport-data">Data raportu:</label>
                 <input type="date" id="raport-data" onchange="zmienDateWFormularzu()">
+
+                <div class="field-group">
+                    <label>👥 Sprzedawca / Pracownicy odpowiedzialni za wynik (Zaznacz min. 1):</label>
+                    <div id="sprzedawcy-checkboxes-container" style="max-height: 150px; overflow-y: auto; background: var(--card-bg); padding: 8px; border: 1px solid var(--border-color); border-radius: 4px;">
+                        Ładowanie listy pracowników...
+                    </div>
+                </div>
 
                 <div class="field-group">
                     <label>☕ KAWA</label>
@@ -286,6 +294,45 @@
             </div>
 
             <div id="prośby-lista-container">Ładowanie próśb...</div>
+        </div>
+
+        <!-- MODUŁ PLANOGRAMY -->
+        <div id="modul-planogram" class="hidden">
+            <button class="back-btn" onclick="powrotDoMenu()">⬅ Powrót do menu</button>
+            <h3>📋 Planogramy Ułożenia Towaru</h3>
+            
+            <div id="admin-planogram-kategoria-panel" class="field-group hidden" style="background: var(--card-bg); border: 2px dashed #007bff; margin-bottom: 20px;">
+                <h4 style="margin-top:0; color:#007bff;">⚙️ Panel Admina: Zarządzaj listą półek/stref</h4>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="nowa-polka-nazwa" placeholder="Nazwa nowej półki / strefy (np. Strefa Nowości)" style="margin:0;">
+                    <button onclick="dodajNowaPolkeDoListy()" style="background: #28a745; margin:0; width: auto; white-space: nowrap;">➕ Dodaj półkę</button>
+                </div>
+            </div>
+
+            <p style="font-size: 0.9em; color: #6c757d;">Wybierz półkę/strefę z listy poniżej, aby zobaczyć aktualny planogram.</p>
+            <div id="planogramy-lista-container">Ładowanie listy półek...</div>
+        </div>
+
+        <!-- MODAL SZCZEGÓŁÓW PLANOGRAMU (DLA PÓŁKI) -->
+        <div id="modal-planogram-szczegoly" class="modal-overlay hidden">
+            <div class="modal-content" style="border: 2px solid #007bff; max-width: 600px;">
+                <h4 id="modal-planogram-tytul" style="margin-top:0; color:#007bff;">Planogram</h4>
+                <div id="modal-planogram-tresc">Ładowanie...</div>
+                
+                <div id="admin-planogram-edycja" class="field-group hidden" style="margin-top: 15px; border-top: 1px solid var(--border-color); padding-top: 10px;">
+                    <h5 style="margin: 0 0 5px 0; color: #28a745;">⚙️ Panel Administratora (Zarządzaj zdjęciem)</h5>
+                    <label style="font-size: 0.85em;">Wybierz zdjęcie planogramu (z aparatu lub galerii):</label>
+                    <input type="file" id="admin-planogram-file" accept="image/*" style="padding: 6px;">
+                    <div style="display: flex; gap: 8px; margin-top: 5px;">
+                        <button onclick="zapiszPlanogram()" style="background: #28a745; margin: 0;">💾 Zapisz / Zastąp zdjęcie</button>
+                        <button onclick="usunPlanogramPlik()" style="background: #dc3545; margin: 0;" id="btn-usun-planogram">🗑️ Usuń zdjęcie</button>
+                    </div>
+                </div>
+
+                <div style="margin-top: 20px;">
+                    <button onclick="zamknijModalPlanogramu()" style="background: #6c757d; margin:0;">Zamknij</button>
+                </div>
+            </div>
         </div>
 
         <!-- MODUŁ SPRZĄTANIE / KONTROLA PÓŁEK -->
@@ -481,7 +528,7 @@
         let currentUserData = null;
         let aktualneDaneSprzatania = {};
 
-        const POLKI_LISTA = [
+        const DOMYSLNE_POLKI = [
             "Akcesoria", "Alkohol", "Chemia", "Kasa 1: 5 półek", "Kasa 1: 9 półek", 
             "Kasa 2: 5 półek", "Kasa 2: 9 półek", "Kawy / Sosy", "Lodówka mała", 
             "Lodówka Napoje", "Lodówka Piwo", "Oleje", "Piwo", "Soki i Woda", "Strefa zakasowa"
@@ -516,7 +563,6 @@
         }
 
         const zoomContainer = document.getElementById('zoom-container');
-        const zoomImage = document.getElementById('zoom-image-element');
 
         zoomContainer.onmousedown = function (e) {
             e.preventDefault();
@@ -638,7 +684,6 @@
             }
         }
 
-        // Inicjalizacja motywu i czcionki przy starcie
         const zapisanyMotyw = localStorage.getItem("sklep_motyw") || "light";
         document.getElementById("wybor-motywu").value = zapisanyMotyw;
         zastosujMotyw(zapisanyMotyw);
@@ -676,6 +721,7 @@
             document.getElementById('modul-grafik').classList.add('hidden');
             document.getElementById('modul-pracownicy').classList.add('hidden');
             document.getElementById('modul-sprzatanie').classList.add('hidden');
+            document.getElementById('modul-planogram').classList.add('hidden');
             document.getElementById('menu-tiles').classList.add('hidden');
 
             if (hash === "#menu" || hash === "") {
@@ -699,13 +745,18 @@
                 document.getElementById('modul-sprzatanie').classList.remove('hidden');
                 
                 const biezacy = pobierzBiezacyOkresSystemowy();
-                const miesiacInput = document.getElementById('sprzatanie-miesiac');
-                const okresSelect = document.getElementById('sprzatanie-okres');
-                
-                if(!miesiacInput.value) miesiacInput.value = biezacy.miesiacStr;
-                if(!okresSelect.value) okresSelect.value = biezacy.okresStr;
+                document.getElementById('sprzatanie-miesiac').value = biezacy.miesiacStr;
+                document.getElementById('sprzatanie-okres').value = biezacy.okresStr;
 
                 zaladujSprzatanie();
+            } else if (hash === "#planogram") {
+                document.getElementById('modul-planogram').classList.remove('hidden');
+                if (currentUserData && currentUserData.rola === 'admin') {
+                    document.getElementById('admin-planogram-kategoria-panel').classList.remove('hidden');
+                } else {
+                    document.getElementById('admin-planogram-kategoria-panel').classList.add('hidden');
+                }
+                zaladujPlanogramyMenu();
             } else if (hash === "#pracownicy") {
                 document.getElementById('modul-pracownicy').classList.remove('hidden');
                 zaladujlistePracownikow();
@@ -744,6 +795,215 @@
             }
         }
 
+        // --- MODUŁ PLANOGRAMY ---
+        async function pobierzListePolokDlaPlanogramu() {
+            try {
+                const docRef = doc(db, "system_ustawienia", "planogramy_kategorie");
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists() && docSnap.data().lista) {
+                    return docSnap.data().lista;
+                } else {
+                    await setDoc(docRef, { lista: DOMYSLNE_POLKI });
+                    return DOMYSLNE_POLKI;
+                }
+            } catch (e) {
+                console.error(e);
+                return DOMYSLNE_POLKI;
+            }
+        }
+
+        async function zaladujPlanogramyMenu() {
+            const container = document.getElementById('planogramy-lista-container');
+            container.innerHTML = "Pobieranie listy półek...";
+
+            try {
+                const listaPolok = await pobierzListePolokDlaPlanogramu();
+                const querySnapshot = await getDocs(collection(db, "planogramy"));
+                const danePlanogramow = {};
+                querySnapshot.forEach(docSnap => {
+                    danePlanogramow[docSnap.id] = docSnap.data();
+                });
+
+                let html = `<table class="cleaning-table">
+                    <tr>
+                        <th>Nazwa półki / strefy</th>
+                        <th>Data umieszczenia</th>
+                        <th>Status / Podgląd</th>`;
+                
+                const czyAdmin = currentUserData && currentUserData.rola === 'admin';
+                if (czyAdmin) {
+                    html += `<th>Akcja</th>`;
+                }
+                html += `</tr>`;
+
+                listaPolok.forEach((polka) => {
+                    const pData = danePlanogramow[polka];
+                    let statusBadge = `<span class="badge-pending">Brak planogramu</span>`;
+                    let dataUmieszczenia = "-";
+
+                    if (pData && pData.dataUmieszczenia) {
+                        dataUmieszczenia = pData.dataUmieszczenia;
+                        statusBadge = `<span class="badge-done">📷 Dostępne zdjęcie</span>`;
+                    }
+
+                    html += `<tr class="cleaning-row">
+                        <td onclick="otworzModalPlanogramu('${polka}')"><strong>${polka}</strong></td>
+                        <td align="center" onclick="otworzModalPlanogramu('${polka}')">${dataUmieszczenia}</td>
+                        <td align="center" onclick="otworzModalPlanogramu('${polka}')">${statusBadge}</td>`;
+                    
+                    if (czyAdmin) {
+                        html += `<td><button onclick="usunPolkeZListyPlanogramu('${polka}')" style="background: #dc3545; padding: 4px 8px; font-size: 0.8em; margin:0; width:auto;" title="Usuń półkę z listy">🗑️ Usuń</button></td>`;
+                    }
+                    html += `</tr>`;
+                });
+
+                html += `</table>`;
+                container.innerHTML = html;
+            } catch (e) {
+                console.error(e);
+                container.innerHTML = "Błąd ładowania planogramów.";
+            }
+        }
+
+        window.dodajNowaPolkeDoListy = async function() {
+            const input = document.getElementById('nowa-polka-nazwa');
+            const nazwa = input.value.trim();
+            if (!nazwa) {
+                alert("Wpisz nazwę nowej półki lub strefy!");
+                return;
+            }
+
+            try {
+                const lista = await pobierzListePolokDlaPlanogramu();
+                if (lista.includes(nazwa)) {
+                    alert("Taka półka lub strefa już istnieje na liście!");
+                    return;
+                }
+
+                lista.push(nazwa);
+                lista.sort();
+
+                await setDoc(doc(db, "system_ustawienia", "planogramy_kategorie"), { lista: lista });
+                alert(`Dodano nową strefę: ${nazwa}`);
+                input.value = "";
+                zaladujPlanogramyMenu();
+            } catch (e) {
+                alert("Błąd podczas dodawania półki do listy.");
+            }
+        }
+
+        window.usunPolkeZListyPlanogramu = async function(polkaNazwa) {
+            if (!confirm(`Czy na pewno chcesz usunąć strefę "${polkaNazwa}" z listy? Spowoduje to również usunięcie przypisanego do niej planogramu.`)) {
+                return;
+            }
+
+            try {
+                let lista = await pobierzListePolokDlaPlanogramu();
+                lista = lista.filter(p => p !== polkaNazwa);
+
+                await setDoc(doc(db, "system_ustawienia", "planogramy_kategorie"), { lista: lista });
+                await deleteDoc(doc(db, "planogramy", polkaNazwa));
+
+                alert("Usunięto strefę z listy.");
+                zaladujPlanogramyMenu();
+            } catch (e) {
+                alert("Błąd podczas usuwania strefy.");
+            }
+        }
+
+        let wymawiajacyPolkaPlanogram = "";
+
+        window.otworzModalPlanogramu = async function(polkaNazwa) {
+            wymawiajacyPolkaPlanogram = polkaNazwa;
+            document.getElementById('modal-planogram-tytul').innerText = `Planogram: ${polkaNazwa}`;
+            const trescDiv = document.getElementById('modal-planogram-tresc');
+            const adminPanel = document.getElementById('admin-planogram-edycja');
+            const btnUsun = document.getElementById('btn-usun-planogram');
+            document.getElementById('admin-planogram-file').value = "";
+
+            trescDiv.innerHTML = "Pobieranie zdjęcia...";
+            document.getElementById('modal-planogram-szczegoly').classList.remove('hidden');
+
+            if (currentUserData && currentUserData.rola === 'admin') {
+                adminPanel.classList.remove('hidden');
+            } else {
+                adminPanel.classList.add('hidden');
+            }
+
+            try {
+                const docRef = doc(db, "planogramy", polkaNazwa);
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists() && docSnap.data().plik) {
+                    const data = docSnap.data();
+                    if (currentUserData && currentUserData.rola === 'admin') {
+                        btnUsun.style.display = 'block';
+                    }
+
+                    trescDiv.innerHTML = `<p style="font-size: 0.9em;">Data umieszczenia: <strong>${data.dataUmieszczenia}</strong> | Dodano przez: <strong>${data.autor || 'Admin'}</strong></p>
+                    <div style="text-align: center; margin-top: 10px;">
+                        <p style="font-size:0.85em; color:#28a745;">Kliknij na zdjęcie, aby powiększyć (zoom):</p>
+                        <img src="${data.plik}" onclick="otworzZoomZdjecia('${data.plik}')" style="max-height: 280px; max-width: 100%; border-radius: 4px; box-shadow: 0 2px 6px rgba(0,0,0,0.15); cursor: pointer;" title="Kliknij, aby powiększyć">
+                    </div>`;
+                } else {
+                    btnUsun.style.display = 'none';
+                    trescDiv.innerHTML = `<p style="color: #6c757d; text-align: center; padding: 20px;">Brak załączonego zdjęcia planogramu dla tej półki.</p>`;
+                }
+            } catch (e) {
+                console.error(e);
+                trescDiv.innerHTML = "Błąd pobierania planogramu.";
+            }
+        }
+
+        window.zamknijModalPlanogramu = function() {
+            document.getElementById('modal-planogram-szczegoly').classList.add('hidden');
+        }
+
+        window.zapiszPlanogram = async function() {
+            const fileInput = document.getElementById('admin-planogram-file');
+            if (fileInput.files.length === 0) {
+                alert("Wybierz zdjęcie planogramu do wgrania!");
+                return;
+            }
+
+            const plik = fileInput.files[0];
+            const reader = new FileReader();
+
+            reader.onload = async function(e) {
+                const base64Data = e.target.result;
+                const teraz = new Date().toLocaleString();
+                const imieAktualne = currentUserData ? currentUserData.imie : "Admin";
+
+                try {
+                    await setDoc(doc(db, "planogramy", wymawiajacyPolkaPlanogram), {
+                        polka: wymawiajacyPolkaPlanogram,
+                        plik: base64Data,
+                        dataUmieszczenia: teraz,
+                        autor: imieAktualne
+                    });
+                    alert("Zdjęcie planogramu zostało pomyślnie zapisane!");
+                    otworzModalPlanogramu(wymawiajacyPolkaPlanogram);
+                    zaladujPlanogramyMenu();
+                } catch (err) {
+                    alert("Błąd podczas zapisu planogramu: " + err.message);
+                }
+            };
+            reader.readAsDataURL(plik);
+        }
+
+        window.usunPlanogramPlik = async function() {
+            if (!confirm("Czy na pewno chcesz usunąć zdjęcie planogramu z tej półki?")) return;
+
+            try {
+                await deleteDoc(doc(db, "planogramy", wymawiajacyPolkaPlanogram));
+                alert("Usunięto zdjęcie planogramu.");
+                otworzModalPlanogramu(wymawiajacyPolkaPlanogram);
+                zaladujPlanogramyMenu();
+            } catch (e) {
+                alert("Błąd podczas usuwania pliku.");
+            }
+        }
+
         // --- MODUŁ SPRZĄTANIE / KONTROLA PÓŁEK ---
         window.zaladujSprzatanie = async function() {
             const miesiac = document.getElementById('sprzatanie-miesiac').value;
@@ -779,7 +1039,7 @@
                         <th>Ostatnio sprawdzał</th>
                     </tr>`;
 
-                POLKI_LISTA.forEach((polka, index) => {
+                DOMYSLNE_POLKI.forEach((polka, index) => {
                     const pData = aktualneDaneSprzatania[index] || { czystosc: false, daty: false, planogram: false, podpis: "-" };
                     const zrobione = pData.czystosc && pData.daty && pData.planogram;
                     
@@ -808,7 +1068,7 @@
         }
 
         window.otworzModalPolki = function(index) {
-            const polkaNazwa = POLKI_LISTA[index];
+            const polkaNazwa = DOMYSLNE_POLKI[index];
             const pData = aktualneDaneSprzatania[index] || { czystosc: false, daty: false, planogram: false, komentarz: "", zdjecie: "" };
             const zrobione = pData.czystosc && pData.daty && pData.planogram;
             const czyAdmin = currentUserData && currentUserData.rola === 'admin';
@@ -898,7 +1158,7 @@
                 let zdjecieFinalne = base64Img || stareDane.zdjecie || "";
 
                 aktualneDaneSprzatania[index] = {
-                    nazwa: POLKI_LISTA[index],
+                    nazwa: DOMYSLNE_POLKI[index],
                     czystosc: czystosc,
                     daty: daty,
                     planogram: planogram,
@@ -947,7 +1207,7 @@
             const teraz = new Date().toLocaleString();
 
             aktualneDaneSprzatania[index] = {
-                nazwa: POLKI_LISTA[index],
+                nazwa: DOMYSLNE_POLKI[index],
                 czystosc: false,
                 daty: false,
                 planogram: false,
@@ -1340,12 +1600,40 @@
             sprawdzWczytajDaneDlaDaty();
         }
 
+        async function pobierzPracownikowDoCheckboxow(zaznaczeniPracownicy = []) {
+            const container = document.getElementById('sprzedawcy-checkboxes-container');
+            container.innerHTML = "Pobieranie listy pracowników...";
+            try {
+                const querySnapshot = await getDocs(collection(db, "uzytkownicy"));
+                let html = "";
+                let count = 0;
+                querySnapshot.forEach(docSnap => {
+                    const p = docSnap.data();
+                    const imie = p.imie;
+                    const isChecked = zaznaczeniPracownicy.includes(imie) ? "checked" : "";
+                    html += `<label style="display: flex; align-items: center; gap: 8px; margin: 4px 0; cursor: pointer; font-size: 0.95em;">
+                        <input type="checkbox" name="sprzedawca-chk" value="${imie}" ${isChecked} style="width: 18px; height: 18px; margin: 0;"> ${imie}
+                    </label>`;
+                    count++;
+                });
+
+                if (count === 0) {
+                    container.innerHTML = "Brak pracowników w bazie.";
+                } else {
+                    container.innerHTML = html;
+                }
+            } catch (e) {
+                container.innerHTML = "Błąd pobierania pracowników.";
+            }
+        }
+
         async function sprawdzWczytajDaneDlaDaty() {
             const dataRaportu = document.getElementById('raport-data').value;
             if (!dataRaportu) return;
             try {
                 const docRef = doc(db, "sprzedaz", dataRaportu);
                 const docSnap = await getDoc(docRef);
+                let wybraneOsoby = [];
                 if (docSnap.exists()) {
                     const data = docSnap.data();
                     document.getElementById('kawa-ilosc').value = data.kawa?.ilosc || '';
@@ -1353,6 +1641,7 @@
                     document.getElementById('hd-ilosc').value = data.hd?.ilosc || '';
                     document.getElementById('hd-wartosc').value = data.hd?.wartosc || '';
                     document.getElementById('sklep-wartosc').value = data.sklep?.wartosc || '';
+                    wybraneOsoby = data.sprzedawcy || [];
                 } else {
                     document.getElementById('kawa-ilosc').value = '';
                     document.getElementById('kawa-wartosc').value = '';
@@ -1360,6 +1649,7 @@
                     document.getElementById('hd-wartosc').value = '';
                     document.getElementById('sklep-wartosc').value = '';
                 }
+                await pobierzPracownikowDoCheckboxow(wybraneOsoby);
             } catch (e) {
                 console.error(e);
             }
@@ -1393,6 +1683,14 @@
 
             if (!dataRaportu) { alert("Wybierz datę raportu!"); return; }
 
+            const checkboxes = document.querySelectorAll('input[name="sprzedawca-chk"]:checked');
+            const wybraniSprzedawcy = Array.from(checkboxes).map(cb => cb.value);
+
+            if (wybraniSprzedawcy.length === 0) {
+                alert("Musisz wybrać przynajmniej jednego sprzedawcę odpowiedzialnego za ten wynik!");
+                return;
+            }
+
             if(user) {
                 const docRef = doc(db, "sprzedaz", dataRaportu);
                 const docSnap = await getDoc(docRef);
@@ -1401,6 +1699,7 @@
 
                 let daneZapisu = {
                     data: dataRaportu,
+                    sprzedawcy: wybraniSprzedawcy,
                     kawa: { ilosc: kawaIlosc, wartosc: kawaWartosc },
                     hd: { ilosc: hdIlosc, wartosc: hdWartosc },
                     sklep: { wartosc: sklepWartosc }
@@ -1436,8 +1735,9 @@
                 raporty.forEach(data => {
                     let audit = `Utworzył: <strong>${data.utworzyl || 'Nieznany'}</strong> (${data.dataUtworzenia || ''})`;
                     if (data.zmodyfikowal) audit += `<br>Korekta: ${data.zmodyfikowal} (${data.dataModyfikacji})`;
+                    const sprzedawcyStr = data.sprzedawcy ? data.sprzedawcy.join(", ") : "Brak danych";
                     html += `<div class="report-box" style="cursor:pointer;" onclick="przejdzDoDnia('${data.data}')">
-                        <strong>📅 ${data.data}</strong> (Kliknij edytuj)<br>
+                        <strong>📅 ${data.data}</strong> | Sprzedawcy: <strong>${sprzedawcyStr}</strong> (Kliknij edytuj)<br>
                         Kawa: ${data.kawa.ilosc} / ${data.kawa.wartosc} zł | HD: ${data.hd.ilosc} / ${data.hd.wartosc} zł | Sklep: ${data.sklep.wartosc} zł
                         <div class="audit-info">${audit}</div>
                     </div>`;
@@ -1467,14 +1767,21 @@
                 }
 
                 let sKawaI = 0, sKawaW = 0, sHdI = 0, sHdW = 0, sSklepW = 0;
-                let table = `<table class="month-table"><tr><th>Dzień</th><th>Kawa (szt/zł)</th><th>HD (szt/zł)</th><th>Sklep (zł)</th></tr>`;
+                let table = `<table class="month-table"><tr><th>Dzień</th><th>Sprzedawca/cy</th><th>Kawa (szt/zł)</th><th>HD (szt/zł)</th><th>Sklep (zł)</th></tr>`;
                 raporty.forEach(r => {
                     sKawaI += Number(r.kawa?.ilosc)||0; sKawaW += Number(r.kawa?.wartosc)||0;
                     sHdI += Number(r.hd?.ilosc)||0; sHdW += Number(r.hd?.wartosc)||0;
                     sSklepW += Number(r.sklep?.wartosc)||0;
-                    table += `<tr class="clickable-row" onclick="przejdzDoDnia('${r.data}')"><td><strong>${r.data.slice(8)}</strong></td><td>${r.kawa?.ilosc} / ${r.kawa?.wartosc}</td><td>${r.hd?.ilosc} / ${r.hd?.wartosc}</td><td>${r.sklep?.wartosc}</td></tr>`;
+                    const sprzedawcyStr = r.sprzedawcy ? r.sprzedawcy.join(", ") : "-";
+                    table += `<tr class="clickable-row" onclick="przejdzDoDnia('${r.data}')">
+                        <td><strong>${r.data.slice(8)}</strong></td>
+                        <td style="font-size:0.9em;">${sprzedawcyStr}</td>
+                        <td>${r.kawa?.ilosc} / ${r.kawa?.wartosc}</td>
+                        <td>${r.hd?.ilosc} / ${r.hd?.wartosc}</td>
+                        <td>${r.sklep?.wartosc}</td>
+                    </tr>`;
                 });
-                table += `<tr class="sum-row"><td>SUMA</td><td>${sKawaI} / ${sKawaW.toFixed(2)}</td><td>${sHdI} / ${sHdW.toFixed(2)}</td><td>${sSklepW.toFixed(2)}</td></tr></table>`;
+                table += `<tr class="sum-row"><td colspan="2">SUMA</td><td>${sKawaI} / ${sKawaW.toFixed(2)}</td><td>${sHdI} / ${sHdW.toFixed(2)}</td><td>${sSklepW.toFixed(2)}</td></tr></table>`;
                 container.innerHTML = table;
             } catch(e) { container.innerHTML = "Błąd tabeli."; }
         }
@@ -1491,6 +1798,7 @@
                 document.getElementById('modul-grafik').classList.add('hidden');
                 document.getElementById('modul-pracownicy').classList.add('hidden');
                 document.getElementById('modul-sprzatanie').classList.add('hidden');
+                document.getElementById('modul-planogram').classList.add('hidden');
                 document.getElementById('menu-tiles').classList.remove('hidden');
                 
                 if (!window.location.hash || window.location.hash === "#login") {
