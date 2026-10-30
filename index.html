@@ -37,7 +37,7 @@
         [data-fontsize="xlarge"] { --base-font-size: 18px; }
 
         body { font-family: Arial, sans-serif; font-size: var(--base-font-size); background: var(--bg-color); margin: 0; padding: 10px; color: var(--text-color); transition: background 0.3s, color 0.3s; }
-        .card { background: var(--card-bg); padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); max-width: 950px; margin: auto; margin-bottom: 20px; transition: background 0.3s; position: relative; }
+        .card { background: var(--card-bg); padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); max-width: 950px; margin: auto; margin-bottom: 20px; transition: background 0.3s; position: relative; overflow-x: hidden; }
         
         input:not([type="checkbox"]), select, textarea { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid var(--border-color); border-radius: 4px; box-sizing: border-box; font-family: inherit; font-size: inherit; background: var(--input-bg); color: var(--input-text); }
         
@@ -50,7 +50,7 @@
         .hidden { display: none !important; }
         .error { color: red; font-size: 1em; margin-top: 5px; }
         .admin-badge { background: #28a745; color: white; padding: 5px 10px; border-radius: 4px; display: inline-block; font-size: 0.85em; margin-bottom: 10px; }
-        .report-box { background: var(--group-bg); padding: 12px; border-left: 4px solid #007bff; margin: 12px 0; font-size: 0.95em; border-radius: 4px; }
+        .report-box { background: var(--group-bg); padding: 12px; border-left: 4px solid #007bff; margin: 12px 0; font-size: 0.95em; border-radius: 4px; word-break: break-word; }
         .field-group { background: var(--group-bg); padding: 10px; border-radius: 4px; margin-bottom: 10px; }
         .field-group label { font-weight: bold; font-size: 0.9em; display: block; margin-bottom: 3px; color: var(--group-label); }
         .audit-info { font-size: 0.8em; color: #6c757d; margin-top: 6px; border-top: 1px dashed var(--border-color); padding-top: 4px; }
@@ -58,20 +58,30 @@
         .val-red { color: #dc3545; font-weight: bold; }
         .val-green { color: #28a745; font-weight: bold; }
 
+        /* Kontener z poziomym przewijaniem dla tabel */
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+
+        /* Ujednolicony układ kafelków na stronie głównej – po 2 w rzędzie */
         .tiles-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 20px 0; }
         .tile { background: var(--card-bg); border: 2px solid #007bff; padding: 20px 10px; text-align: center; border-radius: 8px; font-weight: bold; color: #007bff; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.05); position: relative; display: flex; align-items: center; justify-content: center; min-height: 65px; box-sizing: border-box; }
         .tile:hover { background: #007bff; color: white; }
         .tile.disabled { border-color: var(--border-color); color: #aaa; cursor: not-allowed; background: var(--group-bg); }
         .tile.disabled:hover { background: var(--group-bg); color: #aaa; }
-        .tile-full { grid-column: span 2; }
         
         .notification-badge {
             position: absolute; top: -8px; right: -8px; background: #dc3545; color: white; border-radius: 50%; padding: 4px 8px; font-size: 0.75em; font-weight: bold; border: 2px solid var(--card-bg);
         }
         
-        table.month-table, table.standard-table, table.cleaning-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.95em; background: var(--card-bg); color: var(--text-color); }
-        table.month-table th, table.month-table td, table.standard-table th, table.standard-table td, table.cleaning-table th, table.cleaning-table td { border: 1px solid var(--border-color); padding: 8px; text-align: center; }
-        table.month-table th, table.standard-table th, table.cleaning-table th { background: #007bff; color: white; font-size: 0.85em; }
+        table.month-table, table.standard-table, table.cleaning-table { width: 100%; border-collapse: collapse; font-size: 0.85em; background: var(--card-bg); color: var(--text-color); white-space: nowrap; }
+        table.month-table th, table.month-table td, table.standard-table th, table.standard-table td, table.cleaning-table th, table.cleaning-table td { border: 1px solid var(--border-color); padding: 5px 6px; text-align: center; }
+        table.month-table th, table.standard-table th, table.cleaning-table th { background: #007bff; color: white; font-size: 0.8em; }
         
         .cleaning-row { cursor: pointer; transition: background 0.1s; }
         .cleaning-row:hover { background: var(--group-bg) !important; }
@@ -94,7 +104,7 @@
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); display: flex; justify-content: center; align-items: center; z-index: 1000; padding: 15px; box-sizing: border-box;
         }
         .modal-content {
-            background: var(--card-bg); color: var(--text-color); padding: 20px; border-radius: 8px; max-width: 600px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            background: var(--card-bg); color: var(--text-color); padding: 20px; border-radius: 8px; max-width: 600px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.2); box-sizing: border-box;
         }
 
         .modal-image-overlay {
@@ -116,7 +126,7 @@
         .grafik-preview-box { text-align: center; margin-top: 15px; border: 2px dashed var(--border-color); padding: 15px; border-radius: 6px; background: var(--preview-bg); }
         .grafik-preview-box img { max-width: 100%; height: auto; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
         
-        .request-item { background: var(--group-bg); border-left: 4px solid #ffc107; padding: 10px; margin-bottom: 10px; border-radius: 4px; font-size: 0.95em; text-align: left; }
+        .request-item { background: var(--group-bg); border-left: 4px solid #ffc107; padding: 10px; margin-bottom: 10px; border-radius: 4px; font-size: 0.95em; text-align: left; word-break: break-word; }
     </style>
 </head>
 <body>
@@ -141,17 +151,28 @@
         <div id="menu-tiles">
             <h3>Wybierz moduł:</h3>
             <div class="tiles-grid">
+                <!-- Rząd 1 -->
                 <div class="tile" onclick="otworzModul('sprzedaz')">📊 Sprzedaż</div>
-                <div class="tile" onclick="otworzModul('grafik')">📅 Grafik</div>
-                <div class="tile tile-full" onclick="otworzModul('sprzatanie')">🧹 Sprzątanie i Kontrola Półek</div>
-                <div class="tile tile-full" onclick="otworzModul('planogram')">📋 Planogramy</div>
+                <div class="tile" style="opacity: 0.6; cursor: not-allowed;">💰 Premia</div>
+
+                <!-- Rząd 2 -->
+                <div class="tile" onclick="otworzModul('sprzatanie')">🧹 Sprzątanie i Kontrola Półek</div>
+                <div class="tile" onclick="otworzModul('planogram')">📋 Planogramy</div>
+
+                <!-- Rząd 3 -->
                 <div class="tile" onclick="otworzModul('misje')" style="border-color: #17a2b8; color: #17a2b8; background: #e8f4fd;">
                     🎯 Misje
                     <span id="misje-badge" class="notification-badge hidden">0</span>
                 </div>
-                <div class="tile" onclick="otworzModul('pracownicy')" id="tile-pracownicy">👥 Panel Pracowników</div>
-                <div class="tile" style="opacity: 0.6; cursor: not-allowed;">💰 Premia</div>
+                <div class="tile" onclick="otworzModul('grafik')">📅 Grafik</div>
+
+                <!-- Rząd 4 -->
                 <div class="tile" style="opacity: 0.6; cursor: not-allowed;">💬 Wiadomości</div>
+                <div class="tile" style="opacity: 0.4; cursor: not-allowed; border-style: dashed;">➕ Pusty kafelek</div>
+
+                <!-- Rzędy dodatkowe dla Admina (wyświetlane dynamicznie) -->
+                <div class="tile admin-only-tile" onclick="otworzModul('pracownicy')" id="tile-pracownicy" style="border-color: #28a745; color: #28a745; background: #e8f9ed; display: none;">👥 Panel pracowników</div>
+                <div class="tile admin-only-tile" onclick="otworzModul('statystyki')" id="tile-statystyki" style="border-color: #28a745; color: #28a745; background: #e8f9ed; display: none;">📊 Statystyki</div>
             </div>
         </div>
         
@@ -202,7 +223,7 @@
                 </div>
 
                 <div class="field-group">
-                    <label>🔋 HD</label>
+                    <label>🌭 HD</label>
                     <input type="number" id="hd-ilosc" placeholder="Ilość (szt.)">
                     <input type="number" step="0.01" id="hd-wartosc" placeholder="Wartość (zł)">
                 </div>
@@ -213,6 +234,76 @@
                 </div>
 
                 <button onclick="zapiszSprzedaz()">Zapisz / Aktualizuj Raport</button>
+            </div>
+        </div>
+
+        <!-- MODUŁ STATYSTYKY I ZARZĄDZANIE DANYMI (TYLKO ADMIN) -->
+        <div id="modul-statystyki" class="hidden">
+            <h3>📊 Dane i Statystyki Systemu</h3>
+            <p style="color: #6c757d; font-size: 0.9em;">Generuj zaawansowane raporty i analizuj wyniki zespołu.</p>
+
+            <div class="field-group">
+                <h4>📈 Generowanie raportów statystycznych</h4>
+                <button onclick="pokazOpcjeStatystyk()" style="background: #17a2b8; margin-top:5px;">Generuj / Odśwież statystyki</button>
+                
+                <!-- Opcje wyboru statystyk -->
+                <div id="statystyki-opcje-panel" class="hidden" style="margin-top: 15px; padding: 12px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 6px;">
+                    <label><strong>Wybierz zakres czasu:</strong></label>
+                    <select id="stats-okres-typ" onchange="toggleStatsCustomDates()">
+                        <option value="biezacy">Bieżący miesiąc</option>
+                        <option value="poprzedni">Poprzedni miesiąc</option>
+                        <option value="30dni">Ostatnie 30 dni</option>
+                        <option value="custom">Własny zakres dat (od-do)</option>
+                    </select>
+
+                    <div id="stats-custom-dates-box" class="hidden" style="display: flex; gap: 10px; margin-top: 5px;">
+                        <div style="flex:1;">
+                            <label style="font-size:0.8em;">Data od:</label>
+                            <input type="date" id="stats-date-from">
+                        </div>
+                        <div style="flex:1;">
+                            <label style="font-size:0.8em;">Data do:</label>
+                            <input type="date" id="stats-date-to">
+                        </div>
+                    </div>
+
+                    <label style="margin-top: 10px; display: block;"><strong>Zaznacz statystyki do wygenerowania:</strong></label>
+                    <div style="display: grid; grid-template-columns: 1fr; gap: 6px; margin-top: 5px;">
+                        <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="chk-stat-sprzedaz-ogolna" checked> Sprzedaż łącznie, średnia dzienna oraz Najlepszy/Najgorszy dzień</label>
+                        <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="chk-stat-sprzedaz-pracownicy" checked> Sprzedaż w podziale na pracowników (proporcjonalnie wg liczby osób)</label>
+                        <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="chk-stat-plany" checked> Realizacja planów sprzedażowych (ogólnie i proporcjonalnie do dzisiaj)</label>
+                        <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="chk-stat-sprzatanie" checked> Sprzątanie: wykonane, niewykonane, usunięte/cofnięte oraz udział pracowników</label>
+                    </div>
+
+                    <button onclick="przeliczIWygenerujStatystyki()" style="background: #28a745; margin-top: 15px;">📊 Oblicz i pokaż raport</button>
+                </div>
+
+                <div id="statystyki-wynik-box" style="margin-top: 15px;">Kliknij przycisk powyżej, aby skonfigurować i wygenerować raport.</div>
+            </div>
+
+            <!-- ROZWIJANY MODUŁ CZYSZCZENIA DANYCH -->
+            <div style="margin-top: 20px;">
+                <div class="collapsible-header" onclick="toggleCollapsible('cleanup-content', 'cleanup-arrow')" style="background: #dc3545;">
+                    <span>🗑️ Czyszczenie archiwum danych serwera</span>
+                    <span id="cleanup-arrow">▼ Rozwiń</span>
+                </div>
+                <div id="cleanup-content" class="collapsible-content" style="border: 2px dashed #dc3545; background: var(--card-bg);">
+                    <p style="font-size: 0.85em; color: #dc3545; margin-top: 0;">Usuwanie archiwalnych danych pozwala zwolnić miejsce na serwerze i przyspieszyć działanie aplikacji.</p>
+                    <label>Usuń wszystkie dane starsze niż:</label>
+                    <select id="cleanup-zakres" onchange="toggleCleanupCustomDate()">
+                        <option value="6">6 miesięcy</option>
+                        <option value="12">12 miesięcy</option>
+                        <option value="24">24 miesięcy</option>
+                        <option value="custom">Własny zakres (Wybierz datę graniczną)</option>
+                    </select>
+
+                    <div id="cleanup-custom-box" class="hidden" style="margin-top: 8px;">
+                        <label>Wybierz datę graniczną:</label>
+                        <input type="date" id="cleanup-custom-date">
+                    </div>
+
+                    <button onclick="uruchomProcedureUsuwaniaDanych()" style="background: #dc3545; margin-top: 15px;">⚠️ Wykonaj procedurę usuwania danych</button>
+                </div>
             </div>
         </div>
 
@@ -491,31 +582,37 @@
         <div id="modul-pracownicy" class="hidden">
             <h3>👥 Panel Zarządzania Pracownikami</h3>
             
-            <div class="field-group">
-                <h4>Dodaj nowego pracownika</h4>
-                <input type="text" id="new-p-imie" placeholder="Imię i nazwisko">
-                <input type="text" id="new-p-login" placeholder="Login (np. emil)">
-                <input type="password" id="new-p-haslo" placeholder="Hasło początkowe">
-                <select id="new-p-rola">
-                    <option value="pracownik">Pracownik</option>
-                    <option value="admin">Administrator (Kierownik)</option>
-                </select>
-                <select id="new-p-umowa" onchange="toggleEtatPole('new')">
-                    <option value="UoP">Umowa o pracę (UoP)</option>
-                    <option value="Zlecenie">Umowa Zlecenie</option>
-                </select>
-                <div id="new-etat-box">
-                    <label style="font-size:0.9em; margin-top:5px;">Wymiar etatu:</label>
-                    <select id="new-p-etat" onchange="checkEtatCustom('new')">
-                        <option value="1/1">1/1 (Pełny etat)</option>
-                        <option value="3/4">3/4 etatu</option>
-                        <option value="1/2">1/2 etatu</option>
-                        <option value="1/4">1/4 etatu</option>
-                        <option value="inny">Inny (wpisz ręcznie)</option>
-                    </select>
-                    <input type="text" id="new-p-etat-custom" class="hidden" placeholder="Wpisz etat np. 3/5" style="margin-top:4px;">
+            <!-- Zwijany formularz dodawania pracownika -->
+            <div style="margin-bottom: 20px;">
+                <div class="collapsible-header" onclick="toggleCollapsible('add-pracownik-content', 'add-pracownik-arrow')" style="background: #28a745;">
+                    <span>➕ Dodaj nowego pracownika</span>
+                    <span id="add-pracownik-arrow">▼ Rozwiń</span>
                 </div>
-                <button onclick="dodajPracownika()" style="background: #28a745; margin-top:10px;">Dodaj pracownika w systemie</button>
+                <div id="add-pracownik-content" class="collapsible-content" style="border: 2px dashed #28a745; background: var(--card-bg);">
+                    <input type="text" id="new-p-imie" placeholder="Imię i nazwisko">
+                    <input type="text" id="new-p-login" placeholder="Login (np. emil)">
+                    <input type="password" id="new-p-haslo" placeholder="Hasło początkowe">
+                    <select id="new-p-rola">
+                        <option value="pracownik">Pracownik</option>
+                        <option value="admin">Administrator (Kierownik)</option>
+                    </select>
+                    <select id="new-p-umowa" onchange="toggleEtatPole('new')">
+                        <option value="UoP">Umowa o pracę (UoP)</option>
+                        <option value="Zlecenie">Umowa Zlecenie</option>
+                    </select>
+                    <div id="new-etat-box">
+                        <label style="font-size:0.9em; margin-top:5px;">Wymiar etatu:</label>
+                        <select id="new-p-etat" onchange="checkEtatCustom('new')">
+                            <option value="1/1">1/1 (Pełny etat)</option>
+                            <option value="3/4">3/4 etatu</option>
+                            <option value="1/2">1/2 etatu</option>
+                            <option value="1/4">1/4 etatu</option>
+                            <option value="inny">Inny (wpisz ręcznie)</option>
+                        </select>
+                        <input type="text" id="new-p-etat-custom" class="hidden" placeholder="Wpisz etat np. 3/5" style="margin-top:4px;">
+                    </div>
+                    <button onclick="dodajPracownika()" style="background: #28a745; margin-top:10px;">Dodaj pracownika w systemie</button>
+                </div>
             </div>
 
             <h4>Aktualna lista pracowników (Kliknij, aby edytować)</h4>
@@ -527,12 +624,18 @@
             <div class="modal-content" style="border: 2px solid #007bff;">
                 <h4 style="margin-top:0; color:#007bff;">✏️ Edycja Pracownika</h4>
                 <input type="hidden" id="edit-p-id">
+                <input type="hidden" id="edit-p-uid">
                 
                 <label>Imię i nazwisko:</label>
                 <input type="text" id="edit-p-imie">
                 
                 <label>Login:</label>
                 <input type="text" id="edit-p-login">
+
+                <div class="field-group" style="border: 1px dashed #17a2b8; margin-top: 10px;">
+                    <label style="color: #17a2b8; margin-bottom: 5px;">🔑 Zmiana hasła pracownika (Opcjonalnie)</label>
+                    <input type="password" id="edit-p-nowe-haslo" placeholder="Wpisz nowe hasło (zostaw puste, jeśli bez zmian)">
+                </div>
                 
                 <label>Rola:</label>
                 <select id="edit-p-rola">
@@ -736,7 +839,7 @@
         // --- ROUTING ---
         window.addEventListener("hashchange", () => {
             const hash = window.location.hash;
-            ['modul-sprzedaz', 'modul-grafik', 'modul-pracownicy', 'modul-sprzatanie', 'modul-planogram', 'modul-misje', 'menu-tiles'].forEach(id => {
+            ['modul-sprzedaz', 'modul-grafik', 'modul-pracownicy', 'modul-sprzatanie', 'modul-planogram', 'modul-misje', 'modul-statystyki', 'menu-tiles'].forEach(id => {
                 document.getElementById(id).classList.add('hidden');
             });
 
@@ -768,6 +871,9 @@
             } else if (hash === "#pracownicy") {
                 document.getElementById('modul-pracownicy').classList.remove('hidden');
                 zaladujlistePracownikow();
+            } else if (hash === "#statystyki") {
+                if (!(currentUserData && currentUserData.rola === 'admin')) { window.location.hash = "#menu"; return; }
+                document.getElementById('modul-statystyki').classList.remove('hidden');
             } else if (hash === "#dzien") {
                 document.getElementById('modul-sprzedaz').classList.remove('hidden');
                 document.getElementById('view-monthly').classList.add('hidden');
@@ -785,6 +891,297 @@
         window.checkEtatCustom = function(prefix) {
             const etatVal = document.getElementById(`${prefix}-p-etat`).value;
             document.getElementById(`${prefix}-p-etat-custom`).classList.toggle('hidden', etatVal !== 'inny');
+        }
+
+        // --- STATYSTYKI I CZYSZCZENIE DANYCH (ADMIN) ---
+        window.pokazOpcjeStatystyk = function() {
+            document.getElementById('statystyki-opcje-panel').classList.remove('hidden');
+        }
+
+        window.toggleStatsCustomDates = function() {
+            const typ = document.getElementById('stats-okres-typ').value;
+            document.getElementById('stats-custom-dates-box').classList.toggle('hidden', typ !== 'custom');
+        }
+
+        window.przeliczIWygenerujStatystyki = async function() {
+            const box = document.getElementById('statystyki-wynik-box');
+            box.innerHTML = "Trwa przeliczanie i ładowanie danych...";
+
+            const typOkresu = document.getElementById('stats-okres-typ').value;
+            let dOd = "", dDo = "";
+            let biezacyMiesiacCode = new Date().toISOString().slice(0, 7);
+
+            const teraz = new Date();
+            if (typOkresu === 'biezacy') {
+                dOd = `${biezacyMiesiacCode}-01`;
+                dDo = new Date(teraz.getFullYear(), teraz.getMonth() + 1, 0).toISOString().slice(0, 10);
+            } else if (typOkresu === 'poprzedni') {
+                let prev = new Date(teraz.getFullYear(), teraz.getMonth() - 1, 1);
+                let prevCode = prev.toISOString().slice(0, 7);
+                dOd = `${prevCode}-01`;
+                dDo = new Date(prev.getFullYear(), prev.getMonth() + 1, 0).toISOString().slice(0, 10);
+            } else if (typOkresu === '30dni') {
+                let d30 = new Date(); d30.setDate(d30.getDate() - 30);
+                dOd = d30.toISOString().slice(0, 10);
+                dDo = teraz.toISOString().slice(0, 10);
+            } else if (typOkresu === 'custom') {
+                dOd = document.getElementById('stats-date-from').value;
+                dDo = document.getElementById('stats-date-to').value;
+                if (!dOd || !dDo) return alert("Wybierz poprawny zakres dat (od-do)!");
+            }
+
+            try {
+                let raportySnap = await getDocs(collection(db, "sprzedaz"));
+                let przefiltrowaneRaporty = [];
+                raportySnap.forEach(d => {
+                    let r = d.data();
+                    if (r.data >= dOd && r.data <= dDo) przefiltrowaneRaporty.push(r);
+                });
+
+                let htmlWynik = `<div style="display:flex; flex-direction:column; gap:15px; width:100%; box-sizing:border-box;">`;
+                htmlWynik += `<div style="background:var(--group-bg); padding:10px; border-radius:6px; font-weight:bold; word-break:break-word;">📅 Wybrany okres raportowania: od ${dOd} do ${dDo}</div>`;
+
+                // 1. SPRZEDAŻ OGÓLNA I WG KATEGORII
+                if (document.getElementById('chk-stat-sprzedaz-ogolna').checked) {
+                    let sKawaW = 0, sHdW = 0, sSklepW = 0, sumaLaczna = 0;
+                    let najlepszyDzien = null, najgorszyDzien = null;
+
+                    przefiltrowaneRaporty.forEach(r => {
+                        let kawa = Number(r.kawa?.wartosc)||0;
+                        let hd = Number(r.hd?.wartosc)||0;
+                        let sklep = Number(r.sklep?.wartosc)||0;
+                        let sumaDnia = kawa + hd + sklep;
+
+                        sKawaW += kawa; sHdW += hd; sSklepW += sklep; sumaLaczna += sumaDnia;
+
+                        if (!najlepszyDzien || sumaDnia > najlepszyDzien.suma) najlepszyDzien = { data: r.data, suma: sumaDnia, kawa, hd, sklep };
+                        if (!najgorszyDzien || sumaDnia < najgorszyDzien.suma) najgorszyDzien = { data: r.data, suma: sumaDnia, kawa, hd, sklep };
+                    });
+
+                    let dniLiczba = przefiltrowaneRaporty.length || 1;
+                    let sredniaDziennie = sumaLaczna / dniLiczba;
+
+                    htmlWynik += `
+                        <div class="field-group" style="border-left:4px solid #007bff;">
+                            <h4 style="margin-top:0;">📊 Sprzedaż Ogólna i Kategoriowa</h4>
+                            <div class="table-responsive">
+                                <table class="standard-table" style="text-align: left;">
+                                    <tr><th>Wskaźnik / Kategoria</th><th>Wartość / Średnia</th></tr>
+                                    <tr><td><strong>Łączny obrót</strong></td><td>${sumaLaczna.toFixed(2)} zł (Dni: ${przefiltrowaneRaporty.length})</td></tr>
+                                    <tr><td><strong>Średnia dzienna</strong></td><td>${sredniaDziennie.toFixed(2)} zł/dzień</td></tr>
+                                    <tr><td><strong>☕ Kawa</strong></td><td>Łącznie: ${sKawaW.toFixed(2)} zł | Średnio: ${(sKawaW/dniLiczba).toFixed(2)} zł/dzień</td></tr>
+                                    <tr><td><strong>🌭 HD</strong></td><td>Łącznie: ${sHdW.toFixed(2)} zł | Średnio: ${(sHdW/dniLiczba).toFixed(2)} zł/dzień</td></tr>
+                                    <tr><td><strong>🛒 Sklep</strong></td><td>Łącznie: ${sSklepW.toFixed(2)} zł | Średnio: ${(sSklepW/dniLiczba).toFixed(2)} zł/dzień</td></tr>
+                                </table>
+                            </div>
+                            ${najlepszyDzien ? `<p style="margin-top:8px;" class="val-green">🌟 Najlepszy dzień: <strong>${najlepszyDzien.data}</strong> (${najlepszyDzien.suma.toFixed(2)} zł)</p>` : ''}
+                            ${najgorszyDzien ? `<p class="val-red">🔻 Najgorszy dzień: <strong>${najgorszyDzien.data}</strong> (${najgorszyDzien.suma.toFixed(2)} zł)</p>` : ''}
+                        </div>
+                    `;
+                }
+
+                // 2. SPRZEDAŻ WG PRACOWNIKÓW (Oryginalny układ z przewijaniem bocznym)
+                if (document.getElementById('chk-stat-sprzedaz-pracownicy').checked) {
+                    let pracownicyWyniki = {};
+
+                    przefiltrowaneRaporty.forEach(r => {
+                        let osoby = r.sprzedawcy || [];
+                        let cnt = osoby.length;
+                        if (cnt > 0) {
+                            let kawaUdzial = (Number(r.kawa?.wartosc)||0) / cnt;
+                            let hdUdzial = (Number(r.hd?.wartosc)||0) / cnt;
+                            let sklepUdzial = (Number(r.sklep?.wartosc)||0) / cnt;
+                            let sumaUdzial = kawaUdzial + hdUdzial + sklepUdzial;
+
+                            osoby.forEach(p => {
+                                if (!pracownicyWyniki[p]) pracownicyWyniki[p] = { suma: 0, kawa: 0, hd: 0, sklep: 0, dni: 0 };
+                                pracownicyWyniki[p].suma += sumaUdzial;
+                                pracownicyWyniki[p].kawa += kawaUdzial;
+                                pracownicyWyniki[p].hd += hdUdzial;
+                                pracownicyWyniki[p].sklep += sklepUdzial;
+                                pracownicyWyniki[p].dni += 1;
+                            });
+                        }
+                    });
+
+                    let pRows = "";
+                    Object.keys(pracownicyWyniki).forEach(p => {
+                        let pw = pracownicyWyniki[p];
+                        pRows += `<tr><td><strong>${p}</strong></td><td>${pw.dni}</td><td>☕ ${pw.kawa.toFixed(2)} zł</td><td>🌭 ${pw.hd.toFixed(2)} zł</td><td>🛒 ${pw.sklep.toFixed(2)} zł</td><td><strong>${pw.suma.toFixed(2)} zł</strong></td></tr>`;
+                    });
+
+                    htmlWynik += `
+                        <div class="field-group" style="border-left:4px solid #28a745;">
+                            <h4 style="margin-top:0;">👥 Sprzedaż w podziale na pracowników (Proporcjonalnie)</h4>
+                            ${pRows ? `<div class="table-responsive"><table class="standard-table"><tr><th>Pracownik</th><th>Dni</th><th>Kawa</th><th>HD</th><th>Sklep</th><th>Suma</th></tr>${pRows}</table></div>` : '<p>Brak danych sprzedażowych w okresie.</p>'}
+                        </div>
+                    `;
+                }
+
+                // 3. REALIZACJA PLANÓW (Oryginalny układ z przewijaniem bocznym)
+                if (document.getElementById('chk-stat-plany').checked) {
+                    let miesiacKlucz = dOd.slice(0, 7);
+                    const pDoc = await getDoc(doc(db, "plany_miesieczne", miesiacKlucz));
+                    let plany = pDoc.exists() ? pDoc.data() : { kawa: 0, hd: 0, sklep: 0 };
+
+                    let sKawaW = 0, sHdW = 0, sSklepW = 0;
+                    przefiltrowaneRaporty.forEach(r => {
+                        sKawaW += Number(r.kawa?.wartosc)||0;
+                        sHdW += Number(r.hd?.wartosc)||0;
+                        sSklepW += Number(r.sklep?.wartosc)||0;
+                    });
+
+                    let terazDate = new Date();
+                    let [rRok, rMies] = miesiacKlucz.split('-').map(Number);
+                    let dniWMiesiacu = new Date(rRok, rMies, 0).getDate();
+                    let biezacyDzien = (terazDate.getFullYear() === rRok && (terazDate.getMonth() + 1) === rMies) ? terazDate.getDate() : dniWMiesiacu;
+                    let ptProporcja = biezacyDzien / dniWMiesiacu;
+
+                    let planPropKawa = (plany.kawa || 0) * ptProporcja;
+                    let planPropHd = (plany.hd || 0) * ptProporcja;
+                    let planPropSklep = (plany.sklep || 0) * ptProporcja;
+
+                    let diffKawa100 = sKawaW - (plany.kawa||0);
+                    let diffHd100 = sHdW - (plany.hd||0);
+                    let diffSklep100 = sSklepW - (plany.sklep||0);
+
+                    let diffKawaProp = sKawaW - planPropKawa;
+                    let diffHdProp = sHdW - planPropHd;
+                    let diffSklepProp = sSklepW - planPropSklep;
+
+                    htmlWynik += `
+                        <div class="field-group" style="border-left:4px solid #17a2b8;">
+                            <h4 style="margin-top:0;">🎯 Realizacja Planów Sprzedażowych (${miesiacKlucz})</h4>
+                            <p style="font-size:0.85em; color:#6c757d;">Proporcja upływu miesiąca: Dzień ${biezacyDzien} z ${dniWMiesiacu} (${(ptProporcja*100).toFixed(1)}%)</p>
+                            <div class="table-responsive">
+                                <table class="standard-table">
+                                    <tr><th>Kategoria</th><th>Wykonanie</th><th>Plan Cały</th><th>Status 100%</th><th>Plan do Dziś</th><th>Status do Dziś</th></tr>
+                                    <tr>
+                                        <td><strong>☕ KAWA</strong></td>
+                                        <td>${sKawaW.toFixed(2)} zł</td>
+                                        <td>${(plany.kawa||0).toFixed(2)} zł</td>
+                                        <td class="${diffKawa100>=0?'val-green':'val-red'}">${diffKawa100.toFixed(2)} zł</td>
+                                        <td>${planPropKawa.toFixed(2)} zł</td>
+                                        <td class="${diffKawaProp>=0?'val-green':'val-red'}">${diffKawaProp.toFixed(2)} zł</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>🌭 HD</strong></td>
+                                        <td>${sHdW.toFixed(2)} zł</td>
+                                        <td>${(plany.hd||0).toFixed(2)} zł</td>
+                                        <td class="${diffHd100>=0?'val-green':'val-red'}">${diffHd100.toFixed(2)} zł</td>
+                                        <td>${planPropHd.toFixed(2)} zł</td>
+                                        <td class="${diffHdProp>=0?'val-green':'val-red'}">${diffHdProp.toFixed(2)} zł</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>🛒 SKLEP</strong></td>
+                                        <td>${sSklepW.toFixed(2)} zł</td>
+                                        <td>${(plany.sklep||0).toFixed(2)} zł</td>
+                                        <td class="${diffSklep100>=0?'val-green':'val-red'}">${diffSklep100.toFixed(2)} zł</td>
+                                        <td>${planPropSklep.toFixed(2)} zł</td>
+                                        <td class="${diffSklepProp>=0?'val-green':'val-red'}">${diffSklepProp.toFixed(2)} zł</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                // 4. SPRZĄTANIE I KONTROLA PÓŁEK
+                if (document.getElementById('chk-stat-sprzatanie').checked) {
+                    let sprzatanieSnap = await getDocs(collection(db, "sprzatanie"));
+                    let wykonaneRazem = 0, niewykonaneRazem = 0, zresetowaneAdmin = 0;
+                    let pracownicySprzatanie = {};
+
+                    sprzatanieSnap.forEach(docS => {
+                        let id = docS.id;
+                        let mPart = id.slice(0, 7);
+                        if (mPart >= dOd.slice(0, 7) && mPart <= dDo.slice(0, 7)) {
+                            let polki = docS.data().półki || {};
+                            Object.values(polki).forEach(p => {
+                                let zrobione = p.czystosc && p.daty && p.planogram;
+                                if (zrobione) {
+                                    wykonaneRazem++;
+                                    let kto = p.podpis || "Nieznany";
+                                    if (kto !== "-") pracownicySprzatanie[kto] = (pracownicySprzatanie[kto] || 0) + 1;
+                                } else {
+                                    niewykonaneRazem++;
+                                }
+                                if (p.podpis === "-" && p.dataSprawdzenia) {
+                                    zresetowaneAdmin++;
+                                }
+                            });
+                        }
+                    });
+
+                    let spRows = "";
+                    Object.keys(pracownicySprzatanie).forEach(kto => {
+                        spRows += `<tr><td><strong>${kto}</strong></td><td>✔ ${pracownicySprzatanie[kto]} sprawdzonych półek</td></tr>`;
+                    });
+
+                    htmlWynik += `
+                        <div class="field-group" style="border-left:4px solid #ffc107;">
+                            <h4 style="margin-top:0;">🧹 Kontrola Czystości i Półek</h4>
+                            <p><strong>Wykonane zadania kontrolne:</strong> <span class="val-green">${wykonaneRazem}</span></p>
+                            <p><strong>Niewykonane / w trakcie:</strong> <span class="val-red">${niewykonaneRazem}</span></p>
+                            <p><strong>Cofnięte / zresetowane przez admina:</strong> ${zresetowaneAdmin}</p>
+                            ${spRows ? `<h5 style="margin-bottom:5px;">Aktywność pracowników w sprzątaniu:</h5><div class="table-responsive"><table class="standard-table"><tr><th>Pracownik</th><th>Liczba wykonanych kontroli</th></tr>${spRows}</table></div>` : ''}
+                        </div>
+                    `;
+                }
+
+                htmlWynik += `</div>`;
+                box.innerHTML = htmlWynik;
+
+            } catch (e) {
+                box.innerHTML = "<span class='error'>Błąd podczas obliczania statystyk: " + e.message + "</span>";
+            }
+        }
+
+        window.toggleCleanupCustomDate = function() {
+            const val = document.getElementById('cleanup-zakres').value;
+            document.getElementById('cleanup-custom-box').classList.toggle('hidden', val !== 'custom');
+        }
+
+        window.uruchomProcedureUsuwaniaDanych = async function() {
+            const wybor = document.getElementById('cleanup-zakres').value;
+            let dataGraniczna = new Date();
+
+            if (wybor === 'custom') {
+                const customVal = document.getElementById('cleanup-custom-date').value;
+                if (!customVal) return alert("Wybierz poprawną datę graniczną!");
+                dataGraniczna = new Date(customVal);
+            } else {
+                let miesiace = parseInt(wybor);
+                dataGraniczna.setMonth(dataGraniczna.getMonth() - miesiace);
+            }
+
+            let potwierdzenie1 = confirm(`⚠️ OSTRZEŻENIE: Zamierzasz trwale usunąć z serwera wszystkie dane starsze niż ${dataGraniczna.toISOString().slice(0, 10)}.\n\nCzy na pewno chcesz kontynuować?`);
+            if (!potwierdzenie1) return;
+
+            let potwierdzenie2 = confirm(`🔴 DRUGIE POTWIERDZENE: Tej operacji NIE DA SIĘ cofnąć. Wszystkie archiwalne raporty, misje i wpisy sprzed tej daty zostaną bezpowrotnie skasowane.\n\nKliknij OK, aby wykonać usunięcie.`);
+            if (!potwierdzenie2) return;
+
+            alert("Trwa usuwanie danych z serwera...");
+            try {
+                let usunieteKolekcje = ['sprzedaz', 'misje', 'prosby_o_zmiany'];
+                for (let kol of usunieteKolekcje) {
+                    let snap = await getDocs(collection(db, kol));
+                    for (let d of snap.docs) {
+                        let dataD = d.data();
+                        let dataObiekt = null;
+                        if (dataD.data) dataObiekt = new Date(dataD.data);
+                        else if (dataD.doKiedy) dataObiekt = new Date(dataD.doKiedy);
+                        else if (dataD.dataUtworzenia) dataObiekt = new Date(dataD.dataUtworzenia);
+
+                        if (dataObiekt && dataObiekt < dataGraniczna) {
+                            await deleteDoc(doc(db, kol, d.id));
+                        }
+                    }
+                }
+                alert("Operacja czyszczenia zakończona pomyślnie.");
+            } catch (e) {
+                alert("Błąd podczas usuwania danych: " + e.message);
+            }
         }
 
         // --- POWIADOMIENIA MISJI ---
@@ -854,7 +1251,6 @@
                     let kolory = { 'zrobione': '#28a745', 'zaliczone': '#28a745', 'po czasie': '#dc3545', 'do wyjaśnienia': '#dc3545', 'odebrane': '#17a2b8', 'nowe': '#ffc107' };
                     let statusBadge = `<span style="background: ${kolory[aktualnyStatus]||'#ffc107'}; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.85em;">${aktualnyStatus}</span>`;
                     
-                    // Cały wiersz po kliknięciu otwiera modal szczegółów (zgodnie z poleceniem usunięto osobną kolumnę akcji)
                     let bezpiecznaTresc = encodeURIComponent(d.zadanie);
                     let bezpieczneUwagi = encodeURIComponent(d.uwagi || '');
                     html += `<tr class="cleaning-row" onclick="otworzModalUniwersalnaMisja('${id}', '${d.pracownik}', '${bezpiecznaTresc}', '${d.doKiedy}', '${aktualnyStatus}', '${bezpieczneUwagi}')">
@@ -883,6 +1279,14 @@
             const adminSekcja = document.getElementById('admin-edit-misja-sekcja');
             const pracownikSekcja = document.getElementById('pracownik-view-misja-sekcja');
             const btnUsun = document.getElementById('btn-usun-misja-admin');
+            const statusSel = document.getElementById('m-edit-misja-status');
+
+            if (status === "nowe") {
+                status = "odebrane";
+                try {
+                    await setDoc(doc(db, "misje", id), { status: "odebrane" }, { merge: true });
+                } catch(e) { console.error(e); }
+            }
 
             if (czyAdmin) {
                 adminSekcja.classList.remove('hidden');
@@ -892,23 +1296,37 @@
                 document.getElementById('m-edit-misja-pracownik').value = pracownik;
                 document.getElementById('m-edit-misja-tresc-admin').value = decodeURIComponent(zadanie);
                 document.getElementById('m-edit-misja-termin-admin').value = doKiedy;
+
+                statusSel.innerHTML = `
+                    <option value="nowe">nowe</option>
+                    <option value="odebrane">odebrane</option>
+                    <option value="zrobione">zrobione</option>
+                    <option value="zaliczone">zaliczone</option>
+                    <option value="do wyjaśnienia">do wyjaśnienia</option>
+                `;
             } else {
                 adminSekcja.classList.add('hidden');
                 pracownikSekcja.classList.remove('hidden');
                 btnUsun.style.display = 'none';
                 document.getElementById('m-edit-misja-tresc-pracownik').innerText = decodeURIComponent(zadanie);
                 document.getElementById('m-edit-misja-termin-pracownik').innerText = doKiedy;
+
+                let opcjaAktualnaTekst = status.charAt(0).toUpperCase() + status.slice(1);
+                statusSel.innerHTML = `
+                    <option value="${status}">${opcjaAktualnaTekst}</option>
+                    <option value="zrobione">Zrobione</option>
+                `;
             }
 
-            // Status "po czasie" nie może być wybrany ręcznie, więc jest ukrywany lub blokowany w selektorze
-            const statusSel = document.getElementById('m-edit-misja-status');
             statusSel.value = status;
-            
             document.getElementById('m-edit-misja-uwagi').value = decodeURIComponent(uwagi);
             document.getElementById('modal-uniwersalna-misja').classList.remove('hidden');
         }
 
-        window.zamknijModalUniwersalnaMisja = () => document.getElementById('modal-uniwersalna-misja').classList.add('hidden');
+        window.zamknijModalUniwersalnaMisja = () => {
+            document.getElementById('modal-uniwersalna-misja').classList.add('hidden');
+            zaladujMisje();
+        }
 
         window.zapiszUniwersalnaMisja = async function() {
             const id = document.getElementById('m-edit-misja-id').value;
@@ -927,7 +1345,6 @@
                 await setDoc(doc(db, "misje", id), daneZapisu, { merge: true });
                 zamknijModalUniwersalnaMisja();
                 alert("Zaktualizowano zadanie!");
-                zaladujMisje();
             } catch (e) { alert("Błąd zapisu zadania."); }
         }
 
@@ -936,7 +1353,7 @@
                 const id = document.getElementById('m-edit-misja-id').value;
                 try {
                     await deleteDoc(doc(db, "misje", id));
-                    zamknijModalUniwersalnaMisja();
+                    document.getElementById('modal-uniwersalna-misja').classList.add('hidden');
                     alert("Usunięto misję.");
                     zaladujMisje();
                 } catch (e) { alert("Błąd usuwania misji."); }
@@ -1175,13 +1592,13 @@
             const index = document.getElementById('modal-polka-index').value;
             const miesiac = document.getElementById('sprzatanie-miesiac').value;
             const okres = document.getElementById('sprzatanie-okres').value;
-            aktualneDaneSprzatania[index] = { nazwa: DOMYSLNE_POLKI[index], czystosc: false, daty: false, planogram: false, komentarz: "", zdjecie: "", podpis: "-", dataSprawdzenia: "" };
+            aktualneDaneSprzatania[index] = { nazwa: DOMYSLNE_POLKI[index], czystosc: false, daty: false, planogram: false, komentarz: "", zdjecie: "", podpis: "-", dataSprawdzenia: new Date().toLocaleString() };
             await setDoc(doc(db, "sprzatanie", `${miesiac}_${okres}`), { półki: aktualneDaneSprzatania }, { merge: true });
             zamknijModalPolki();
             zaladujSprzatanie();
         }
 
-        // --- PRACOWNICY ---
+        // --- PRACOWNICI ---
         window.dodajPracownika = async function() {
             const imie = document.getElementById('new-p-imie').value.trim();
             const login = document.getElementById('new-p-login').value.trim();
@@ -1205,19 +1622,21 @@
             container.innerHTML = "Pobieranie listy...";
             try {
                 const snap = await getDocs(collection(db, "uzytkownicy"));
-                let table = `<table class="standard-table"><tr><th>Imię i nazwisko</th><th>Login</th><th>Rola</th><th>Umowa / Etat</th><th>Akcje</th></tr>`;
+                let table = `<div class="table-responsive"><table class="standard-table"><tr><th>Imię i nazwisko</th><th>Login</th><th>Rola</th><th>Umowa / Etat</th><th>Akcje</th></tr>`;
                 snap.forEach(d => {
                     const p = d.data(), id = d.id;
                     table += `<tr><td>${p.imie}</td><td>${p.login||'-'}</td><td>${p.rola}</td><td>${p.umowa} (${p.etat})</td><td><button onclick="pokazSzczegolyPracownika('${id}', '${p.imie}', '${p.login||''}', '${p.rola}', '${p.umowa}', '${p.etat}')" style="padding:4px 8px; font-size:0.8em; margin:0; background:#007bff;">Edytuj</button><button onclick="usunPracownika('${id}', '${p.imie}')" style="padding:4px 8px; font-size:0.8em; margin:0; background:#dc3545; margin-top:4px;">Usuń</button></td></tr>`;
                 });
-                container.innerHTML = table + `</table>`;
+                container.innerHTML = table + `</table></div>`;
             } catch (e) { container.innerHTML = "Błąd."; }
         }
 
         window.pokazSzczegolyPracownika = function(id, imie, login, rola, umowa, etat) {
             document.getElementById('edit-p-id').value = id;
+            document.getElementById('edit-p-uid').value = id;
             document.getElementById('edit-p-imie').value = imie;
             document.getElementById('edit-p-login').value = login;
+            document.getElementById('edit-p-nowe-haslo').value = "";
             document.getElementById('edit-p-rola').value = rola;
             document.getElementById('edit-p-umowa').value = umowa;
             toggleEtatPole('edit');
@@ -1235,6 +1654,7 @@
             const id = document.getElementById('edit-p-id').value;
             const imie = document.getElementById('edit-p-imie').value.trim();
             const login = document.getElementById('edit-p-login').value.trim();
+            const noweHasloAdmin = document.getElementById('edit-p-nowe-haslo').value;
             const rola = document.getElementById('edit-p-rola').value;
             const umowa = document.getElementById('edit-p-umowa').value;
             let etat = umowa === 'UoP' ? (document.getElementById('edit-p-etat').value === 'inny' ? document.getElementById('edit-p-etat-custom').value.trim() : document.getElementById('edit-p-etat').value) : "-";
@@ -1242,9 +1662,23 @@
             if (!imie) return alert("Imię nie może być puste!");
             try {
                 await setDoc(doc(db, "uzytkownicy", id), { imie, login, rola, umowa, etat }, { merge: true });
+                
+                if (noweHasloAdmin && noweHasloAdmin.trim().length > 0) {
+                    if (noweHasloAdmin.length < 6) return alert("Nowe hasło musi mieć co najmniej 6 znaków!");
+                    const currentUser = auth.currentUser;
+                    const targetEmail = `${login}@sp580.pl`;
+                    
+                    if (currentUser && currentUser.email === targetEmail) {
+                        await updatePassword(currentUser, noweHasloAdmin);
+                    } else {
+                        alert("⚠️ Informacja: Zmiana hasła dla innego konta wymaga ponownego zalogowania lub uprawnień Cloud Functions w Firebase. Dane profilu w bazie zostały zaktualizowane, ale aby zmienić hasło logowania tego konta bezpośrednio, zaloguj się na nie lub zaktualizuj je w konsoli Firebase Auth.");
+                    }
+                }
+
                 zamknijEdycjePracownika();
                 zaladujlistePracownikow();
-            } catch (e) { alert("Błąd zapisu."); }
+                alert("Zaktualizowano dane pracownika!");
+            } catch (e) { alert("Błąd zapisu: " + e.message); }
         }
 
         window.usunPracownika = async function(id, imie) {
@@ -1466,7 +1900,7 @@
                 const [rok, mies] = m.split('-').map(Number);
                 const dni = new Date(rok, mies, 0).getDate();
                 let sKawaI = 0, sKawaW = 0, sHdI = 0, sHdW = 0, sSklepW = 0;
-                let table = `<table class="month-table"><tr><th>Dzień</th><th>Sprzedawcy</th><th>Kawa (szt/zł)</th><th>HD (szt/zł)</th><th>Sklep (zł)</th></tr>`;
+                let table = `<div class="table-responsive"><table class="month-table"><tr><th>Dzień</th><th>Sprzedawcy</th><th>Kawa (szt/zł)</th><th>HD (szt/zł)</th><th>Sklep (zł)</th></tr>`;
 
                 for (let d = 1; d <= dni; d++) {
                     let ds = String(d).padStart(2, '0'), pd = `${m}-${ds}`, r = mapa[pd];
@@ -1479,19 +1913,23 @@
                         table += `<tr class="cleaning-row" onclick="przejdzDoDnia('${pd}')" style="color:#999;"><td><strong>${ds}</strong></td><td>-</td><td>-</td><td>-</td><td>-</td></tr>`;
                     }
                 }
-                table += `<tr class="sum-row"><td colspan="2">SUMA</td><td>${sKawaI} / ${sKawaW.toFixed(2)}</td><td>${sHdI} / ${sHdW.toFixed(2)}</td><td>${sSklepW.toFixed(2)}</td></tr></table>`;
+                table += `<tr class="sum-row"><td colspan="2">SUMA</td><td>${sKawaI} / ${sKawaW.toFixed(2)}</td><td>${sHdI} / ${sHdW.toFixed(2)}</td><td>${sSklepW.toFixed(2)}</td></tr></table></div>`;
                 container.innerHTML = table;
 
                 const czyAdmin = currentUserData && currentUserData.rola === 'admin';
                 const d68K = sKawaW - (plany.kawa*0.68), d68H = sHdW - (plany.hd*0.68), d68S = sSklepW - (plany.sklep*0.68);
                 const d100K = sKawaW - plany.kawa, d100H = sHdW - plany.hd, d100S = sSklepW - plany.sklep;
 
-                plansContainer.innerHTML = `<table class="month-table" style="margin-top:5px;">
-                    <tr><th>Wskaźnik</th><th>KAWA (zł)</th><th>HD (zł)</th><th>SKLEP (zł)</th></tr>
-                    <tr><td><strong>Plan kwotowy</strong></td><td><input type="number" step="0.01" id="input-plan-kawa" value="${plany.kawa||''}" ${czyAdmin?'':'readonly'} style="margin:0; text-align:center;"></td><td><input type="number" step="0.01" id="input-plan-hd" value="${plany.hd||''}" ${czyAdmin?'':'readonly'} style="margin:0; text-align:center;"></td><td><input type="number" step="0.01" id="input-plan-sklep" value="${plany.sklep||''}" ${czyAdmin?'':'readonly'} style="margin:0; text-align:center;"></td></tr>
-                    <tr><td><strong>Do 68%</strong></td><td class="${d68K>=0?'val-green':'val-red'}">${d68K.toFixed(2)} zł</td><td class="${d68H>=0?'val-green':'val-red'}">${d68H.toFixed(2)} zł</td><td class="${d68S>=0?'val-green':'val-red'}">${d68S.toFixed(2)} zł</td></tr>
-                    <tr><td><strong>Do 100%</strong></td><td class="${d100K>=0?'val-green':'val-red'}">${d100K.toFixed(2)} zł</td><td class="${d100H>=0?'val-green':'val-red'}">${d100H.toFixed(2)} zł</td><td class="${d100S>=0?'val-green':'val-red'}">${d100S.toFixed(2)} zł</td></tr>
-                </table>${czyAdmin?'<button onclick="zapiszPlanyMiesieczne()" style="background:#28a745; margin-top:10px;">💾 Zapisz plany</button>':''}`;
+                plansContainer.innerHTML = `
+                    <div class="table-responsive">
+                        <table class="standard-table" style="margin-top:5px;">
+                            <tr><th>Wskaźnik</th><th>KAWA (zł)</th><th>HD (zł)</th><th>SKLEP (zł)</th></tr>
+                            <tr><td><strong>Plan kwotowy</strong></td><td><input type="number" step="0.01" id="input-plan-kawa" value="${plany.kawa||''}" ${czyAdmin?'':'readonly'} style="margin:0; text-align:center;"></td><td><input type="number" step="0.01" id="input-plan-hd" value="${plany.hd||''}" ${czyAdmin?'':'readonly'} style="margin:0; text-align:center;"></td><td><input type="number" step="0.01" id="input-plan-sklep" value="${plany.sklep||''}" ${czyAdmin?'':'readonly'} style="margin:0; text-align:center;"></td></tr>
+                            <tr><td><strong>Do 68%</strong></td><td class="${d68K>=0?'val-green':'val-red'}">${d68K.toFixed(2)} zł</td><td class="${d68H>=0?'val-green':'val-red'}">${d68H.toFixed(2)} zł</td><td class="${d68S>=0?'val-green':'val-red'}">${d68S.toFixed(2)} zł</td></tr>
+                            <tr><td><strong>Do 100%</strong></td><td class="${d100K>=0?'val-green':'val-red'}">${d100K.toFixed(2)} zł</td><td class="${d100H>=0?'val-green':'val-red'}">${d100H.toFixed(2)} zł</td><td class="${d100S>=0?'val-green':'val-red'}">${d100S.toFixed(2)} zł</td></tr>
+                        </table>
+                    </div>${czyAdmin?'<button onclick="zapiszPlanyMiesieczne()" style="background:#28a745; margin-top:10px;">💾 Zapisz plany</button>':''}
+                `;
             } catch (e) { container.innerHTML = "Błąd tabeli."; }
         }
 
@@ -1502,7 +1940,7 @@
             if (user) {
                 loginScr.classList.add('hidden');
                 appScr.classList.remove('hidden');
-                window.location.hash = "#menu"; // Zawsze uruchamiaj stronę główną po zalogowaniu
+                window.location.hash = "#menu";
                 try {
                     const snap = await getDoc(doc(db, "uzytkownicy", user.uid));
                     if (snap.exists()) {
@@ -1510,7 +1948,12 @@
                         document.getElementById('user-name').innerText = currentUserData.imie;
                         let czyAdmin = currentUserData.rola === 'admin';
                         document.getElementById('role-container').innerHTML = czyAdmin ? `<span class="admin-badge">PANEL KIEROWNIKA</span>` : `<p>Rola: Pracownik</p>`;
-                        document.getElementById('tile-pracownicy').style.display = czyAdmin ? "flex" : "none";
+                        
+                        // Wyświetlanie kafelków administracyjnych
+                        document.querySelectorAll('.admin-only-tile').forEach(el => {
+                            el.style.display = czyAdmin ? "flex" : "none";
+                        });
+
                         sprawdzPowiadomieniaMisje(currentUserData.imie, czyAdmin);
                     }
                 } catch(e) { console.error(e); }
@@ -1526,4 +1969,3 @@
     </script>
 </body>
 </html>
-
