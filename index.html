@@ -19,6 +19,42 @@
             --base-font-size: 14px;
         }
 
+        [data-theme="light"] {
+            --bg-color: #f4f4f9;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --border-color: #ccc;
+            --input-bg: #ffffff;
+            --input-text: #333333;
+            --group-bg: #e9ecef;
+            --group-label: #495057;
+            --preview-bg: #fafafa;
+        }
+
+        [data-theme="warm-light"] {
+            --bg-color: #fcf8f2;
+            --card-bg: #ffffff;
+            --text-color: #4a3b32;
+            --border-color: #e3d3c2;
+            --input-bg: #fffdfa;
+            --input-text: #4a3b32;
+            --group-bg: #f4ece1;
+            --group-label: #6e5b4d;
+            --preview-bg: #f7f2eb;
+        }
+
+        [data-theme="mint-light"] {
+            --bg-color: #f0f7f4;
+            --card-bg: #ffffff;
+            --text-color: #2c3e35;
+            --border-color: #c7dcd0;
+            --input-bg: #f8fbfa;
+            --input-text: #2c3e35;
+            --group-bg: #e2ede7;
+            --group-label: #456353;
+            --preview-bg: #ebf4f0;
+        }
+
         [data-theme="dark"] {
             --bg-color: #121212;
             --card-bg: #1e1e1e;
@@ -29,6 +65,30 @@
             --group-bg: #2c2c2c;
             --group-label: #b0b0b0;
             --preview-bg: #252525;
+        }
+
+        [data-theme="midnight-blue"] {
+            --bg-color: #0d1b2a;
+            --card-bg: #1b263b;
+            --text-color: #e0e1dd;
+            --border-color: #415a77;
+            --input-bg: #22304a;
+            --input-text: #ffffff;
+            --group-bg: #162235;
+            --group-label: #8d99ae;
+            --preview-bg: #121d2d;
+        }
+
+        [data-theme="slate-dark"] {
+            --bg-color: #181c24;
+            --card-bg: #21262d;
+            --text-color: #c9d1d9;
+            --border-color: #30363d;
+            --input-bg: #111418;
+            --input-text: #f0f6fc;
+            --group-bg: #161b22;
+            --group-label: #8b949e;
+            --preview-bg: #111418;
         }
 
         [data-fontsize="small"] { --base-font-size: 12px; }
@@ -45,11 +105,25 @@
             width: 20px; height: 20px; margin: 0; padding: 0; vertical-align: middle; accent-color: #007bff; cursor: pointer; flex-shrink: 0;
         }
 
-        button { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid var(--border-color); border-radius: 4px; box-sizing: border-box; font-family: inherit; font-size: inherit; background: #007bff; color: white; border: none; font-weight: bold; cursor: pointer; }
-        button:hover { background: #0056b3; }
+        button, .ui-btn { 
+            width: 100%; 
+            padding: 10px; 
+            margin: 8px 0; 
+            border-radius: 6px; 
+            box-sizing: border-box; 
+            font-family: inherit; 
+            font-size: inherit; 
+            background: #007bff; 
+            color: white; 
+            border: 1px solid #0056b3; 
+            font-weight: bold; 
+            cursor: pointer; 
+            transition: background 0.2s, transform 0.1s;
+        }
+        button:hover, .ui-btn:hover { background: #0056b3; }
+        
         .hidden { display: none !important; }
         .error { color: red; font-size: 1em; margin-top: 5px; }
-        .admin-badge { background: #28a745; color: white; padding: 5px 10px; border-radius: 4px; display: inline-block; font-size: 0.85em; margin-bottom: 10px; }
         .report-box { background: var(--group-bg); padding: 12px; border-left: 4px solid #007bff; margin: 12px 0; font-size: 0.95em; border-radius: 4px; word-break: break-word; }
         .field-group { background: var(--group-bg); padding: 10px; border-radius: 4px; margin-bottom: 10px; }
         .field-group label { font-weight: bold; font-size: 0.9em; display: block; margin-bottom: 3px; color: var(--group-label); }
@@ -80,8 +154,115 @@
             background: #007bff;
         }
 
-        .tiles-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 20px 0; }
-        .tile { background: var(--card-bg); border: 2px solid #007bff; padding: 20px 10px; text-align: center; border-radius: 8px; font-weight: bold; color: #007bff; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.05); position: relative; display: flex; align-items: center; justify-content: center; min-height: 65px; box-sizing: border-box; }
+        .app-header-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+            gap: 10px;
+        }
+
+        .info-btn {
+            background: var(--group-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            font-size: 18px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            flex-shrink: 0;
+            margin: 0;
+            transition: 0.2s;
+        }
+        .info-btn:hover { background: #007bff; color: white; border-color: #007bff; }
+
+        .current-date-display {
+            font-size: 0.95em;
+            font-weight: bold;
+            color: var(--text-color);
+            text-align: center;
+            flex-grow: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .user-profile-container {
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .user-profile-btn {
+            background: var(--group-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 8px 16px;
+            font-size: 1em;
+            font-weight: bold;
+            color: var(--text-color);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: background 0.2s, border-color 0.2s;
+            width: auto;
+            margin: 0;
+        }
+        .user-profile-btn span { font-size: 1.2em; }
+
+        .user-profile-btn:hover {
+            background: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            right: 0;
+            top: 48px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            width: 230px;
+            padding: 12px;
+            z-index: 101;
+            box-sizing: border-box;
+        }
+
+        .dropdown-menu h5 {
+            margin: 0 0 10px 0;
+            padding-bottom: 6px;
+            border-bottom: 1px solid var(--border-color);
+            color: #007bff;
+        }
+
+        .tiles-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; }
+        .tile { 
+            background: var(--card-bg); 
+            border: 2px solid #007bff; 
+            padding: 20px 10px; 
+            text-align: center; 
+            border-radius: 8px; 
+            font-weight: bold; 
+            color: #007bff; 
+            cursor: pointer; 
+            transition: 0.2s; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
+            position: relative; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            min-height: 65px; 
+            box-sizing: border-box; 
+        }
         .tile:hover { background: #007bff; color: white; }
         .tile.disabled { border-color: var(--border-color); color: #aaa; cursor: not-allowed; background: var(--group-bg); }
         .tile.disabled:hover { background: var(--group-bg); color: #aaa; }
@@ -105,11 +286,6 @@
         .collapsible-header:hover { background: #0056b3; }
         .collapsible-content { display: none; margin-top: 10px; padding: 12px; background: var(--group-bg); border-radius: 6px; }
         .collapsible-content.open { display: block; }
-
-        .settings-icon-btn {
-            position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 22px; cursor: pointer; width: auto; padding: 5px; margin: 0; color: var(--text-color);
-        }
-        .settings-icon-btn:hover { color: #007bff; background: none; }
 
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); display: flex; justify-content: center; align-items: center; z-index: 1000; padding: 15px; box-sizing: border-box;
@@ -138,6 +314,35 @@
         .grafik-preview-box img { max-width: 100%; height: auto; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); cursor: pointer; }
         
         .request-item { background: var(--group-bg); border-left: 4px solid #ffc107; padding: 10px; margin-bottom: 10px; border-radius: 4px; font-size: 0.95em; text-align: left; word-break: break-word; }
+
+        .msg-item {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-left: 5px solid #007bff;
+            padding: 12px;
+            margin-bottom: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+            position: relative;
+        }
+        .msg-item:hover { background: var(--group-bg); }
+        .msg-item.unread { border-left-color: #dc3545; background: var(--preview-bg); font-weight: bold; }
+        .msg-item.important { border-left-color: #ffc107; }
+        .msg-status-tag { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 0.8em; margin-right: 5px; }
+        .msg-tab-btn {
+            background: var(--group-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            padding: 8px 12px;
+            border-radius: 4px 4px 0 0;
+            cursor: pointer;
+            font-weight: bold;
+            display: inline-block;
+            margin-right: 4px;
+            width: auto;
+        }
+        .msg-tab-btn.active { background: #007bff; color: white; border-color: #007bff; }
     </style>
 </head>
 <body>
@@ -147,43 +352,75 @@
         <h2>Logowanie do Sklepu</h2>
         <input type="text" id="login-input" placeholder="Login">
         <input type="password" id="password-input" placeholder="Hasło">
-        <button onclick="zaloguj()">Zaloguj się</button>
+        <button onclick="window.zaloguj()">Zaloguj się</button>
         <p id="error-msg" class="error"></p>
     </div>
 
     <!-- PANEL GŁÓWNY (KAFELKI) -->
     <div id="app-screen" class="card hidden" style="max-width: 950px;">
-        <button class="settings-icon-btn" onclick="otworzModalUstawienia()" title="Ustawienia systemu">⚙️</button>
-        <h2>Witaj, <span id="user-name"></span>!</h2>
-        <div id="role-container"></div>
         
-        <hr>
+        <div class="app-header-bar">
+            <button class="info-btn" onclick="window.otworzModalInfo()" title="Informacje o aplikacji">i</button>
+            <div class="current-date-display" id="header-current-date">Ładowanie daty...</div>
+            
+            <div class="user-profile-container">
+                <button class="user-profile-btn" id="user-profile-btn" onclick="window.toggleDropdownMenu(event)">
+                    <span>👤</span> <span id="profile-btn-label">Zaloguj</span>
+                </button>
+                <div id="user-dropdown-menu" class="dropdown-menu hidden" onclick="event.stopPropagation()">
+                    <h5>⚙️ Ustawienia konta</h5>
+                    
+                    <label for="wybor-motywu-dd" style="font-size:0.85em; font-weight:bold; display:block;">Motyw:</label>
+                    <select id="wybor-motywu-dd" onchange="window.zmienMotyw(this.value)">
+                        <optgroup label="Jasne motywy">
+                            <option value="light">Jasny (Standardowy)</option>
+                            <option value="warm-light">Beżowy (Ciepły)</option>
+                            <option value="mint-light">Miętowy (Pastelowy)</option>
+                        </optgroup>
+                        <optgroup label="Ciemne motywy">
+                            <option value="dark">Ciemny (Standardowy)</option>
+                            <option value="midnight-blue">Niebieski (Midnight)</option>
+                            <option value="slate-dark">Szary (Slate)</option>
+                        </optgroup>
+                    </select>
+
+                    <label for="wybor-czcionki-dd" style="font-size:0.85em; font-weight:bold; margin-top:8px; display:block;">Czcionka:</label>
+                    <select id="wybor-czcionki-dd" onchange="window.zmienCzcionke(this.value)">
+                        <option value="small">Mała</option>
+                        <option value="normal">Standardowa</option>
+                        <option value="large">Duża</option>
+                        <option value="xlarge">Bardzo duża</option>
+                    </select>
+
+                    <hr style="margin: 12px 0; border: 0; border-top: 1px solid var(--border-color);">
+                    <button onclick="window.otworzModalZmianyHasla(); window.zamknijDropdownMenu();" style="background: #17a2b8; margin: 0 0 8px 0; padding: 8px; font-size: 0.85em;">🔑 Zmień hasło</button>
+                    <button onclick="window.wyloguj(); window.zamknijDropdownMenu();" style="background: #dc3545; margin: 0; padding: 8px; font-size: 0.85em;">🚪 Wyloguj się</button>
+                </div>
+            </div>
+        </div>
 
         <div id="menu-tiles">
-            <h3>Wybierz moduł:</h3>
             <div class="tiles-grid">
-                <!-- Rząd 1 -->
-                <div class="tile" onclick="otworzModul('sprzedaz')">📊 Sprzedaż</div>
+                <div class="tile" onclick="window.otworzModul('sprzedaz')">📊 Sprzedaż</div>
                 <div class="tile" style="opacity: 0.6; cursor: not-allowed;">💰 Premia</div>
 
-                <!-- Rząd 2 -->
-                <div class="tile" onclick="otworzModul('sprzatanie')">🧹 Sprzątanie i Kontrola Półek</div>
-                <div class="tile" onclick="otworzModul('planogram')">📋 Planogramy</div>
+                <div class="tile" onclick="window.otworzModul('sprzatanie')">🧹 Sprzątanie i Kontrola Półek</div>
+                <div class="tile" onclick="window.otworzModul('planogram')">📋 Planogramy</div>
 
-                <!-- Rząd 3 -->
-                <div class="tile" onclick="otworzModul('misje')" style="border-color: #17a2b8; color: #17a2b8; background: #e8f4fd;">
+                <div class="tile" onclick="window.otworzModul('misje')" style="border-color: #17a2b8; color: #17a2b8; background: var(--group-bg);">
                     🎯 Misje
                     <span id="misje-badge" class="notification-badge hidden">0</span>
                 </div>
-                <div class="tile" onclick="otworzModul('grafik')">📅 Grafik</div>
+                <div class="tile" onclick="window.otworzModul('grafik')">📅 Grafik</div>
 
-                <!-- Rząd 4 -->
-                <div class="tile" style="opacity: 0.6; cursor: not-allowed;">💬 Wiadomości</div>
+                <div class="tile" onclick="window.otworzModul('wiadomosci')" style="border-color: #007bff; color: #007bff; background: var(--group-bg);">
+                    💬 Wiadomości
+                    <span id="wiadomosci-badge" class="notification-badge hidden">0</span>
+                </div>
                 <div class="tile" style="opacity: 0.4; cursor: not-allowed; border-style: dashed;">➕ Pusty kafelek</div>
 
-                <!-- Rzędy dodatkowe dla Admina (wyświetlane dynamicznie) -->
-                <div class="tile admin-only-tile" onclick="otworzModul('pracownicy')" id="tile-pracownicy" style="border-color: #28a745; color: #28a745; background: #e8f9ed; display: none;">👥 Panel pracowników</div>
-                <div class="tile admin-only-tile" onclick="otworzModul('statystyki')" id="tile-statystyki" style="border-color: #28a745; color: #28a745; background: #e8f9ed; display: none;">📊 Statystyki</div>
+                <div class="tile admin-only-tile" onclick="window.otworzModul('pracownicy')" id="tile-pracownicy" style="border-color: #28a745; color: #28a745; display: none;">👥 Panel pracowników</div>
+                <div class="tile admin-only-tile" onclick="window.otworzModul('statystyki')" id="tile-statystyki" style="border-color: #28a745; color: #28a745; display: none;">📊 Statystyki</div>
             </div>
         </div>
         
@@ -192,11 +429,10 @@
             <div id="view-monthly">
                 <h3>📊 Podsumowanie Miesięczne Sprzedaży</h3>
                 <label for="wybrany-miesiac">Wybierz miesiąc:</label>
-                <input type="month" id="wybrany-miesiac" onchange="zaladujMiesiacTabela()">
+                <input type="month" id="wybrany-miesiac" onchange="window.zaladujMiesiacTabela()">
                 
-                <!-- ANALIZA PLANÓW (ROZWIJANA) -->
                 <div style="margin-top: 15px;">
-                    <div class="collapsible-header" onclick="toggleCollapsible('plans-content', 'plans-arrow')">
+                    <div class="collapsible-header" onclick="window.toggleCollapsible('plans-content', 'plans-arrow')">
                         <span>🎯 Analiza Planów Miesięcznych</span>
                         <span id="plans-arrow">▼ Rozwiń</span>
                     </div>
@@ -218,7 +454,7 @@
                 <h3 id="daily-title">Raport Dzienny</h3>
                 
                 <label for="raport-data">Data raportu:</label>
-                <input type="date" id="raport-data" onchange="zmienDateWFormularzu()">
+                <input type="date" id="raport-data" onchange="window.zmienDateWFormularzu()">
 
                 <div class="field-group">
                     <label>👥 Sprzedawca / Pracownicy odpowiedzialni za wynik (Zaznacz min. 1):</label>
@@ -244,23 +480,103 @@
                     <input type="number" step="0.01" id="sklep-wartosc" placeholder="Wartość całkowita (zł)">
                 </div>
 
-                <button onclick="zapiszSprzedaz()" id="btn-zapisz-raport">Zapisz / Aktualizuj Raport</button>
+                <button onclick="window.zapiszSprzedaz()" id="btn-zapisz-raport">Zapisz / Aktualizuj Raport</button>
             </div>
         </div>
 
-        <!-- MODUŁ STATYSTYKY I ZARZĄDZANIE DANYMI (TYLKO ADMIN) -->
+        <!-- MODUŁ WIADOMOŚCI -->
+        <div id="modul-wiadomosci" class="hidden">
+            <h3>💬 Wewnętrzna Poczta / Wiadomości</h3>
+            
+            <div style="margin-bottom: 15px;">
+                <button onclick="window.otworzFormularzNowejWiadomosci()" style="background: #28a745; margin: 0 0 10px 0;">✉️ Napisz nową wiadomość</button>
+                
+                <div style="border-bottom: 2px solid var(--border-color); margin-top: 10px;">
+                    <button class="msg-tab-btn active" id="tab-odebrane" onclick="window.przelaczTabWiadomosci('odebrane')">📥 Odebrane</button>
+                    <button class="msg-tab-btn" id="tab-wyslane" onclick="window.przelaczTabWiadomosci('wyslane')">📤 Wysłane</button>
+                    <button class="msg-tab-btn hidden" id="tab-wszystkie" onclick="window.przelaczTabWiadomosci('wszystkie')">🌐 Wszystkie (Panel Admina)</button>
+                </div>
+            </div>
+
+            <div id="wiadomosci-lista-container">Ładowanie wiadomości...</div>
+        </div>
+
+        <!-- MODAL NOWEJ WIADOMOŚCI / ODPOWIEDZI -->
+        <div id="modal-nowa-wiadomosc" class="modal-overlay hidden">
+            <div class="modal-content" style="border: 2px solid #007bff; max-width: 600px;">
+                <h4 style="margin-top:0; color:#007bff;" id="modal-msg-tytul">✉️ Nowa Wiadomość</h4>
+                
+                <div class="field-group">
+                    <label>👥 Odbiorcy (Zaznacz adresatów):</label>
+                    <div id="msg-odbiorcy-checkboxes" style="max-height: 140px; overflow-y: auto; background: var(--card-bg); padding: 8px; border: 1px solid var(--border-color); border-radius: 4px;">
+                        Ładowanie adresatów...
+                    </div>
+                </div>
+
+                <label>Treść wiadomości:</label>
+                <textarea id="msg-tresc-input" rows="4" placeholder="Wpisz treść wiadomości..."></textarea>
+
+                <label>Załącz zdjęcie (opcjonalnie):</label>
+                <input type="file" id="msg-zdjecie-input" accept="image/*" style="padding: 6px;">
+                <div id="msg-zdjecie-preview" style="margin-top: 5px; text-align: center;"></div>
+
+                <div class="field-group" style="margin-top: 10px; background: var(--preview-bg);">
+                    <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+                        <input type="checkbox" id="msg-wazne-checkbox">
+                        <span><strong>⭐ Oznacz jako ważne (Wysoki priorytet)</strong></span>
+                    </label>
+                    <span style="font-size:0.8em; color:#6c757d; display:block; margin-top:3px;">Wiadomość z ważnym priorytetem wyróżni się na liście odbiorców.</span>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-top: 15px;">
+                    <button onclick="window.wyslijWiadomosc()" style="background: #28a745; margin:0;">📤 Wyślij wiadomość</button>
+                    <button onclick="window.zamknijModalNowejWiadomosci()" style="background: #6c757d; margin:0;">Anuluj</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL PODGLĄDU WIADOMOŚCI -->
+        <div id="modal-podglad-wiadomosci" class="modal-overlay hidden">
+            <div class="modal-content" style="border: 2px solid #17a2b8; max-width: 650px;">
+                <h4 style="margin-top:0; color:#17a2b8;">📩 Szczegóły Wiadomości</h4>
+                <input type="hidden" id="podglad-msg-id">
+                
+                <div id="podglad-msg-naglowek" class="field-group"></div>
+                
+                <div class="field-group" style="background: var(--card-bg); border: 1px solid var(--border-color);">
+                    <label>Treść wiadomości:</label>
+                    <p id="podglad-msg-tresc" style="white-space: pre-wrap; margin: 5px 0; font-size: 1em;"></p>
+                </div>
+
+                <div id="podglad-msg-zdjecie-container" style="text-align: center; margin-top: 10px;"></div>
+
+                <div class="field-group" style="margin-top: 15px;">
+                    <label>👥 Statusy odbiorców:</label>
+                    <div id="podglad-msg-odbiorcy-statusy" style="font-size: 0.9em;"></div>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 20px;">
+                    <div style="display: flex; gap: 10px;">
+                        <button onclick="window.otworzOdpowiedzWiadomosc()" style="background: #007bff; margin:0;">↩️ Odpowiedz</button>
+                        <button id="btn-usun-wiadomosc-admin" onclick="window.usunWiadomoscPrzezAdmina()" style="background: #dc3545; margin:0; display:none;">🗑️ Usuń wiadomość</button>
+                    </div>
+                    <button onclick="window.zamknijModalPodgladuWiadomosci()" style="background: #6c757d; margin:0;">Zamknij</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODUŁ STATYSTYKI -->
         <div id="modul-statystyki" class="hidden">
             <h3>📊 Dane i Statystyki Systemu</h3>
             <p style="color: #6c757d; font-size: 0.9em;">Generuj zaawansowane raporty i analizuj wyniki zespołu.</p>
 
             <div class="field-group">
                 <h4>📈 Generowanie raportów statystycznych</h4>
-                <button onclick="pokazOpcjeStatystyk()" style="background: #17a2b8; margin-top:5px;">Generuj / Odśwież statystyki</button>
+                <button onclick="window.pokazOpcjeStatystyk()" style="background: #17a2b8; margin-top:5px;">Generuj / Odśwież statystyki</button>
                 
-                <!-- Opcje wyboru statystyk -->
                 <div id="statystyki-opcje-panel" class="hidden" style="margin-top: 15px; padding: 12px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 6px;">
                     <label><strong>Wybierz zakres czasu:</strong></label>
-                    <select id="stats-okres-typ" onchange="toggleStatsCustomDates()">
+                    <select id="stats-okres-typ" onchange="window.toggleStatsCustomDates()">
                         <option value="biezacy">Bieżący miesiąc</option>
                         <option value="poprzedni">Poprzedni miesiąc</option>
                         <option value="30dni">Ostatnie 30 dni</option>
@@ -282,26 +598,25 @@
                     <div style="display: grid; grid-template-columns: 1fr; gap: 6px; margin-top: 5px;">
                         <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="chk-stat-sprzedaz-ogolna" checked> Sprzedaż łącznie, średnia dzienna oraz Najlepszy/Najgorszy dzień</label>
                         <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="chk-stat-sprzedaz-pracownicy" checked> Sprzedaż w podziale na pracowników (proporcjonalnie wg liczby osób)</label>
-                        <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="chk-stat-plany" checked> Realizacja planów sprzedażowych (ogólnie i proporcjonalnie do dzisiaj)</label>
+                        <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="chk-stat-plany" checked> Realizacja planów sprzedażowych (ogólnie i proporcjonalnie do ostatniego raportu)</label>
                         <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="chk-stat-sprzatanie" checked> Sprzątanie: wykonane, niewykonane, usunięte/cofnięte oraz udział pracowników</label>
                     </div>
 
-                    <button onclick="przeliczIWygenerujStatystyki()" style="background: #28a745; margin-top: 15px;">📊 Oblicz i pokaż raport</button>
+                    <button onclick="window.przeliczIWygenerujStatystyki()" style="background: #28a745; margin-top: 15px;">📊 Oblicz i pokaż raport</button>
                 </div>
 
                 <div id="statystyki-wynik-box" style="margin-top: 15px;">Kliknij przycisk powyżej, aby skonfigurować i wygenerować raport.</div>
             </div>
 
-            <!-- ROZWIJANY MODUŁ CZYSZCZENIA DANYCH -->
             <div style="margin-top: 20px;">
-                <div class="collapsible-header" onclick="toggleCollapsible('cleanup-content', 'cleanup-arrow')" style="background: #dc3545;">
+                <div class="collapsible-header" onclick="window.toggleCollapsible('cleanup-content', 'cleanup-arrow')" style="background: #dc3545;">
                     <span>🗑️ Czyszczenie archiwum danych serwera</span>
                     <span id="cleanup-arrow">▼ Rozwiń</span>
                 </div>
                 <div id="cleanup-content" class="collapsible-content" style="border: 2px dashed #dc3545; background: var(--card-bg);">
                     <p style="font-size: 0.85em; color: #dc3545; margin-top: 0;">Usuwanie archiwalnych danych pozwala zwolnić miejsce na serwerze i przyspieszyć działanie aplikacji.</p>
                     <label>Usuń wszystkie dane starsze niż:</label>
-                    <select id="cleanup-zakres" onchange="toggleCleanupCustomDate()">
+                    <select id="cleanup-zakres" onchange="window.toggleCleanupCustomDate()">
                         <option value="6">6 miesięcy</option>
                         <option value="12">12 miesięcy</option>
                         <option value="24">24 miesięcy</option>
@@ -313,7 +628,7 @@
                         <input type="date" id="cleanup-custom-date">
                     </div>
 
-                    <button onclick="uruchomProcedureUsuwaniaDanych()" style="background: #dc3545; margin-top: 15px;">⚠️ Wykonaj procedurę usuwania danych</button>
+                    <button onclick="window.uruchomProcedureUsuwaniaDanych()" style="background: #dc3545; margin-top: 15px;">⚠️ Wykonaj procedurę usuwania danych</button>
                 </div>
             </div>
         </div>
@@ -323,7 +638,7 @@
             <h3>🎯 Misje i Zadania Indywidualne</h3>
             
             <div id="admin-misje-wrapper" class="hidden" style="margin-bottom: 20px;">
-                <div class="collapsible-header" onclick="toggleCollapsible('admin-misje-content', 'admin-misje-arrow')" style="background: #28a745;">
+                <div class="collapsible-header" onclick="window.toggleCollapsible('admin-misje-content', 'admin-misje-arrow')" style="background: #28a745;">
                     <span>⚙️ Panel Admina: Wyznacz nowe zadanie</span>
                     <span id="admin-misje-arrow">▼ Rozwiń</span>
                 </div>
@@ -339,7 +654,7 @@
                     <label>Do kiedy:</label>
                     <input type="date" id="misja-termin">
 
-                    <button onclick="dodajMisje()" style="background: #28a745; margin-top:5px;">➕ Utwórz i wyślij misję</button>
+                    <button onclick="window.dodajMisje()" style="background: #28a745; margin-top:5px;">➕ Utwórz i wyślij misję</button>
                 </div>
             </div>
 
@@ -347,7 +662,7 @@
             <div id="misje-lista-container">Ładowanie misji...</div>
         </div>
 
-        <!-- MODAL SZCZEGÓŁÓW/EDYCJI MISJI (UNIWERSALNY DLA PRACOWNIKA I ADMINA) -->
+        <!-- MODAL MISJI -->
         <div id="modal-uniwersalna-misja" class="modal-overlay hidden">
             <div class="modal-content" style="border: 2px solid #17a2b8; max-width: 500px;">
                 <h4 style="margin-top:0; color:#17a2b8;" id="modal-misja-tytul">🎯 Szczegóły Zadania</h4>
@@ -391,9 +706,9 @@
                 <textarea id="m-edit-misja-uwagi" rows="3" placeholder="Wpisz uwagi lub komentarz do zadania..."></textarea>
 
                 <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 15px;">
-                    <button onclick="zapiszUniwersalnaMisja()" style="background: #28a745; margin:0;">💾 Zapisz zmiany</button>
-                    <button id="btn-usun-misja-admin" onclick="usunMisjeZModala()" style="background: #dc3545; margin:0; display:none;">🗑️ Usuń to zadanie</button>
-                    <button onclick="zamknijModalUniwersalnaMisja()" style="background: #6c757d; margin:0;">Zamknij</button>
+                    <button onclick="window.zapiszUniwersalnaMisja()" style="background: #28a745; margin:0;">💾 Zapisz zmiany</button>
+                    <button id="btn-usun-misja-admin" onclick="window.usunMisjeZModala()" style="background: #dc3545; margin:0; display:none;">🗑️ Usuń to zadanie</button>
+                    <button onclick="window.zamknijModalUniwersalnaMisja()" style="background: #6c757d; margin:0;">Zamknij</button>
                 </div>
             </div>
         </div>
@@ -404,10 +719,9 @@
             
             <div style="margin-bottom: 15px;">
                 <label for="grafik-miesiac">Wybierz miesiąc:</label>
-                <input type="month" id="grafik-miesiac" onchange="zaladujGrafikObrazkowy()">
+                <input type="month" id="grafik-miesiac" onchange="window.zaladujGrafikObrazkowy()">
             </div>
 
-            <!-- Panel Kierownika -->
             <div id="admin-grafik-panel" class="field-group hidden">
                 <h4>⚙️ Panel Kierownika: Zarządzaj Grafikiem</h4>
                 
@@ -415,23 +729,21 @@
                 <input type="file" id="grafik-file-input" accept="image/*" style="padding:8px;">
 
                 <div style="display: flex; gap: 10px; margin-top: 5px;">
-                    <button onclick="zapiszGrafikObrazkowy()" style="background: #28a745; margin:0;">📤 Opublikuj / Nadpisz Grafik</button>
-                    <button onclick="usunGrafikObrazkowy()" style="background: #dc3545; margin:0;">🗑️ Usuń Grafik</button>
+                    <button onclick="window.zapiszGrafikObrazkowy()" style="background: #28a745; margin:0;">📤 Opublikuj / Nadpisz Grafik</button>
+                    <button onclick="window.usunGrafikObrazkowy()" style="background: #dc3545; margin:0;">🗑️ Usuń Grafik</button>
                 </div>
             </div>
 
-            <!-- Podgląd grafiku -->
             <div class="grafik-preview-box" id="grafik-preview-container">
                 <p>Brak opublikowanego grafiku dla tego miesiąca.</p>
             </div>
 
             <hr style="margin: 25px 0;">
 
-            <!-- Sekcja próśb o zmiany -->
             <h4>💬 Prośby i Uwagi dot. Zmian</h4>
             <div class="field-group">
                 <textarea id="nowa-prosba-tekst" rows="3" placeholder="Wpisz swoją prośbę o zmianę (np. Proszę o wolne 15 września, zamienię się z...)"></textarea>
-                <button onclick="wyslijProsbe()" style="background: #17a2b8; margin-top:5px;">Wyślij prośbę o zmianę</button>
+                <button onclick="window.wyslijProsbe()" style="background: #17a2b8; margin-top:5px;">Wyślij prośbę o zmianę</button>
             </div>
 
             <div id="prośby-lista-container">Ładowanie próśb...</div>
@@ -445,7 +757,7 @@
                 <h4 style="margin-top:0; color:#007bff;">⚙️ Panel Admina: Zarządzaj listą półek/stref</h4>
                 <div style="display: flex; gap: 10px;">
                     <input type="text" id="nowa-polka-nazwa" placeholder="Nazwa nowej półki / strefy (np. Strefa Nowości)" style="margin:0;">
-                    <button onclick="dodajNowaPolkeDoListy()" style="background: #28a745; margin:0; width: auto; white-space: nowrap;">➕ Dodaj półkę</button>
+                    <button onclick="window.dodajNowaPolkeDoListy()" style="background: #28a745; margin:0; width: auto; white-space: nowrap;">➕ Dodaj półkę</button>
                 </div>
             </div>
 
@@ -453,7 +765,7 @@
             <div id="planogramy-lista-container">Ładowanie listy półek...</div>
         </div>
 
-        <!-- MODAL SZCZEGÓŁÓW PLANOGRAMU (DLA PÓŁKI) -->
+        <!-- MODAL PLANOGRAMU -->
         <div id="modal-planogram-szczegoly" class="modal-overlay hidden">
             <div class="modal-content" style="border: 2px solid #007bff; max-width: 650px;">
                 <h4 id="modal-planogram-tytul" style="margin-top:0; color:#007bff;">Planogram</h4>
@@ -464,28 +776,28 @@
                     <label style="font-size: 0.85em;">Wybierz jedno lub więcej zdjęć (możesz zaznaczyć kilka naraz):</label>
                     <input type="file" id="admin-planogram-file" accept="image/*" multiple style="padding: 6px;">
                     <div style="margin-top: 5px;">
-                        <button onclick="dodajZdjeciaDoPlanogramu()" style="background: #28a745; margin: 0;">➕ Dodaj wybrane zdjęcia do galerii</button>
+                        <button onclick="window.dodajZdjeciaDoPlanogramu()" style="background: #28a745; margin: 0;">➕ Dodaj wybrane zdjęcia do galerii</button>
                     </div>
                 </div>
 
                 <div style="margin-top: 20px;">
-                    <button onclick="zamknijModalPlanogramu()" style="background: #6c757d; margin:0;">Zamknij</button>
+                    <button onclick="window.zamknijModalPlanogramu()" style="background: #6c757d; margin:0;">Zamknij</button>
                 </div>
             </div>
         </div>
 
-        <!-- MODUŁ SPRZĄTANIE / KONTROLA PÓŁEK -->
+        <!-- MODUŁ SPRZĄTANIE -->
         <div id="modul-sprzatanie" class="hidden">
             <h3>🧹 Kontrola Półek i Czystości</h3>
             
             <div class="field-group" style="display: flex; gap: 10px; align-items: flex-end;">
                 <div style="flex: 1;">
                     <label for="sprzatanie-miesiac">Wybierz miesiąc:</label>
-                    <input type="month" id="sprzatanie-miesiac" onchange="zaladujSprzatanie()">
+                    <input type="month" id="sprzatanie-miesiac" onchange="window.zaladujSprzatanie()">
                 </div>
                 <div style="flex: 1;">
                     <label for="sprzatanie-okres">Okres:</label>
-                    <select id="sprzatanie-okres" onchange="zaladujSprzatanie()">
+                    <select id="sprzatanie-okres" onchange="window.zaladujSprzatanie()">
                         <option value="1-15">Od 1 do 15 dnia miesiąca</option>
                         <option value="16-koniec">Od 16 do końca miesiąca</option>
                     </select>
@@ -496,7 +808,7 @@
             <div id="sprzatanie-container">Ładowanie listy...</div>
         </div>
 
-        <!-- MODAL SZCZEGÓŁÓW PÓŁKI -->
+        <!-- MODAL PÓŁKI -->
         <div id="modal-polka" class="modal-overlay hidden">
             <div class="modal-content" style="border: 2px solid #007bff;">
                 <h4 id="modal-polka-tytuł" style="margin-top:0; color:#007bff;">Szczegóły Półki</h4>
@@ -522,47 +834,18 @@
                 <div id="m-zdjecie-preview" style="margin-top: 10px; text-align: center;"></div>
 
                 <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 20px;" id="modal-buttons-container">
-                    <button onclick="zapiszSzczegolyPolki()" style="background: #28a745; margin:0;" id="btn-zapisz-polka">💾 Zapisz</button>
-                    <button onclick="usunPotwierdzeniePolki()" style="background: #dc3545; margin:0; display:none;" id="btn-usun-polka">🗑️ Usuń potwierdzenie (Reset półki)</button>
-                    <button onclick="zamknijModalPolki()" style="background: #6c757d; margin:0;">Zamknij / Powrót</button>
+                    <button onclick="window.zapiszSzczegolyPolki()" style="background: #28a745; margin:0;" id="btn-zapisz-polka">💾 Zapisz</button>
+                    <button onclick="window.usunPotwierdzeniePolki()" style="background: #dc3545; margin:0; display:none;" id="btn-usun-polka">🗑️ Usuń potwierdzenie (Reset półki)</button>
+                    <button onclick="window.zamknijModalPolki()" style="background: #6c757d; margin:0;">Zamknij / Powrót</button>
                 </div>
             </div>
         </div>
 
-        <!-- MODAL PEŁNOEKRANOWY ZDJĘCIA Z ZOOMEM -->
+        <!-- MODAL ZOOM ZDJĘCIA -->
         <div id="modal-zoom-zdjecia" class="modal-image-overlay hidden">
-            <button class="close-zoom-btn" onclick="zamknijZoomZdjecia()">✕</button>
+            <button class="close-zoom-btn" onclick="window.zamknijZoomZdjecia()">✕</button>
             <div class="zoomable-image-container" id="zoom-container">
                 <img id="zoom-image-element" src="" alt="Powiększone zdjęcie">
-            </div>
-        </div>
-
-        <!-- MODAL USTAWIEN WYGLĄDU I HASŁA -->
-        <div id="modal-ustawienia" class="modal-overlay hidden">
-            <div class="modal-content" style="border: 2px solid #007bff;">
-                <h4 style="margin-top:0; color:#007bff;">⚙️ Ustawienia Systemu</h4>
-                
-                <label for="wybor-motywu" style="font-weight:bold; margin-top:10px; display:block;">Motyw:</label>
-                <select id="wybor-motywu" onchange="zmienMotyw(this.value)">
-                    <option value="light">Jasny</option>
-                    <option value="dark">Ciemny</option>
-                </select>
-
-                <label for="wybor-czcionki" style="font-weight:bold; margin-top:15px; display:block;">Wielkość czcionki:</label>
-                <select id="wybor-czcionki" onchange="zmienCzcionke(this.value)">
-                    <option value="small">Mała</option>
-                    <option value="normal">Standardowa</option>
-                    <option value="large">Duża</option>
-                    <option value="xlarge">Bardzo duża</option>
-                </select>
-
-                <hr style="margin: 20px 0; border: 0; border-top: 1px solid var(--border-color);">
-                <button onclick="otworzModalZmianyHasla()" style="background: #17a2b8; margin: 0 0 10px 0;">🔑 Zmień hasło do konta</button>
-                <button onclick="wyloguj()" style="background: #dc3545; margin: 0;">🚪 Wyloguj się z systemu</button>
-
-                <div style="margin-top: 20px;">
-                    <button onclick="zamknijModalUstawienia()" style="background: #6c757d; margin:0;">Zamknij</button>
-                </div>
             </div>
         </div>
 
@@ -580,11 +863,32 @@
                 <label style="font-size:0.9em;">Powtórz nowe hasło:</label>
                 <input type="password" id="nowe-haslo-2" placeholder="Wpisz ponownie nowe hasło">
                 
-                <button onclick="zmienWlasneHasloPotwierdz()" style="background: #28a745; margin-top: 10px;">Zapisz nowe hasło</button>
+                <button onclick="window.zmienWlasneHasloPotwierdz()" style="background: #28a745; margin-top: 10px;">Zapisz nowe hasło</button>
                 <p id="haslo-msg" class="error" style="font-size: 0.9em; text-align: center;"></p>
 
                 <div style="margin-top: 15px;">
-                    <button onclick="zamknijModalZmianyHasla()" style="background: #6c757d; margin:0;">Anuluj</button>
+                    <button onclick="window.zamknijModalZmianyHasla()" style="background: #6c757d; margin:0;">Anuluj</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL INFO -->
+        <div id="modal-info-app" class="modal-overlay hidden" style="z-index: 1500;">
+            <div class="modal-content" style="border: 2px solid #007bff; max-width: 500px;">
+                <h4 style="margin-top:0; color:#007bff;">ℹ️ Instrukcja i obsługa aplikacji</h4>
+                <p style="font-size: 0.9em; line-height: 1.5;">
+                    Witamy w systemie obsługi sklepu. Poniżej znajdziesz krótkie podsumowanie głównych modułów:
+                </p>
+                <ul style="font-size: 0.9em; line-height: 1.5; padding-left: 20px;">
+                    <li><strong>📊 Sprzedaż:</strong> Wprowadzanie raportów dziennych oraz podgląd miesięczny i analiza planów.</li>
+                    <li><strong>🧹 Sprzątanie i Kontrola Półek:</strong> Weryfikacja czystości, dat ważności i zgodności z planogramem.</li>
+                    <li><strong>📋 Planogramy:</strong> Podgląd ułożenia towaru na poszczególnych strefach i półkach.</li>
+                    <li><strong>🎯 Misje:</strong> Indywidualne zadania przypisywane przez kierownika.</li>
+                    <li><strong>💬 Wiadomości:</strong> Wewnętrzna poczta e-mail z obsługą priorytetów i załącznikami.</li>
+                    <li><strong>📅 Grafik:</strong> Podgląd grafiku miesięcznego oraz wysyłanie próśb o zmiany.</li>
+                </ul>
+                <div style="margin-top: 20px;">
+                    <button onclick="window.zamknijModalInfo()" style="background: #6c757d; margin:0;">Rozumiem</button>
                 </div>
             </div>
         </div>
@@ -593,9 +897,8 @@
         <div id="modul-pracownicy" class="hidden">
             <h3>👥 Panel Zarządzania Pracownikami</h3>
             
-            <!-- Zwijany formularz dodawania pracownika -->
             <div style="margin-bottom: 20px;">
-                <div class="collapsible-header" onclick="toggleCollapsible('add-pracownik-content', 'add-pracownik-arrow')" style="background: #28a745;">
+                <div class="collapsible-header" onclick="window.toggleCollapsible('add-pracownik-content', 'add-pracownik-arrow')" style="background: #28a745;">
                     <span>➕ Dodaj nowego pracownika</span>
                     <span id="add-pracownik-arrow">▼ Rozwiń</span>
                 </div>
@@ -607,13 +910,13 @@
                         <option value="pracownik">Pracownik</option>
                         <option value="admin">Administrator (Kierownik)</option>
                     </select>
-                    <select id="new-p-umowa" onchange="toggleEtatPole('new')">
+                    <select id="new-p-umowa" onchange="window.toggleEtatPole('new')">
                         <option value="UoP">Umowa o pracę (UoP)</option>
                         <option value="Zlecenie">Umowa Zlecenie</option>
                     </select>
                     <div id="new-etat-box">
                         <label style="font-size:0.9em; margin-top:5px;">Wymiar etatu:</label>
-                        <select id="new-p-etat" onchange="checkEtatCustom('new')">
+                        <select id="new-p-etat" onchange="window.checkEtatCustom('new')">
                             <option value="1/1">1/1 (Pełny etat)</option>
                             <option value="3/4">3/4 etatu</option>
                             <option value="1/2">1/2 etatu</option>
@@ -622,7 +925,7 @@
                         </select>
                         <input type="text" id="new-p-etat-custom" class="hidden" placeholder="Wpisz etat np. 3/5" style="margin-top:4px;">
                     </div>
-                    <button onclick="dodajPracownika()" style="background: #28a745; margin-top:10px;">Dodaj pracownika w systemie</button>
+                    <button onclick="window.dodajPracownika()" style="background: #28a745; margin-top:10px;">Dodaj pracownika w systemie</button>
                 </div>
             </div>
 
@@ -655,14 +958,14 @@
                 </select>
                 
                 <label>Forma zatrudnienia:</label>
-                <select id="edit-p-umowa" onchange="toggleEtatPole('edit')">
+                <select id="edit-p-umowa" onchange="window.toggleEtatPole('edit')">
                     <option value="UoP">Umowa o pracę (UoP)</option>
                     <option value="Zlecenie">Umowa Zlecenie</option>
                 </select>
                 
                 <div id="edit-etat-box">
                     <label style="font-size:0.9em; margin-top:5px;">Wymiar etatu:</label>
-                    <select id="edit-p-etat" onchange="checkEtatCustom('edit')">
+                    <select id="edit-p-etat" onchange="window.checkEtatCustom('edit')">
                         <option value="1/1">1/1 (Pełny etat)</option>
                         <option value="3/4">3/4 etatu</option>
                         <option value="1/2">1/2 etatu</option>
@@ -673,8 +976,8 @@
                 </div>
                 
                 <div style="display: flex; gap: 10px; margin-top: 20px;">
-                    <button onclick="zapiszEdycjePracownika()" style="background: #28a745; margin:0;">Zapisz zmiany</button>
-                    <button onclick="zamknijEdycjePracownika()" style="background: #6c757d; margin:0;">Anuluj</button>
+                    <button onclick="window.zapiszEdycjePracownika()" style="background: #28a745; margin:0;">Zapisz zmiany</button>
+                    <button onclick="window.zamknijEdycjePracownika()" style="background: #6c757d; margin:0;">Anuluj</button>
                 </div>
             </div>
         </div>
@@ -701,12 +1004,46 @@
 
         let currentUserData = null;
         let aktualneDaneSprzatania = {};
+        let aktualnyTabWiadomosci = "odebrane";
+        let aktualniePodgladanaWiadomosc = null;
 
         const DOMYSLNE_POLKI = [
             "Akcesoria", "Alkohol", "Chemia", "Kasa 1: 5 półek", "Kasa 1: 9 półek", 
             "Kasa 2: 5 półek", "Kasa 2: 9 półek", "Kawy / Sosy", "Lodówka mała", 
             "Lodówka Napoje", "Lodówka Piwo", "Oleje", "Piwo", "Soki i Woda", "Strefa zakasowa"
         ];
+
+        function ustawBiezacaDateWNaglowku() {
+            const dataEl = document.getElementById('header-current-date');
+            if (dataEl) {
+                const opcje = { weekday: 'long', year: 'numeric', month: 'numeric', day: 'numeric' };
+                const dzisiaj = new Date();
+                dataEl.innerText = dzisiaj.toLocaleDateString('pl-PL', opcje);
+            }
+        }
+        ustawBiezacaDateWNaglowku();
+
+        window.otworzModalInfo = function() {
+            document.getElementById('modal-info-app').classList.remove('hidden');
+        };
+        window.zamknijModalInfo = function() {
+            document.getElementById('modal-info-app').classList.add('hidden');
+        };
+
+        window.toggleDropdownMenu = function(e) {
+            e.stopPropagation();
+            const menu = document.getElementById('user-dropdown-menu');
+            menu.classList.toggle('hidden');
+        };
+
+        window.zamknijDropdownMenu = function() {
+            const menu = document.getElementById('user-dropdown-menu');
+            if (menu) menu.classList.add('hidden');
+        };
+
+        document.addEventListener('click', () => {
+            window.zamknijDropdownMenu();
+        });
 
         function kompresujObraz(file, callback) {
             if (!file) { callback(null); return; }
@@ -754,7 +1091,9 @@
 
         window.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
-                const modals = ['modal-zoom-zdjecia', 'modal-polka', 'modal-planogram-szczegoly', 'modal-zmien-haslo', 'modal-ustawienia', 'modal-uniwersalna-misja', 'modal-szczegoly-pracownika'];
+                window.zamknijDropdownMenu();
+                window.zamknijModalInfo();
+                const modals = ['modal-zoom-zdjecia', 'modal-polka', 'modal-planogram-szczegoly', 'modal-zmien-haslo', 'modal-uniwersalna-misja', 'modal-szczegoly-pracownika', 'modal-nowa-wiadomosc', 'modal-podglad-wiadomosci'];
                 for (let mId of modals) {
                     const el = document.getElementById(mId);
                     if (el && !el.classList.contains('hidden')) {
@@ -773,7 +1112,9 @@
             if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
             e.preventDefault();
             
-            const modals = ['modal-zoom-zdjecia', 'modal-polka', 'modal-planogram-szczegoly', 'modal-zmien-haslo', 'modal-ustawienia', 'modal-uniwersalna-misja', 'modal-szczegoly-pracownika'];
+            window.zamknijDropdownMenu();
+            window.zamknijModalInfo();
+            const modals = ['modal-zoom-zdjecia', 'modal-polka', 'modal-planogram-szczegoly', 'modal-zmien-haslo', 'modal-uniwersalna-misja', 'modal-szczegoly-pracownika', 'modal-nowa-wiadomosc', 'modal-podglad-wiadomosci'];
             for (let mId of modals) {
                 const el = document.getElementById(mId);
                 if (el && !el.classList.contains('hidden')) {
@@ -862,22 +1203,32 @@
             }
         };
 
-        window.zmienMotyw = (tryb) => { localStorage.setItem("sklep_motyw", tryb); zastosujMotyw(tryb); };
+        window.zmienMotyw = (tryb) => { 
+            localStorage.setItem("sklep_motyw", tryb); 
+            zastosujMotyw(tryb); 
+        };
+
         function zastosujMotyw(tryb) {
-            if (tryb === "dark") document.documentElement.setAttribute("data-theme", "dark");
+            if (tryb && tryb !== "light") document.documentElement.setAttribute("data-theme", tryb);
             else document.documentElement.removeAttribute("data-theme");
+            const selectDD = document.getElementById('wybor-motywu-dd');
+            if (selectDD) selectDD.value = tryb || "light";
         }
-        window.zmienCzcionke = (rozmiar) => { localStorage.setItem("sklep_czcionka", rozmiar); zastosujCzcionke(rozmiar); };
+
+        window.zmienCzcionke = (rozmiar) => { 
+            localStorage.setItem("sklep_czcionka", rozmiar); 
+            zastosujCzcionke(rozmiar); 
+        };
+
         function zastosujCzcionke(rozmiar) {
             if (rozmiar && rozmiar !== "normal") document.documentElement.setAttribute("data-fontsize", rozmiar);
             else document.documentElement.removeAttribute("data-fontsize");
+            const selectDD = document.getElementById('wybor-czcionki-dd');
+            if (selectDD) selectDD.value = rozmiar || "normal";
         }
 
         zastosujMotyw(localStorage.getItem("sklep_motyw") || "light");
         zastosujCzcionke(localStorage.getItem("sklep_czcionka") || "normal");
-
-        window.otworzModalUstawienia = () => document.getElementById('modal-ustawienia').classList.remove('hidden');
-        window.zamknijModalUstawienia = () => document.getElementById('modal-ustawienia').classList.add('hidden');
 
         window.otworzModalZmianyHasla = function() {
             document.getElementById('stare-haslo').value = "";
@@ -908,7 +1259,7 @@
                 await updatePassword(user, h1);
                 msg.style.color = "green";
                 msg.innerText = "Hasło zostało pomyślnie zmienione!";
-                setTimeout(() => { zamknijModalZmianyHasla(); zamknijModalUstawienia(); }, 1500);
+                setTimeout(() => { window.zamknijModalZmianyHasla(); }, 1500);
             } catch (error) {
                 msg.innerText = (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') ? "Błąd: Podano niepoprawne aktualne hasło." : "Błąd: " + error.message;
             }
@@ -924,38 +1275,45 @@
 
         window.addEventListener("hashchange", () => {
             const hash = window.location.hash;
-            ['modul-sprzedaz', 'modul-grafik', 'modul-pracownicy', 'modul-sprzatanie', 'modul-planogram', 'modul-misje', 'modul-statystyki', 'menu-tiles'].forEach(id => {
+            ['modul-sprzedaz', 'modul-grafik', 'modul-pracownicy', 'modul-sprzatanie', 'modul-planogram', 'modul-misje', 'modul-statystyki', 'modul-wiadomosci', 'menu-tiles'].forEach(id => {
                 document.getElementById(id).classList.add('hidden');
             });
 
             if (hash === "#menu" || hash === "") {
                 document.getElementById('menu-tiles').classList.remove('hidden');
-                if (currentUserData) sprawdzPowiadomieniaMisje(currentUserData.imie, currentUserData.rola === 'admin');
+                if (currentUserData) {
+                    sprawdzPowiadomieniaMisje(currentUserData.imie, currentUserData.rola === 'admin');
+                    sprawdzPowiadomieniaWiadomosci(currentUserData.imie);
+                }
             } else if (hash === "#sprzedaz") {
                 document.getElementById('modul-sprzedaz').classList.remove('hidden');
-                pokazWidokMiesieczny();
+                window.pokazWidokMiesieczny();
             } else if (hash === "#grafik") {
                 document.getElementById('modul-grafik').classList.remove('hidden');
                 if(!document.getElementById('grafik-miesiac').value) document.getElementById('grafik-miesiac').value = new Date().toISOString().slice(0, 7);
                 document.getElementById('admin-grafik-panel').classList.toggle('hidden', !(currentUserData && currentUserData.rola === 'admin'));
-                zaladujGrafikObrazkowy();
+                window.zaladujGrafikObrazkowy();
             } else if (hash === "#misje") {
                 document.getElementById('modul-misje').classList.remove('hidden');
                 document.getElementById('admin-misje-wrapper').classList.toggle('hidden', !(currentUserData && currentUserData.rola === 'admin'));
-                zaladujMisje();
+                window.zaladujMisje();
+            } else if (hash === "#wiadomosci") {
+                document.getElementById('modul-wiadomosci').classList.remove('hidden');
+                document.getElementById('tab-wszystkie').classList.toggle('hidden', !(currentUserData && currentUserData.rola === 'admin'));
+                window.zaladujWiadomosci();
             } else if (hash === "#sprzatanie") {
                 document.getElementById('modul-sprzatanie').classList.remove('hidden');
                 const b = pobierzBiezacyOkresSystemowy();
                 document.getElementById('sprzatanie-miesiac').value = b.miesiacStr;
                 document.getElementById('sprzatanie-okres').value = b.okresStr;
-                zaladujSprzatanie();
+                window.zaladujSprzatanie();
             } else if (hash === "#planogram") {
                 document.getElementById('modul-planogram').classList.remove('hidden');
                 document.getElementById('admin-planogram-kategoria-panel').classList.toggle('hidden', !(currentUserData && currentUserData.rola === 'admin'));
-                zaladujPlanogramyMenu();
+                window.zaladujPlanogramyMenu();
             } else if (hash === "#pracownicy") {
                 document.getElementById('modul-pracownicy').classList.remove('hidden');
-                zaladujlistePracownikow();
+                window.zaladujlistePracownikow();
             } else if (hash === "#statystyki") {
                 if (!(currentUserData && currentUserData.rola === 'admin')) { window.location.hash = "#menu"; return; }
                 document.getElementById('modul-statystyki').classList.remove('hidden');
@@ -967,6 +1325,254 @@
         });
 
         window.otworzModul = (nazwa) => { window.location.hash = "#" + nazwa; };
+
+        /* ==================== MODUŁ WIADOMOŚCI ==================== */
+
+        async function sprawdzPowiadomieniaWiadomosci(mojeImie) {
+            try {
+                const snap = await getDocs(collection(db, "wiadomosci"));
+                let nieprzeczytaneCnt = 0;
+                snap.forEach(d => {
+                    const data = d.data();
+                    let st = data.odbiorcyStatus ? data.odbiorcyStatus[mojeImie] : null;
+                    if (st && st.przeczytane === false) nieprzeczytaneCnt++;
+                });
+                const badge = document.getElementById('wiadomosci-badge');
+                if (nieprzeczytaneCnt > 0) {
+                    badge.innerText = nieprzeczytaneCnt;
+                    badge.classList.remove('hidden');
+                } else {
+                    badge.classList.add('hidden');
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        window.przelaczTabWiadomosci = function(tab) {
+            aktualnyTabWiadomosci = tab;
+            ['odebrane', 'wyslane', 'wszystkie'].forEach(t => {
+                const btn = document.getElementById(`tab-${t}`);
+                if (btn) btn.classList.toggle('active', t === tab);
+            });
+            window.zaladujWiadomosci();
+        };
+
+        async function wypelnijAdresatowDoCheckboxow(zaznaczeni = []) {
+            const container = document.getElementById('msg-odbiorcy-checkboxes');
+            container.innerHTML = "Wczytywanie użytkowników...";
+            try {
+                const snap = await getDocs(collection(db, "uzytkownicy"));
+                let html = "";
+                let mojeImie = currentUserData ? currentUserData.imie : "";
+                snap.forEach(d => {
+                    let imie = d.data().imie;
+                    if (imie !== mojeImie) {
+                        let chk = zaznaczeni.includes(imie) ? 'checked' : '';
+                        html += `<label style="display:flex; align-items:center; gap:8px; margin:4px 0; cursor:pointer;"><input type="checkbox" name="msg-odbiorca-chk" value="${imie}" ${chk}> ${imie}</label>`;
+                    }
+                });
+                container.innerHTML = html || "<p style='color:#6c757d; margin:0;'>Brak innych zarejestrowanych użytkowników.</p>";
+            } catch (e) { container.innerHTML = "Błąd wczytywania."; }
+        }
+
+        window.otworzFormularzNowejWiadomosci = async function(domyslnyOdbiorca = null) {
+            document.getElementById('modal-msg-tytul').innerText = "✉️ Nowa Wiadomość";
+            document.getElementById('msg-tresc-input').value = "";
+            document.getElementById('msg-zdjecie-input').value = "";
+            document.getElementById('msg-zdjecie-preview').innerHTML = "";
+            document.getElementById('msg-wazne-checkbox').checked = false;
+            
+            let domyslni = domyslnyOdbiorca ? [domyslnyOdbiorca] : [];
+            await wypelnijAdresatowDoCheckboxow(domyslni);
+            document.getElementById('modal-nowa-wiadomosc').classList.remove('hidden');
+        };
+
+        window.zamknijModalNowejWiadomosci = () => {
+            document.getElementById('modal-nowa-wiadomosc').classList.add('hidden');
+        };
+
+        window.wyslijWiadomosc = async function() {
+            const odbiorcy = Array.from(document.querySelectorAll('input[name="msg-odbiorca-chk"]:checked')).map(cb => cb.value);
+            const tresc = document.getElementById('msg-tresc-input').value.trim();
+            const wazne = document.getElementById('msg-wazne-checkbox').checked;
+            const fileInput = document.getElementById('msg-zdjecie-input');
+
+            if (odbiorcy.length === 0) return alert("Wybierz przynajmniej jednego odbiorcę!");
+            if (!tresc) return alert("Treść wiadomości nie może być pusta!");
+
+            const nadawca = currentUserData ? currentUserData.imie : "Anonim";
+            const nowData = new Date().toLocaleString('pl-PL');
+
+            let odbiorcyStatus = {};
+            odbiorcy.forEach(o => {
+                odbiorcyStatus[o] = {
+                    przeczytane: false,
+                    dataOdczytu: null
+                };
+            });
+
+            let stworzIWyslij = async (zdjecieBase64 = null) => {
+                try {
+                    await addDoc(collection(db, "wiadomosci"), {
+                        nadawca,
+                        odbiorcy,
+                        odbiorcyStatus,
+                        tresc,
+                        zdjecie: zdjecieBase64 || null,
+                        wazne,
+                        data: nowData,
+                        timestamp: Date.now()
+                    });
+                    alert("Wiadomość została wysłana!");
+                    window.zamknijModalNowejWiadomosci();
+                    window.zaladujWiadomosci();
+                } catch (e) { alert("Błąd wysyłania wiadomości: " + e.message); }
+            };
+
+            if (fileInput.files && fileInput.files.length > 0) {
+                kompresujObraz(fileInput.files[0], (dataUrl) => {
+                    stworzIWyslij(dataUrl);
+                });
+            } else {
+                await stworzIWyslij(null);
+            }
+        };
+
+        window.zaladujWiadomosci = async function() {
+            const container = document.getElementById('wiadomosci-lista-container');
+            container.innerHTML = "Pobieranie wiadomości...";
+            const mojeImie = currentUserData ? currentUserData.imie : "";
+            const czyAdmin = currentUserData && currentUserData.rola === 'admin';
+
+            try {
+                const snap = await getDocs(collection(db, "wiadomosci"));
+                let lista = [];
+                snap.forEach(d => {
+                    let w = { id: d.id, ...d.data() };
+                    if (aktualnyTabWiadomosci === 'odebrane' && w.odbiorcy && w.odbiorcy.includes(mojeImie)) lista.push(w);
+                    else if (aktualnyTabWiadomosci === 'wyslane' && w.nadawca === mojeImie) lista.push(w);
+                    else if (aktualnyTabWiadomosci === 'wszystkie' && czyAdmin) lista.push(w);
+                });
+
+                lista.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+                if (lista.length === 0) {
+                    container.innerHTML = `<p style="color:#6c757d; text-align:center; padding:20px;">Brak wiadomości w tej kategorii.</p>`;
+                    return;
+                }
+
+                let html = "";
+                lista.forEach(w => {
+                    let st = w.odbiorcyStatus ? w.odbiorcyStatus[mojeImie] : null;
+                    let czyNieprzeczytana = (aktualnyTabWiadomosci === 'odebrane' && st && !st.przeczytane);
+                    let badgeUnread = czyNieprzeczytana ? `<span class="msg-status-tag" style="background:#dc3545; color:white;">NOWA</span>` : '';
+                    let badgeWazne = w.wazne ? `<span class="msg-status-tag" style="background:#ffc107; color:black;">⭐ WAŻNE</span>` : '';
+                    let badgeZdjecie = w.zdjecie ? `<span class="msg-status-tag" style="background:#17a2b8; color:white;">📷 Zdjęcie</span>` : '';
+                    let adminDeleteBtn = czyAdmin ? `<button onclick="event.stopPropagation(); window.usunWiadomoscAdminBezposrednio('${w.id}')" style="background:#dc3545; padding:2px 8px; font-size:0.75em; margin:0; width:auto; float:right;">🗑️ Usuń konwersację</button>` : '';
+
+                    html += `
+                        <div class="msg-item ${czyNieprzeczytana ? 'unread' : ''} ${w.wazne ? 'important' : ''}" onclick="window.otworzPodgladWiadomosci('${w.id}')">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                                <span><strong>Od:</strong> ${w.nadawca} ➔ <strong>Do:</strong> ${w.odbiorcy ? w.odbiorcy.join(', ') : '-'}</span>
+                                <div>
+                                    ${adminDeleteBtn}
+                                    <span style="font-size:0.8em; color:#6c757d; margin-left:8px;">${w.data || ''}</span>
+                                </div>
+                            </div>
+                            <div style="margin-bottom:6px;">${badgeUnread}${badgeWazne}${badgeZdjecie}</div>
+                            <div style="font-size:0.95em; color:var(--text-color); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${w.tresc}</div>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+                sprawdzPowiadomieniaWiadomosci(mojeImie);
+            } catch (e) { container.innerHTML = "Błąd ładowania wiadomości."; }
+        };
+
+        window.otworzPodgladWiadomosci = async function(id) {
+            try {
+                const docRef = doc(db, "wiadomosci", id);
+                const docSnap = await getDoc(docRef);
+                if (!docSnap.exists()) return alert("Nie znaleziono wiadomości!");
+                
+                let w = { id: docSnap.id, ...docSnap.data() };
+                aktualniePodgladanaWiadomosc = w;
+                const mojeImie = currentUserData ? currentUserData.imie : "";
+                const czyAdmin = currentUserData && currentUserData.rola === 'admin';
+
+                if (w.odbiorcyStatus && w.odbiorcyStatus[mojeImie] && !w.odbiorcyStatus[mojeImie].przeczytane) {
+                    w.odbiorcyStatus[mojeImie].przeczytane = true;
+                    w.odbiorcyStatus[mojeImie].dataOdczytu = new Date().toLocaleString('pl-PL');
+                    await setDoc(docRef, { odbiorcyStatus: w.odbiorcyStatus }, { merge: true });
+                }
+
+                document.getElementById('podglad-msg-id').value = w.id;
+                document.getElementById('podglad-msg-naglowek').innerHTML = `
+                    <p style="margin:2px 0;"><strong>Od:</strong> ${w.nadawca}</p>
+                    <p style="margin:2px 0;"><strong>Do:</strong> ${w.odbiorcy ? w.odbiorcy.join(', ') : '-'}</p>
+                    <p style="margin:2px 0; font-size:0.85em; color:#6c757d;"><strong>Data wysłania:</strong> ${w.data}</p>
+                    ${w.wazne ? '<p style="margin:4px 0 0 0;" class="val-red">⭐ Wiadomość oznaczona jako WAŻNA.</p>' : ''}
+                `;
+
+                document.getElementById('podglad-msg-tresc').innerText = w.tresc;
+                
+                const imgContainer = document.getElementById('podglad-msg-zdjecie-container');
+                imgContainer.innerHTML = w.zdjecie ? `<img src="${w.zdjecie}" onclick="window.otworzZoomZdjecia('${w.zdjecie}')" style="max-width:100%; max-height:220px; border-radius:6px; cursor:pointer;" title="Kliknij, aby powiększyć">` : '';
+
+                let statusyHtml = `<ul style="margin:5px 0 0 0; padding-left:20px;">`;
+                if (w.odbiorcyStatus) {
+                    Object.keys(w.odbiorcyStatus).forEach(odb => {
+                        let st = w.odbiorcyStatus[odb];
+                        if (st.przeczytane) {
+                            statusyHtml += `<li style="color:#28a745;">👁️ <strong>${odb}</strong> — Odczytano (${st.dataOdczytu || 'bd'})</li>`;
+                        } else {
+                            statusyHtml += `<li style="color:#ff9800;">⏳ <strong>${odb}</strong> — Nieodebrane / Nieprzeczytane</li>`;
+                        }
+                    });
+                }
+                statusyHtml += `</ul>`;
+                document.getElementById('podglad-msg-odbiorcy-statusy').innerHTML = statusyHtml;
+
+                document.getElementById('btn-usun-wiadomosc-admin').style.display = czyAdmin ? 'block' : 'none';
+                document.getElementById('modal-podglad-wiadomosci').classList.remove('hidden');
+            } catch (e) { alert("Błąd pobierania wiadomości."); }
+        };
+
+        window.zamknijModalPodgladuWiadomosci = () => {
+            document.getElementById('modal-podglad-wiadomosci').classList.add('hidden');
+            window.zaladujWiadomosci();
+        };
+
+        window.otworzOdpowiedzWiadomosc = function() {
+            if (!aktualniePodgladanaWiadomosc) return;
+            window.zamknijModalPodgladuWiadomosci();
+            
+            let nadawcaWiadomosci = aktualniePodgladanaWiadomosc.nadawca;
+            window.otworzFormularzNowejWiadomosci(nadawcaWiadomosci);
+            document.getElementById('modal-msg-tytul').innerText = `↩️ Odpowiedź do: ${nadawcaWiadomosci}`;
+            document.getElementById('msg-tresc-input').value = `\n\n--- Odpowiedź na wiadomość z dnia ${aktualniePodgladanaWiadomosc.data} ---\n> ${aktualniePodgladanaWiadomosc.tresc.replace(/\n/g, '\n> ')}`;
+        };
+
+        window.usunWiadomoscAdminBezposrednio = async function(id) {
+            if (!confirm("Czy na pewno chcesz trwale usunąć tę wiadomość / konwersację?")) return;
+            try {
+                await deleteDoc(doc(db, "wiadomosci", id));
+                window.zaladujWiadomosci();
+            } catch (e) { alert("Błąd usuwania: " + e.message); }
+        };
+
+        window.usunWiadomoscPrzezAdmina = async function() {
+            const id = document.getElementById('podglad-msg-id').value;
+            if (!id) return;
+            if (confirm("Czy na pewno chcesz usunąć tę wiadomość?")) {
+                try {
+                    await deleteDoc(doc(db, "wiadomosci", id));
+                    document.getElementById('modal-podglad-wiadomosci').classList.add('hidden');
+                    window.zaladujWiadomosci();
+                } catch (e) { alert("Błąd usuwania: " + e.message); }
+            }
+        };
+
+        /* ==================== POZOSTAŁE FUNKCJE SYSTEMOWE ==================== */
 
         window.toggleEtatPole = function(prefix) {
             const umowa = document.getElementById(`${prefix}-p-umowa`).value;
@@ -1107,17 +1713,26 @@
                     let plany = pDoc.exists() ? pDoc.data() : { kawa: 0, hd: 0, sklep: 0 };
 
                     let sKawaW = 0, sHdW = 0, sSklepW = 0;
+                    
+                    let ostatniDzienRaportu = 0;
+                    let [rRok, rMies] = miesiacKlucz.split('-').map(Number);
+                    let dniWMiesiacu = new Date(rRok, rMies, 0).getDate();
+
                     przefiltrowaneRaporty.forEach(r => {
                         sKawaW += Number(r.kawa?.wartosc)||0;
                         sHdW += Number(r.hd?.wartosc)||0;
                         sSklepW += Number(r.sklep?.wartosc)||0;
+
+                        if (r.data && r.data.startsWith(miesiacKlucz)) {
+                            let dzienZRaportu = parseInt(r.data.split('-')[2], 10);
+                            if (dzienZRaportu > ostatniDzienRaportu) {
+                                ostatniDzienRaportu = dzienZRaportu;
+                            }
+                        }
                     });
 
-                    let terazDate = new Date();
-                    let [rRok, rMies] = miesiacKlucz.split('-').map(Number);
-                    let dniWMiesiacu = new Date(rRok, rMies, 0).getDate();
-                    let biezacyDzien = (terazDate.getFullYear() === rRok && (terazDate.getMonth() + 1) === rMies) ? terazDate.getDate() : dniWMiesiacu;
-                    let ptProporcja = biezacyDzien / dniWMiesiacu;
+                    let dzienDoObliczen = ostatniDzienRaportu > 0 ? ostatniDzienRaportu : 0;
+                    let ptProporcja = dzienDoObliczen / dniWMiesiacu;
 
                     let planPropKawa = (plany.kawa || 0) * ptProporcja;
                     let planPropHd = (plany.hd || 0) * ptProporcja;
@@ -1134,10 +1749,10 @@
                     htmlWynik += `
                         <div class="field-group" style="border-left:4px solid #17a2b8;">
                             <h4 style="margin-top:0;">🎯 Realizacja Planów Sprzedażowych (${miesiacKlucz})</h4>
-                            <p style="font-size:0.85em; color:#6c757d;">Proporcja upływu miesiąca: Dzień ${biezacyDzien} z ${dniWMiesiacu} (${(ptProporcja*100).toFixed(1)}%)</p>
+                            <p style="font-size:0.85em; color:#6c757d;">Proporcja wg ostatniego raportu: Dzień ${dzienDoObliczen} z ${dniWMiesiacu} (${(ptProporcja*100).toFixed(1)}%)</p>
                             <div class="table-responsive">
                                 <table class="standard-table">
-                                    <tr><th>Kategoria</th><th>Wykonanie</th><th>Plan Cały</th><th>Status 100%</th><th>Plan do Dziś</th><th>Status do Dziś</th></tr>
+                                    <tr><th>Kategoria</th><th>Wykonanie</th><th>Plan Cały</th><th>Status 100%</th><th>Plan proporcjonalny (${dzienDoObliczen} dni)</th><th>Status prop.</th></tr>
                                     <tr>
                                         <td><strong>☕ KAWA</strong></td>
                                         <td>${sKawaW.toFixed(2)} zł</td>
@@ -1244,7 +1859,7 @@
 
             alert("Trwa usuwanie danych z serwera...");
             try {
-                let usunieteKolekcje = ['sprzedaz', 'misje', 'prosby_o_zmiany'];
+                let usunieteKolekcje = ['sprzedaz', 'misje', 'prosby_o_zmiany', 'wiadomosci'];
                 for (let kol of usunieteKolekcje) {
                     let snap = await getDocs(collection(db, kol));
                     for (let d of snap.docs) {
@@ -1300,11 +1915,11 @@
                 alert("Misja przypisana!");
                 document.getElementById('misja-tresc').value = "";
                 document.getElementById('misja-termin').value = "";
-                zaladujMisje();
+                window.zaladujMisje();
             } catch (e) { alert("Błąd zapisu."); }
         }
 
-        async function zaladujMisje() {
+        window.zaladujMisje = async function() {
             const container = document.getElementById('misje-lista-container');
             container.innerHTML = "Pobieranie misji...";
             if (currentUserData && currentUserData.rola === 'admin') wypelnijSelectPracownikow('misja-pracownik-select');
@@ -1332,7 +1947,7 @@
                     
                     let bezpiecznaTresc = encodeURIComponent(d.zadanie);
                     let bezpieczneUwagi = encodeURIComponent(d.uwagi || '');
-                    html += `<tr class="cleaning-row" onclick="otworzModalUniwersalnaMisja('${id}', '${d.pracownik}', '${bezpiecznaTresc}', '${d.doKiedy}', '${aktualnyStatus}', '${bezpieczneUwagi}')">
+                    html += `<tr class="cleaning-row" onclick="window.otworzModalUniwersalnaMisja('${id}', '${d.pracownik}', '${bezpiecznaTresc}', '${d.doKiedy}', '${aktualnyStatus}', '${bezpieczneUwagi}')">
                         <td><strong>${d.pracownik}</strong></td>
                         <td style="text-align:left;">${d.zadanie}</td>
                         <td align="center">${d.doKiedy}</td>
@@ -1404,7 +2019,7 @@
 
         window.zamknijModalUniwersalnaMisja = () => {
             document.getElementById('modal-uniwersalna-misja').classList.add('hidden');
-            zaladujMisje();
+            window.zaladujMisje();
         }
 
         window.zapiszUniwersalnaMisja = async function() {
@@ -1422,7 +2037,7 @@
 
             try {
                 await setDoc(doc(db, "misje", id), daneZapisu, { merge: true });
-                zamknijModalUniwersalnaMisja();
+                window.zamknijModalUniwersalnaMisja();
                 alert("Zaktualizowano zadanie!");
             } catch (e) { alert("Błąd zapisu zadania."); }
         }
@@ -1434,7 +2049,7 @@
                     await deleteDoc(doc(db, "misje", id));
                     document.getElementById('modal-uniwersalna-misja').classList.add('hidden');
                     alert("Usunięto misję.");
-                    zaladujMisje();
+                    window.zaladujMisje();
                 } catch (e) { alert("Błąd usuwania misji."); }
             }
         }
@@ -1448,7 +2063,7 @@
             } catch (e) { return DOMYSLNE_POLKI; }
         }
 
-        async function zaladujPlanogramyMenu() {
+        window.zaladujPlanogramyMenu = async function() {
             const container = document.getElementById('planogramy-lista-container');
             container.innerHTML = "Pobieranie listy półek...";
             try {
@@ -1475,8 +2090,8 @@
                             statusBadge = `<span class="badge-done">📷 1 zdjęcie</span>`;
                         }
                     }
-                    html += `<tr class="cleaning-row"><td onclick="otworzModalPlanogramu('${polka}')"><strong>${polka}</strong></td><td align="center" onclick="otworzModalPlanogramu('${polka}')">${dataUmieszczenia}</td><td align="center" onclick="otworzModalPlanogramu('${polka}')">${statusBadge}</td>`;
-                    if (czyAdmin) html += `<td><button onclick="usunPolkeZListyPlanogramu('${polka}')" style="background: #dc3545; padding: 4px 8px; font-size: 0.8em; margin:0; width:auto;">🗑️ Usuń</button></td>`;
+                    html += `<tr class="cleaning-row"><td onclick="window.otworzModalPlanogramu('${polka}')"><strong>${polka}</strong></td><td align="center" onclick="window.otworzModalPlanogramu('${polka}')">${dataUmieszczenia}</td><td align="center" onclick="window.otworzModalPlanogramu('${polka}')">${statusBadge}</td>`;
+                    if (czyAdmin) html += `<td><button onclick="window.usunPolkeZListyPlanogramu('${polka}')" style="background: #dc3545; padding: 4px 8px; font-size: 0.8em; margin:0; width:auto;">🗑️ Usuń</button></td>`;
                     html += `</tr>`;
                 });
                 container.innerHTML = html + `</table>`;
@@ -1492,7 +2107,7 @@
                 lista.push(nazwa); lista.sort();
                 await setDoc(doc(db, "system_ustawienia", "planogramy_kategorie"), { lista });
                 document.getElementById('nowa-polka-nazwa').value = "";
-                zaladujPlanogramyMenu();
+                window.zaladujPlanogramyMenu();
             } catch (e) { alert("Błąd."); }
         }
 
@@ -1502,7 +2117,7 @@
                 let lista = (await pobierzListePolokDlaPlanogramu()).filter(p => p !== polkaNazwa);
                 await setDoc(doc(db, "system_ustawienia", "planogramy_kategorie"), { lista });
                 await deleteDoc(doc(db, "planogramy", polkaNazwa));
-                zaladujPlanogramyMenu();
+                window.zaladujPlanogramyMenu();
             } catch (e) { alert("Błąd."); }
         }
 
@@ -1522,8 +2137,8 @@
                     if (listaZdjec.length > 0) {
                         let galleryHtml = `<p style="font-size: 0.9em; margin-bottom: 8px;">Ostatnia modyfikacja: <strong>${docSnap.data().dataUmieszczenia || '-'}</strong></p><div class="planogram-gallery">`;
                         listaZdjec.forEach((imgSrc, idx) => {
-                            galleryHtml += `<div class="planogram-thumb-box"><img src="${imgSrc}" onclick="otworzZoomZdjecia('${imgSrc}')">`;
-                            if (currentUserData && currentUserData.rola === 'admin') galleryHtml += `<button class="del-photo-btn" onclick="usunPojedynczeZdjeciePlanogramu(${idx})">🗑️ Usuń</button>`;
+                            galleryHtml += `<div class="planogram-thumb-box"><img src="${imgSrc}" onclick="window.otworzZoomZdjecia('${imgSrc}')">`;
+                            if (currentUserData && currentUserData.rola === 'admin') galleryHtml += `<button class="del-photo-btn" onclick="window.usunPojedynczeZdjeciePlanogramu(${idx})">🗑️ Usuń</button>`;
                             galleryHtml += `</div>`;
                         });
                         trescDiv.innerHTML = galleryHtml + `</div>`;
@@ -1547,10 +2162,10 @@
                 const docRef = doc(db, "planogramy", wymawiajacyPolkaPlanogram);
                 const docSnap = await getDoc(docRef);
                 let istniejace = docSnap.exists() ? (docSnap.data().zdjęcia || (docSnap.data().plik ? [docSnap.data().plik] : [])) : [];
-                await setDoc(docRef, { polka: wymawiajacyPolkaPlanogram, zdjęcia: istniejace.concat(wczytaneBase64), dataUmieszczenia: new Date().toLocaleString(), autor: currentUserData ? currentUserData.imie : "Admin" });
+                await setDoc(docRef, { polka: wymawiajacyPolkaPlanogram, zdjęcia: istniejace.concat(wczytaneBase64), dataUmieszczenia: new Date().toLocaleString(), autor: currentUserData ? currentUserData.imie.split(' ')[0] : "Admin" });
                 fileInput.value = "";
-                otworzModalPlanogramu(wymawiajacyPolkaPlanogram);
-                zaladujPlanogramyMenu();
+                window.otworzModalPlanogramu(wymawiajacyPolkaPlanogram);
+                window.zaladujPlanogramyMenu();
             } catch (err) { alert("Błąd zapisu."); }
         }
 
@@ -1562,8 +2177,8 @@
                 istniejace.splice(index, 1);
                 if (istniejace.length > 0) await setDoc(docRef, { zdjęcia: istniejace, dataUmieszczenia: new Date().toLocaleString() }, { merge: true });
                 else await deleteDoc(docRef);
-                otworzModalPlanogramu(wymawiajacyPolkaPlanogram);
-                zaladujPlanogramyMenu();
+                window.otworzModalPlanogramu(wymawiajacyPolkaPlanogram);
+                window.zaladujPlanogramyMenu();
             } catch (e) { alert("Błąd."); }
         }
 
@@ -1595,7 +2210,7 @@
                     if (zrobione && pData.komentarz) statusBadge += `<br><span class="badge-warning">⚠️ Uwagi</span>`;
                     if (pData.zdjecie) statusBadge += `<br><span class="badge-photo">📷 Zdjęcie</span>`;
 
-                    html += `<tr class="cleaning-row" onclick="otworzModalPolki(${index})"><td><strong>${polka}</strong></td><td align="center">${statusBadge}</td><td style="font-size:0.85em;">${pData.podpis !== "-" ? pData.podpis + " (" + (pData.dataSprawdzenia || '') + ")" : "-"}</td></tr>`;
+                    html += `<tr class="cleaning-row" onclick="window.otworzModalPolki(${index})"><td><strong>${polka}</strong></td><td align="center">${statusBadge}</td><td style="font-size:0.85em;">${pData.podpis !== "-" ? pData.podpis + " (" + (pData.dataSprawdzenia || '') + ")" : "-"}</td></tr>`;
                 });
                 container.innerHTML = html + `</table>`;
             } catch (e) { container.innerHTML = "Błąd pobierania."; }
@@ -1626,7 +2241,7 @@
             document.getElementById('btn-zapisz-polka').style.display = tylkoDoOdczytu ? 'none' : 'block';
             document.getElementById('btn-usun-polka').style.display = (czyAdmin && pData.podpis !== "-") ? 'block' : 'none';
 
-            document.getElementById('m-zdjecie-preview').innerHTML = pData.zdjecie ? `<p style="font-size:0.85em; color:#28a745;">Załączone zdjęcie:</p><img src="${pData.zdjecie}" onclick="otworzZoomZdjecia('${pData.zdjecie}')" style="max-height: 150px; border-radius: 4px; cursor: pointer;">` : `<p style="font-size:0.85em; color:#6c757d;">Brak zdjęcia</p>`;
+            document.getElementById('m-zdjecie-preview').innerHTML = pData.zdjecie ? `<p style="font-size:0.85em; color:#28a745;">Załączone zdjęcie:</p><img src="${pData.zdjecie}" onclick="window.otworzZoomZdjecia('${pData.zdjecie}')" style="max-height: 150px; border-radius: 4px; cursor: pointer;">` : `<p style="font-size:0.85em; color:#6c757d;">Brak zdjęcia</p>`;
             document.getElementById('modal-polka').classList.remove('hidden');
         }
 
@@ -1648,12 +2263,12 @@
                         planogram: document.getElementById('m-planogram').checked,
                         komentarz: document.getElementById('m-komentarz').value.trim(),
                         zdjecie: imgSrc || stareDane.zdjecie || "",
-                        podpis: currentUserData ? currentUserData.imie : "Pracownik",
+                        podpis: currentUserData ? currentUserData.imie.split(' ')[0] : "Pracownik",
                         dataSprawdzenia: new Date().toLocaleString()
                     };
                     await setDoc(doc(db, "sprzatanie", `${miesiac}_${okres}`), { półki: aktualneDaneSprzatania }, { merge: true });
-                    zamknijModalPolki();
-                    zaladujSprzatanie();
+                    window.zamknijModalPolki();
+                    window.zaladujSprzatanie();
                 } catch (e) { alert("Błąd zapisu."); }
             };
 
@@ -1671,8 +2286,8 @@
             const okres = document.getElementById('sprzatanie-okres').value;
             aktualneDaneSprzatania[index] = { nazwa: DOMYSLNE_POLKI[index], czystosc: false, daty: false, planogram: false, komentarz: "", zdjecie: "", podpis: "-", dataSprawdzenia: new Date().toLocaleString() };
             await setDoc(doc(db, "sprzatanie", `${miesiac}_${okres}`), { półki: aktualneDaneSprzatania }, { merge: true });
-            zamknijModalPolki();
-            zaladujSprzatanie();
+            window.zamknijModalPolki();
+            window.zaladujSprzatanie();
         }
 
         window.dodajPracownika = async function() {
@@ -1689,11 +2304,11 @@
                 await setDoc(doc(db, "uzytkownicy", cred.user.uid), { imie, login, rola, umowa, etat });
                 alert(`Dodano pracownika: ${imie}`);
                 ['new-p-imie', 'new-p-login', 'new-p-haslo'].forEach(id => document.getElementById(id).value = "");
-                zaladujlistePracownikow();
+                window.zaladujlistePracownikow();
             } catch (e) { alert("Błąd: " + e.message); }
         }
 
-        async function zaladujlistePracownikow() {
+        window.zaladujlistePracownikow = async function() {
             const container = document.getElementById('pracownicy-list-container');
             container.innerHTML = "Pobieranie listy...";
             try {
@@ -1701,7 +2316,7 @@
                 let table = `<div class="table-responsive"><table class="standard-table"><tr><th>Imię i nazwisko</th><th>Login</th><th>Rola</th><th>Umowa / Etat</th><th>Akcje</th></tr>`;
                 snap.forEach(d => {
                     const p = d.data(), id = d.id;
-                    table += `<tr><td>${p.imie}</td><td>${p.login||'-'}</td><td>${p.rola}</td><td>${p.umowa} (${p.etat})</td><td><button onclick="pokazSzczegolyPracownika('${id}', '${p.imie}', '${p.login||''}', '${p.rola}', '${p.umowa}', '${p.etat}')" style="padding:4px 8px; font-size:0.8em; margin:0; background:#007bff;">Edytuj</button><button onclick="usunPracownika('${id}', '${p.imie}')" style="padding:4px 8px; font-size:0.8em; margin:0; background:#dc3545; margin-top:4px;">Usuń</button></td></tr>`;
+                    table += `<tr><td>${p.imie}</td><td>${p.login||'-'}</td><td>${p.rola}</td><td>${p.umowa} (${p.etat})</td><td><button onclick="window.pokazSzczegolyPracownika('${id}', '${p.imie}', '${p.login||''}', '${p.rola}', '${p.umowa}', '${p.etat}')" style="padding:4px 8px; font-size:0.8em; margin:0; background:#007bff;">Edytuj</button><button onclick="window.usunPracownika('${id}', '${p.imie}')" style="padding:4px 8px; font-size:0.8em; margin:0; background:#dc3545; margin-top:4px;">Usuń</button></td></tr>`;
                 });
                 container.innerHTML = table + `</table></div>`;
             } catch (e) { container.innerHTML = "Błąd."; }
@@ -1715,7 +2330,7 @@
             document.getElementById('edit-p-nowe-haslo').value = "";
             document.getElementById('edit-p-rola').value = rola;
             document.getElementById('edit-p-umowa').value = umowa;
-            toggleEtatPole('edit');
+            window.toggleEtatPole('edit');
             if (umowa === 'UoP') {
                 const etatSelect = document.getElementById('edit-p-etat'), etatCustom = document.getElementById('edit-p-etat-custom');
                 let found = Array.from(etatSelect.options).some(o => o.value === etat);
@@ -1747,19 +2362,19 @@
                     if (currentUser && currentUser.email === targetEmail) {
                         await updatePassword(currentUser, noweHasloAdmin);
                     } else {
-                        alert("⚠️ Informacja: Zmiana hasła dla innego konta wymaga ponownego zalogowania lub uprawnień Cloud Functions w Firebase. Dane profilu w bazie zostały zaktualizowane, ale aby zmienić hasło logowania tego konta bezpośrednio, zaloguj się na nie lub zaktualizuj je w konsoli Firebase Auth.");
+                        alert("⚠️ Informacja: Zmiana hasła dla innego konta wymaga ponownego zalogowania lub uprawnień Cloud Functions w Firebase. Dane profilu w bazie zostały zaktualizowane.");
                     }
                 }
 
-                zamknijEdycjePracownika();
-                zaladujlistePracownikow();
+                window.zamknijEdycjePracownika();
+                window.zaladujlistePracownikow();
                 alert("Zaktualizowano dane pracownika!");
             } catch (e) { alert("Błąd zapisu: " + e.message); }
         }
 
         window.usunPracownika = async function(id, imie) {
             if (confirm(`Usunąć pracownika: ${imie}?`)) {
-                try { await deleteDoc(doc(db, "uzytkownicy", id)); zaladujlistePracownikow(); } catch (e) { alert("Błąd."); }
+                try { await deleteDoc(doc(db, "uzytkownicy", id)); window.zaladujlistePracownikow(); } catch (e) { alert("Błąd."); }
             }
         }
 
@@ -1772,7 +2387,7 @@
                 const docSnap = await getDoc(doc(db, "grafik_obrazy", wybranyMiesiac));
                 if (docSnap.exists() && docSnap.data().zdjecie) {
                     let imgSrc = docSnap.data().zdjecie;
-                    previewContainer.innerHTML = `<img src="${imgSrc}" onclick="otworzZoomZdjecia('${imgSrc}')" title="Kliknij, aby powiększyć">`;
+                    previewContainer.innerHTML = `<img src="${imgSrc}" onclick="window.otworzZoomZdjecia('${imgSrc}')" title="Kliknij, aby powiększyć">`;
                 } else {
                     previewContainer.innerHTML = `<p style="color: #6c757d;">Brak grafiku.</p>`;
                 }
@@ -1787,15 +2402,15 @@
             
             kompresujObraz(fileInput.files[0], async (dataUrl) => {
                 try {
-                    await setDoc(doc(db, "grafik_obrazy", wybranyMiesiac), { zdjecie: dataUrl, zaktualizowal: currentUserData?.imie || "Kierownik" });
+                    await setDoc(doc(db, "grafik_obrazy", wybranyMiesiac), { zdjecie: dataUrl, zaktualizowal: currentUserData?.imie.split(' ')[0] || "Kierownik" });
                     fileInput.value = "";
-                    zaladujGrafikObrazkowy();
+                    window.zaladujGrafikObrazkowy();
                 } catch (e) { alert("Błąd zapisu grafiku."); }
             });
         }
 
         window.usunGrafikObrazkowy = async function() {
-            if (confirm("Usunąć grafik?")) { await deleteDoc(doc(db, "grafik_obrazy", document.getElementById('grafik-miesiac').value)); zaladujGrafikObrazkowy(); }
+            if (confirm("Usunąć grafik?")) { await deleteDoc(doc(db, "grafik_obrazy", document.getElementById('grafik-miesiac').value)); window.zaladujGrafikObrazkowy(); }
         }
 
         window.wyslijProsbe = async function() {
@@ -1803,7 +2418,7 @@
             const tekst = document.getElementById('nowa-prosba-tekst').value.trim();
             if (!wybranyMiesiac || !tekst) return alert("Uzupełnij miesiąc i treść prośby!");
             try {
-                await addDoc(collection(db, "prosby_o_zmiany"), { miesiac: wybranyMiesiac, autor: currentUserData?.imie || "Pracownik", tekst, status: "oczekujace", data: new Date().toLocaleString() });
+                await addDoc(collection(db, "prosby_o_zmiany"), { miesiac: wybranyMiesiac, autor: currentUserData?.imie.split(' ')[0] || "Pracownik", tekst, status: "oczekujace", data: new Date().toLocaleString() });
                 document.getElementById('nowa-prosba-tekst').value = "";
                 zaladujProsby(wybranyMiesiac);
             } catch (e) { alert("Błąd."); }
@@ -1829,8 +2444,8 @@
 
                 prosby.reverse().forEach(p => {
                     let badge = p.status === "zatwierdzone" ? `<span style="background:#28a745; color:white; padding:2px 6px; border-radius:4px; font-size:0.8em;">👍 Zatwierdzone</span>` : (p.status === "odrzucone" ? `<span style="background:#dc3545; color:white; padding:2px 6px; border-radius:4px; font-size:0.8em;">👎 Odrzucone</span>` : `<span style="background:#ffc107; color:black; padding:2px 6px; border-radius:4px; font-size:0.8em;">⏳ Oczekuje</span>`);
-                    let actions = (currentUserData?.rola === 'admin') ? `<div style="margin-top:6px; display:flex; gap:6px;"><button onclick="zmienStatusProsby('${p.id}', 'zatwierdzone')" style="background:#28a745; padding:4px; font-size:0.8em; width:auto;">👍 Zatwierdź</button><button onclick="zmienStatusProsby('${p.id}', 'odrzucone')" style="background:#dc3545; padding:4px; font-size:0.8em; width:auto;">👎 Odrzuć</button></div>` : "";
-                    let delBtn = (currentUserData?.rola === 'admin' || currentUserData?.imie === p.autor) ? `<button onclick="usunProsbe('${p.id}')" style="background:#6c757d; padding:4px; font-size:0.8em; margin-top:6px; width:auto;">🗑️ Usuń</button>` : "";
+                    let actions = (currentUserData?.rola === 'admin') ? `<div style="margin-top:6px; display:flex; gap:6px;"><button onclick="window.zmienStatusProsby('${p.id}', 'zatwierdzone')" style="background:#28a745; padding:4px; font-size:0.8em; width:auto;">👍 Zatwierdź</button><button onclick="window.zmienStatusProsby('${p.id}', 'odrzucone')" style="background:#dc3545; padding:4px; font-size:0.8em; width:auto;">👎 Odrzuć</button></div>` : "";
+                    let delBtn = (currentUserData?.rola === 'admin' || currentUserData?.imie.split(' ')[0] === p.autor) ? `<button onclick="window.usunProsbe('${p.id}')" style="background:#6c757d; padding:4px; font-size:0.8em; margin-top:6px; width:auto;">🗑️ Usuń</button>` : "";
 
                     html += `<div class="request-item"><div style="display:flex; justify-content:space-between;"><strong>👤 ${p.autor}</strong>${badge}</div><div style="font-size:0.8em; color:#6c757d;">(${p.data})</div><div>${p.tekst}</div>${actions}${delBtn}</div>`;
                 });
@@ -1842,7 +2457,7 @@
             document.getElementById('view-monthly').classList.remove('hidden');
             document.getElementById('view-daily').classList.add('hidden');
             if(!document.getElementById('wybrany-miesiac').value) document.getElementById('wybrany-miesiac').value = new Date().toISOString().slice(0, 7);
-            zaladujMiesiacTabela();
+            window.zaladujMiesiacTabela();
             if (currentUserData && currentUserData.rola === 'admin') {
                 document.getElementById('admin-daily-section').classList.remove('hidden');
                 pobierzRaportyDlaAdmina();
@@ -1865,8 +2480,9 @@
                 const snap = await getDocs(collection(db, "uzytkownicy"));
                 let html = "";
                 snap.forEach(d => {
-                    let imie = d.data().imie;
-                    html += `<label style="display:flex; align-items:center; gap:8px; margin:4px 0; cursor:pointer;"><input type="checkbox" name="sprzedawca-chk" value="${imie}" ${zaznaczeni.includes(imie)?'checked':''} style="width:18px; height:18px;"> ${imie}</label>`;
+                    let imiePelne = d.data().imie;
+                    let imieKrotkie = imiePelne.split(' ')[0];
+                    html += `<label style="display:flex; align-items:center; gap:8px; margin:4px 0; cursor:pointer;"><input type="checkbox" name="sprzedawca-chk" value="${imieKrotkie}" ${zaznaczeni.includes(imieKrotkie)?'checked':''} style="width:18px; height:18px;"> ${imieKrotkie}</label>`;
                 });
                 container.innerHTML = html || "Brak pracowników.";
             } catch (e) { container.innerHTML = "Błąd."; }
@@ -1912,7 +2528,7 @@
 
             const docRef = doc(db, "sprzedaz", data);
             const docSnap = await getDoc(docRef);
-            const imieAkt = currentUserData ? currentUserData.imie : "Użytkownik";
+            const imieAkt = currentUserData ? currentUserData.imie.split(' ')[0] : "Użytkownik";
             const nowStr = new Date().toLocaleString();
 
             let dane = {
@@ -1937,11 +2553,10 @@
                 btnZapisz.disabled = false;
                 btnZapisz.innerText = "Zapisz / Aktualizuj Raport";
                 
-                // Bezpośrednie przełączenie widoków w DOM, aby okno edycji zamknęło się natychmiast
                 document.getElementById('view-daily').classList.add('hidden');
                 document.getElementById('view-monthly').classList.remove('hidden');
                 history.replaceState(null, "", "#sprzedaz");
-                zaladujMiesiacTabela();
+                window.zaladujMiesiacTabela();
                 if (currentUserData && currentUserData.rola === 'admin') {
                     pobierzRaportyDlaAdmina();
                 }
@@ -1962,7 +2577,7 @@
                 await deleteDoc(doc(db, "sprzedaz", dataId));
                 alert("Raport został usunięty z serwera.");
                 pobierzRaportyDlaAdmina();
-                zaladujMiesiacTabela();
+                window.zaladujMiesiacTabela();
             } catch (e) {
                 alert("Błąd podczas usuwania raportu: " + e.message);
             }
@@ -1985,9 +2600,9 @@
                     let audit = `Utworzył: <strong>${r.utworzyl || 'Nieznany'}</strong> (${r.dataUtworzenia || ''})`;
                     if (r.zmodyfikowal) audit += `<br>Korekta: ${r.zmodyfikowal} (${r.dataModyfikacji})`;
                     
-                    let adminDeleteBtn = (currentUserData && currentUserData.rola === 'admin') ? `<button onclick="event.stopPropagation(); usunRaportSprzedazy('${r.data}')" style="background:#dc3545; padding:5px 10px; font-size:0.85em; margin-top:8px; width:auto; display:block;">🗑️ Usuń raport z serwera</button>` : "";
+                    let adminDeleteBtn = (currentUserData && currentUserData.rola === 'admin') ? `<button onclick="event.stopPropagation(); window.usunRaportSprzedazy('${r.data}')" style="background:#dc3545; padding:5px 10px; font-size:0.85em; margin-top:8px; width:auto; display:block;">🗑️ Usuń raport z serwera</button>` : "";
 
-                    html += `<div class="report-box" onclick="przejdzDoDnia('${r.data}')"><strong>📅 ${r.data}</strong> | Sprzedawcy: <strong>${r.sprzedawcy?.join(', ')}</strong><br>Kawa: ${r.kawa.ilosc} / ${r.kawa.wartosc} zł | HD: ${r.hd.ilosc} / ${r.hd.wartosc} zł | Sklep: ${r.sklep.wartosc} zł<div class="audit-info">${audit}</div>${adminDeleteBtn}</div>`;
+                    html += `<div class="report-box" onclick="window.przejdzDoDnia('${r.data}')"><strong>📅 ${r.data}</strong> | Sprzedawcy: <strong>${r.sprzedawcy?.join(', ')}</strong><br>Kawa: ${r.kawa.ilosc} / ${r.kawa.wartosc} zł | HD: ${r.hd.ilosc} / ${r.hd.wartosc} zł | Sklep: ${r.sklep.wartosc} zł<div class="audit-info">${audit}</div>${adminDeleteBtn}</div>`;
                 });
                 listDiv.innerHTML = html || "Brak raportów.";
             } catch (e) { listDiv.innerHTML = "Błąd."; }
@@ -2003,7 +2618,7 @@
                 sklep: Number(document.getElementById('input-plan-sklep').value)||0
             });
             alert("Zapisano plany!");
-            zaladujMiesiacTabela();
+            window.zaladujMiesiacTabela();
         }
 
         window.zaladujMiesiacTabela = async function() {
@@ -2033,9 +2648,9 @@
                         sKawaI += Number(r.kawa?.ilosc)||0; sKawaW += Number(r.kawa?.wartosc)||0;
                         sHdI += Number(r.hd?.ilosc)||0; sHdW += Number(r.hd?.wartosc)||0;
                         sSklepW += Number(r.sklep?.wartosc)||0;
-                        table += `<tr class="cleaning-row" onclick="przejdzDoDnia('${pd}')"><td><strong>${ds}</strong></td><td>${r.sprzedawcy?.join(', ')}</td><td>${r.kawa?.ilosc}/${r.kawa?.wartosc}</td><td>${r.hd?.ilosc}/${r.hd?.wartosc}</td><td>${r.sklep?.wartosc}</td></tr>`;
+                        table += `<tr class="cleaning-row" onclick="window.przejdzDoDnia('${pd}')"><td><strong>${ds}</strong></td><td>${r.sprzedawcy?.join(', ')}</td><td>${r.kawa?.ilosc}/${r.kawa?.wartosc}</td><td>${r.hd?.ilosc}/${r.hd?.wartosc}</td><td>${r.sklep?.wartosc}</td></tr>`;
                     } else {
-                        table += `<tr class="cleaning-row" onclick="przejdzDoDnia('${pd}')" style="color:#999;"><td><strong>${ds}</strong></td><td>-</td><td>-</td><td>-</td><td>-</td></tr>`;
+                        table += `<tr class="cleaning-row" onclick="window.przejdzDoDnia('${pd}')" style="color:#999;"><td><strong>${ds}</strong></td><td>-</td><td>-</td><td>-</td><td>-</td></tr>`;
                     }
                 }
                 table += `<tr class="sum-row"><td colspan="2">SUMA</td><td>${sKawaI} / ${sKawaW.toFixed(2)}</td><td>${sHdI} / ${sHdW.toFixed(2)}</td><td>${sSklepW.toFixed(2)}</td></tr></table></div>`;
@@ -2053,7 +2668,7 @@
                             <tr><td><strong>Do 68%</strong></td><td class="${d68K>=0?'val-green':'val-red'}">${d68K.toFixed(2)} zł</td><td class="${d68H>=0?'val-green':'val-red'}">${d68H.toFixed(2)} zł</td><td class="${d68S>=0?'val-green':'val-red'}">${d68S.toFixed(2)} zł</td></tr>
                             <tr><td><strong>Do 100%</strong></td><td class="${d100K>=0?'val-green':'val-red'}">${d100K.toFixed(2)} zł</td><td class="${d100H>=0?'val-green':'val-red'}">${d100H.toFixed(2)} zł</td><td class="${d100S>=0?'val-green':'val-red'}">${d100S.toFixed(2)} zł</td></tr>
                         </table>
-                    </div>${czyAdmin?'<button onclick="zapiszPlanyMiesieczne()" style="background:#28a745; margin-top:10px;">💾 Zapisz plany</button>':''}
+                    </div>${czyAdmin?'<button onclick="window.zapiszPlanyMiesieczne()" style="background:#28a745; margin-top:10px;">💾 Zapisz plany</button>':''}
                 `;
             } catch (e) { container.innerHTML = "Błąd tabeli."; }
         }
@@ -2061,29 +2676,43 @@
         onAuthStateChanged(auth, async (user) => {
             const loginScr = document.getElementById('login-screen');
             const appScr = document.getElementById('app-screen');
+            const profileLabel = document.getElementById('profile-btn-label');
+
             if (user) {
                 loginScr.classList.add('hidden');
                 appScr.classList.remove('hidden');
-                window.location.hash = "#menu";
+                if (!window.location.hash || window.location.hash === "#login") {
+                    window.location.hash = "#menu";
+                } else {
+                    window.dispatchEvent(new Event('hashchange'));
+                }
+                
                 try {
                     const snap = await getDoc(doc(db, "uzytkownicy", user.uid));
                     if (snap.exists()) {
                         currentUserData = snap.data();
-                        document.getElementById('user-name').innerText = currentUserData.imie;
+                        let imieKrotkie = currentUserData.imie.split(' ')[0];
+                        profileLabel.innerText = imieKrotkie;
+
                         let czyAdmin = currentUserData.rola === 'admin';
-                        document.getElementById('role-container').innerHTML = czyAdmin ? `<span class="admin-badge">PANEL KIEROWNIKA</span>` : `<p>Rola: Pracownik</p>`;
-                        
                         document.querySelectorAll('.admin-only-tile').forEach(el => {
                             el.style.display = czyAdmin ? "flex" : "none";
                         });
 
                         sprawdzPowiadomieniaMisje(currentUserData.imie, czyAdmin);
+                        sprawdzPowiadomieniaWiadomosci(currentUserData.imie);
+                    } else {
+                        profileLabel.innerText = user.email ? user.email.split('@')[0] : "Zalogowany";
                     }
-                } catch(e) { console.error(e); }
+                } catch(e) { 
+                    console.error(e); 
+                    profileLabel.innerText = "Zalogowany";
+                }
             } else {
                 currentUserData = null;
                 appScr.classList.add('hidden');
                 loginScr.classList.remove('hidden');
+                profileLabel.innerText = "Zaloguj";
                 document.getElementById('login-input').value = "";
                 document.getElementById('password-input').value = "";
                 document.getElementById('error-msg').innerText = "";
