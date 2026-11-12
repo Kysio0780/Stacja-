@@ -402,7 +402,7 @@
         <div id="menu-tiles">
             <div class="tiles-grid">
                 <div class="tile" onclick="window.otworzModul('sprzedaz')">📊 Sprzedaż</div>
-                <div class="tile" style="opacity: 0.6; cursor: not-allowed;">💰 Premia</div>
+                <div class="tile" onclick="window.otworzModul('premia')" style="border-color: #28a745; color: #28a745; background: var(--group-bg);">💰 Premia</div>
 
                 <div class="tile" onclick="window.otworzModul('sprzatanie')">🧹 Sprzątanie i Kontrola Półek</div>
                 <div class="tile" onclick="window.otworzModul('planogram')">📋 Planogramy</div>
@@ -484,6 +484,83 @@
                 </div>
 
                 <button onclick="window.zapiszSprzedaz()" id="btn-zapisz-raport">Zapisz / Aktualizuj Raport</button>
+            </div>
+        </div>
+
+        <!-- MODUŁ PREMIA -->
+        <div id="modul-premia" class="hidden">
+            <h3>💰 Kalkulator i Podsumowanie Premii</h3>
+            <label for="premia-miesiac">Wybierz miesiąc:</label>
+            <input type="month" id="premia-miesiac" onchange="window.zaladujModulPremia()">
+
+            <div id="admin-premia-panel" class="field-group hidden" style="margin-top: 15px; border: 2px dashed #28a745;">
+                <h4 style="margin-top:0; color:#28a745;">⚙️ Panel Admina: Kwoty Bazowe i Warunki Premii</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
+                    <div>
+                        <label style="font-size:0.85em;">☕ Kawa (zł):</label>
+                        <input type="number" step="0.01" id="admin-pula-kawa" placeholder="0.00">
+                    </div>
+                    <div>
+                        <label style="font-size:0.85em;">🌭 HD (zł):</label>
+                        <input type="number" step="0.01" id="admin-pula-hd" placeholder="0.00">
+                    </div>
+                    <div>
+                        <label style="font-size:0.85em;">🛒 Sklep (zł):</label>
+                        <input type="number" step="0.01" id="admin-pula-sklep" placeholder="0.00">
+                    </div>
+                </div>
+
+                <hr style="margin: 15px 0; border: 0; border-top: 1px solid var(--border-color);">
+                <h5 style="margin: 0 0 8px 0; color: #28a745;">📋 Warunki do spełnienia (Opis + przypisanie)</h5>
+                <div id="admin-warunki-lista-container" style="margin-bottom: 10px;">Ładowanie warunków...</div>
+                
+                <div style="background: var(--card-bg); padding: 10px; border-radius: 6px; border: 1px solid var(--border-color);">
+                    <label style="font-size: 0.85em;">Opis nowego warunku:</label>
+                    <input type="text" id="admin-nowy-warunek-opis" placeholder="np. Brak spóźnień w miesiącu lub odpowiednia czystość">
+                    <label style="font-size: 0.85em; margin-top: 5px;">Dotyczy:</label>
+                    <select id="admin-nowy-warunek-docelowo">
+                        <option value="wszyscy">Wszyscy pracownicy</option>
+                    </select>
+                    <button onclick="window.dodajWarunekPremiaAdmin()" style="background: #17a2b8; margin-top: 8px; width: auto; padding: 6px 12px; font-size: 0.85em;">➕ Dodaj warunek</button>
+                </div>
+
+                <button onclick="window.zapiszPuleIPulaWarunkowAdmin()" style="background: #28a745; margin-top: 15px;">💾 Zapisz konfigurację premii</button>
+            </div>
+
+            <!-- Zwijany Panel Dodatkowej Premii Ręcznej -->
+            <div id="admin-dodatkowa-premia-wrapper" class="hidden" style="margin-top: 15px;">
+                <div class="collapsible-header" onclick="window.toggleCollapsible('admin-dp-content', 'admin-dp-arrow')" style="background: #17a2b8;">
+                    <span>⚙️ Panel Admina: Dodatkowa Premia Ręczna (Dodaj / Odejmij)</span>
+                    <span id="admin-dp-arrow">▼ Rozwiń</span>
+                </div>
+                <div id="admin-dp-content" class="collapsible-content" style="border: 2px dashed #17a2b8; background: var(--card-bg);">
+                    <label style="font-size:0.85em;">Pracownik:</label>
+                    <select id="admin-dp-pracownik">
+                        <option value="">Wczytuję pracowników...</option>
+                    </select>
+                    <label style="font-size:0.85em;">Kwota (zł) (dodatnia lub ujemna, np. 150 lub -50):</label>
+                    <input type="number" step="0.01" id="admin-dp-kwota" placeholder="0.00">
+                    <label style="font-size:0.85em;">Opis (za co / powód):</label>
+                    <input type="text" id="admin-dp-opis" placeholder="np. Za wzorową organizację inwentaryzacji">
+                    <button onclick="window.zapiszDodatkowaPremiaAdmin()" style="background: #17a2b8; margin-top: 10px;">➕ Dodaj / Aktualizuj premię ręczną</button>
+                </div>
+            </div>
+
+            <div id="premia-wyniki-container" style="margin-top: 20px;">Ładowanie danych premii...</div>
+            
+            <div style="margin-top: 25px; padding-top: 10px; border-top: 1px solid var(--border-color); text-align: center; font-size: 0.85em; color: #6c757d; font-style: italic;">
+                Ostateczna decyzja o wypłacie premii i jej wysokości należy do pracodawcy.
+            </div>
+        </div>
+
+        <!-- MODAL SZCZEGÓŁÓW WARUNKÓW PRACOWNIKA -->
+        <div id="modal-premia-warunki" class="modal-overlay hidden">
+            <div class="modal-content" style="border: 2px solid #007bff; max-width: 500px;">
+                <h4 style="margin-top:0; color:#007bff;" id="modal-pw-tytul">📋 Status warunków premii</h4>
+                <div id="modal-pw-tresc" style="margin-top: 10px;">Ładowanie...</div>
+                <div style="margin-top: 20px;">
+                    <button onclick="window.zamknijModalPremiaWarunki()" style="background: #6c757d; margin:0;">Zamknij</button>
+                </div>
             </div>
         </div>
 
@@ -884,6 +961,7 @@
                 </p>
                 <ul style="font-size: 0.9em; line-height: 1.5; padding-left: 20px;">
                     <li><strong>📊 Sprzedaż:</strong> Wprowadzanie raportów dziennych oraz podgląd miesięczny i analiza planów.</li>
+                    <li><strong>💰 Premia:</strong> Podgląd naliczonych premii, warunków oraz premii dodatkowych.</li>
                     <li><strong>🧹 Sprzątanie i Kontrola Półek:</strong> Weryfikacja czystości, dat ważności i zgodności z planogramem.</li>
                     <li><strong>📋 Planogramy:</strong> Podgląd ułożenia towaru na poszczególnych strefach i półkach.</li>
                     <li><strong>🎯 Misje:</strong> Indywidualne zadania przypisywane przez kierownika.</li>
@@ -1122,7 +1200,7 @@
             if (e.key === 'Escape') {
                 window.zamknijDropdownMenu();
                 window.zamknijModalInfo();
-                const modals = ['modal-zoom-zdjecia', 'modal-polka', 'modal-planogram-szczegoly', 'modal-zmien-haslo', 'modal-uniwersalna-misja', 'modal-szczegoly-pracownika', 'modal-nowa-wiadomosc', 'modal-podglad-wiadomosci'];
+                const modals = ['modal-zoom-zdjecia', 'modal-polka', 'modal-planogram-szczegoly', 'modal-zmien-haslo', 'modal-uniwersalna-misja', 'modal-szczegoly-pracownika', 'modal-nowa-wiadomosc', 'modal-podglad-wiadomosci', 'modal-premia-warunki'];
                 for (let mId of modals) {
                     const el = document.getElementById(mId);
                     if (el && !el.classList.contains('hidden')) {
@@ -1143,7 +1221,7 @@
             
             window.zamknijDropdownMenu();
             window.zamknijModalInfo();
-            const modals = ['modal-zoom-zdjecia', 'modal-polka', 'modal-planogram-szczegoly', 'modal-zmien-haslo', 'modal-uniwersalna-misja', 'modal-szczegoly-pracownika', 'modal-nowa-wiadomosc', 'modal-podglad-wiadomosci'];
+            const modals = ['modal-zoom-zdjecia', 'modal-polka', 'modal-planogram-szczegoly', 'modal-zmien-haslo', 'modal-uniwersalna-misja', 'modal-szczegoly-pracownika', 'modal-nowa-wiadomosc', 'modal-podglad-wiadomosci', 'modal-premia-warunki'];
             for (let mId of modals) {
                 const el = document.getElementById(mId);
                 if (el && !el.classList.contains('hidden')) {
@@ -1304,7 +1382,7 @@
 
         window.addEventListener("hashchange", () => {
             const hash = window.location.hash;
-            ['modul-sprzedaz', 'modul-grafik', 'modul-pracownicy', 'modul-sprzatanie', 'modul-planogram', 'modul-misje', 'modul-statystyki', 'modul-wiadomosci', 'menu-tiles'].forEach(id => {
+            ['modul-sprzedaz', 'modul-premia', 'modul-grafik', 'modul-pracownicy', 'modul-sprzatanie', 'modul-planogram', 'modul-misje', 'modul-statystyki', 'modul-wiadomosci', 'menu-tiles'].forEach(id => {
                 document.getElementById(id).classList.add('hidden');
             });
 
@@ -1318,6 +1396,18 @@
             } else if (hash === "#sprzedaz") {
                 document.getElementById('modul-sprzedaz').classList.remove('hidden');
                 window.pokazWidokMiesieczny();
+            } else if (hash === "#premia") {
+                document.getElementById('modul-premia').classList.remove('hidden');
+                if (!document.getElementById('premia-miesiac').value) {
+                    document.getElementById('premia-miesiac').value = new Date().toISOString().slice(0, 7);
+                }
+                const czyAdmin = currentUserData && currentUserData.rola === 'admin';
+                document.getElementById('admin-premia-panel').classList.toggle('hidden', !czyAdmin);
+                document.getElementById('admin-dodatkowa-premia-wrapper').classList.toggle('hidden', !czyAdmin);
+                if (czyAdmin) {
+                    wypelnijSelectPracownikow('admin-dp-pracownik');
+                }
+                window.zaladujModulPremia();
             } else if (hash === "#grafik") {
                 document.getElementById('modul-grafik').classList.remove('hidden');
                 if(!document.getElementById('grafik-miesiac').value) document.getElementById('grafik-miesiac').value = new Date().toISOString().slice(0, 7);
@@ -1355,6 +1445,482 @@
         });
 
         window.otworzModul = (nazwa) => { window.location.hash = "#" + nazwa; };
+
+        /* ==================== MODUŁ PREMIA ==================== */
+
+        let tymczasoweWarunkiAdmin = []; // [{id, opis, docelowo ('wszyscy' lub imie), spelnioneMap: {imie: true/false}}]
+
+        async function pobierzListeWszystkichPracownikow() {
+            let pracownicy = [];
+            try {
+                const snap = await getDocs(collection(db, "uzytkownicy"));
+                snap.forEach(d => {
+                    let imiePelne = d.data().imie;
+                    let imieKrotkie = imiePelne.split(' ')[0];
+                    if (!pracownicy.includes(imieKrotkie)) pracownicy.push(imieKrotkie);
+                });
+            } catch (e) { console.error(e); }
+            return pracownicy;
+        }
+
+        async function aktualizujSelectDocelowoWarunku(pracownicyList) {
+            const sel = document.getElementById('admin-nowy-warunek-docelowo');
+            if (!sel) return;
+            let html = `<option value="wszyscy">Wszyscy pracownicy</option>`;
+            pracownicyList.forEach(p => {
+                html += `<option value="${p}">${p}</option>`;
+            });
+            sel.innerHTML = html;
+        }
+
+        window.dodajWarunekPremiaAdmin = function() {
+            const opis = document.getElementById('admin-nowy-warunek-opis').value.trim();
+            const docelowo = document.getElementById('admin-nowy-warunek-docelowo').value;
+            if (!opis) return alert("Wpisz opis warunku!");
+
+            tymczasoweWarunkiAdmin.push({
+                id: 'w_' + Date.now(),
+                opis: opis,
+                docelowo: docelowo
+            });
+            document.getElementById('admin-nowy-warunek-opis').value = "";
+            wyswietlWarunkiWPaneluAdmina();
+        };
+
+        window.usunWarunekPremiaAdmin = function(id) {
+            tymczasoweWarunkiAdmin = tymczasoweWarunkiAdmin.filter(w => w.id !== id);
+            wyswietlWarunkiWPaneluAdmina();
+        };
+
+        async function wyswietlWarunkiWPaneluAdmina() {
+            const container = document.getElementById('admin-warunki-lista-container');
+            if (!container) return;
+            if (tymczasoweWarunkiAdmin.length === 0) {
+                container.innerHTML = `<p style="font-size:0.85em; color:#6c757d; margin:0;">Brak zdefiniowanych warunków premii.</p>`;
+                return;
+            }
+
+            let pracownicyList = await pobierzListeWszystkichPracownikow();
+            let html = "";
+            tymczasoweWarunkiAdmin.forEach((w, idx) => {
+                let docLabel = w.docelowo === 'wszyscy' ? 'Wszyscy' : `Pracownik: ${w.docelowo}`;
+                html += `<div style="background:var(--card-bg); padding:8px; margin-bottom:6px; border-radius:4px; border:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <strong>${idx + 1}. ${w.opis}</strong> <span style="font-size:0.8em; color:#007bff;">(${docLabel})</span>
+                    </div>
+                    <div style="display:flex; gap:6px;">
+                        <button onclick="window.otworzSzczegolyWarunkuAdmin('${w.id}')" style="background:#17a2b8; padding:2px 8px; font-size:0.75em; width:auto; margin:0;">📋 Szczegóły</button>
+                        <button onclick="window.usunWarunekPremiaAdmin('${w.id}')" style="background:#dc3545; padding:2px 8px; font-size:0.75em; width:auto; margin:0;">🗑️ Usuń</button>
+                    </div>
+                </div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        window.otworzSzczegolyWarunkuAdmin = async function(warunekId) {
+            const m = document.getElementById('premia-miesiac').value;
+            let warunek = tymczasoweWarunkiAdmin.find(w => w.id === warunekId);
+            if (!warunek) return;
+
+            let pracownicyList = await pobierzListeWszystkichPracownikow();
+            let html = `<p style="margin-top:0;"><strong>Warunek:</strong> ${warunek.opis}</p>`;
+            html += `<p style="font-size:0.85em; color:#6c757d;">Zaznacz pracowników, którzy spełnili powyższy warunek:</p>`;
+            html += `<div style="max-height:250px; overflow-y:auto; border:1px solid var(--border-color); padding:8px; border-radius:4px; background:var(--card-bg);">`;
+
+            let dotyczeni = pracownicyList.filter(p => warunek.docelowo === 'wszyscy' || warunek.docelowo === p);
+            dotyczeni.forEach(p => {
+                let spelnione = warunek.spelnioneMap ? !!warunek.spelnioneMap[p] : false;
+                html += `<label style="display:flex; align-items:center; gap:8px; margin:6px 0; cursor:pointer;"><input type="checkbox" ${spelnione ? 'checked' : ''} onchange="window.toggleSpelnienieWarunkuAdminModal('${m}', '${warunekId}', '${p}', this.checked)"> ${p}</label>`;
+            });
+            html += `</div>`;
+
+            document.getElementById('modal-pw-tytul').innerText = "📋 Szczegóły / Spełnienie warunku";
+            document.getElementById('modal-pw-tresc').innerHTML = html;
+            document.getElementById('modal-premia-warunki').classList.remove('hidden');
+        };
+
+        window.toggleSpelnienieWarunkuAdminModal = async function(m, warunekId, pracownik, spelnione) {
+            tymczasoweWarunkiAdmin.forEach(w => {
+                if (w.id === warunekId) {
+                    if (!w.spelnioneMap) w.spelnioneMap = {};
+                    w.spelnioneMap[pracownik] = spelnione;
+                }
+            });
+            await window.zapiszStanWarunkuPracownika(m, tymczasoweWarunkiAdmin);
+        };
+
+        window.zamknijModalPremiaWarunki = function() {
+            document.getElementById('modal-premia-warunki').classList.add('hidden');
+            window.zaladujModulPremia();
+        };
+
+        window.zapiszPuleIPulaWarunkowAdmin = async function() {
+            if (!(currentUserData && currentUserData.rola === 'admin')) return alert("Brak uprawnień!");
+            const m = document.getElementById('premia-miesiac').value;
+            if (!m) return alert("Wybierz miesiąc!");
+
+            const kawaPula = Number(document.getElementById('admin-pula-kawa').value) || 0;
+            const hdPula = Number(document.getElementById('admin-pula-hd').value) || 0;
+            const sklepPula = Number(document.getElementById('admin-pula-sklep').value) || 0;
+
+            try {
+                await setDoc(doc(db, "premie_pule", m), {
+                    kawa: kawaPula,
+                    hd: hdPula,
+                    sklep: sklepPula,
+                    warunki: tymczasoweWarunkiAdmin
+                }, { merge: true });
+                alert("Zapisano konfigurację premii!");
+                window.zaladujModulPremia();
+            } catch (e) {
+                alert("Błąd zapisu: " + e.message);
+            }
+        };
+
+        window.zapiszStanWarunkuPracownika = async function(m, warunkiZaktualizowane) {
+            if (!(currentUserData && currentUserData.rola === 'admin')) return;
+            try {
+                await setDoc(doc(db, "premie_pule", m), {
+                    warunki: warunkiZaktualizowane
+                }, { merge: true });
+            } catch (e) { console.error(e); }
+        };
+
+        window.zapiszWliczenieDoPremiiAdmin = async function(m, pracownik, czyWliczony, powod) {
+            if (!(currentUserData && currentUserData.rola === 'admin')) return;
+            try {
+                await setDoc(doc(db, "premie_statusy", `${m}_${pracownik}`), {
+                    wliczony: czyWliczony,
+                    powod: powod || ""
+                }, { merge: true });
+                window.zaladujModulPremia();
+            } catch (e) { alert("Błąd zapisu statusu: " + e.message); }
+        };
+
+        window.zapiszDodatkowaPremiaAdmin = async function() {
+            if (!(currentUserData && currentUserData.rola === 'admin')) return alert("Brak uprawnień!");
+            const m = document.getElementById('premia-miesiac').value;
+            const pracownik = document.getElementById('admin-dp-pracownik').value;
+            const kwota = Number(document.getElementById('admin-dp-kwota').value);
+            const opis = document.getElementById('admin-dp-opis').value.trim();
+
+            if (!m || !pracownik || isNaN(kwota)) return alert("Wybierz pracownika i podaj kwotę premii!");
+            if (!opis) return alert("Musisz podać opis (za co) dla dodatkowej premii!");
+
+            try {
+                const docId = `${m}_${pracownik}`;
+                await setDoc(doc(db, "premie_dodatkowe", docId), {
+                    miesiac: m,
+                    pracownik: pracownik,
+                    kwota: kwota,
+                    opis: opis,
+                    autor: currentUserData.imie
+                });
+                alert("Dodatkowa premia została zapisana!");
+                document.getElementById('admin-dp-kwota').value = "";
+                document.getElementById('admin-dp-opis').value = "";
+                window.zaladujModulPremia();
+            } catch (e) {
+                alert("Błąd zapisu dodatkowej premii: " + e.message);
+            }
+        };
+
+        window.usunDodatkowaPremiaAdmin = async function(docId) {
+            if (!confirm("Czy na pewno chcesz usunąć tę dodatkową premię?")) return;
+            try {
+                await deleteDoc(doc(db, "premie_dodatkowe", docId));
+                window.zaladujModulPremia();
+            } catch (e) {
+                alert("Błąd usuwania: " + e.message);
+            }
+        };
+
+        window.zaladujModulPremia = async function() {
+            const m = document.getElementById('premia-miesiac').value;
+            const container = document.getElementById('premia-wyniki-container');
+            if (!m) return;
+            container.innerHTML = "Pobieranie i obliczanie danych premii...";
+
+            const czyAdmin = currentUserData && currentUserData.rola === 'admin';
+
+            try {
+                let pracownicyList = await pobierzListeWszystkichPracownikow();
+                if (czyAdmin) {
+                    await aktualizujSelectDocelowoWarunku(pracownicyList);
+                }
+
+                const puleDoc = await getDoc(doc(db, "premie_pule", m));
+                let pule = puleDoc.exists() ? puleDoc.data() : { kawa: 0, hd: 0, sklep: 0, warunki: [] };
+                tymczasoweWarunkiAdmin = pule.warunki || [];
+
+                if (czyAdmin) {
+                    document.getElementById('admin-pula-kawa').value = pule.kawa || '';
+                    document.getElementById('admin-pula-hd').value = pule.hd || '';
+                    document.getElementById('admin-pula-sklep').value = pule.sklep || '';
+                    await wyswietlWarunkiWPaneluAdmina();
+                }
+
+                let statusyPremiaMap = {}; 
+                for (let p of pracownicyList) {
+                    const stDoc = await getDoc(doc(db, "premie_statusy", `${m}_${p}`));
+                    if (stDoc.exists()) {
+                        statusyPremiaMap[p] = stDoc.data();
+                    } else {
+                        let isUserAdmin = false;
+                        try {
+                            const uSnap = await getDocs(collection(db, "uzytkownicy"));
+                            uSnap.forEach(u => {
+                                if (u.data().imie.startsWith(p) && u.data().rola === 'admin') isUserAdmin = true;
+                            });
+                        } catch(err) {}
+
+                        statusyPremiaMap[p] = {
+                            wliczony: !isUserAdmin,
+                            powod: ""
+                        };
+                    }
+                }
+
+                const sprzedazSnap = await getDocs(collection(db, "sprzedaz"));
+                let sumaKawaSklep = 0, sumaHdSklep = 0, sumaSklepSklep = 0;
+                let sprzedazPracownikow = {}; 
+
+                sprzedazSnap.forEach(d => {
+                    let r = d.data();
+                    if (r.data && r.data.startsWith(m)) {
+                        let kVal = Number(r.kawa?.wartosc) || 0;
+                        let hVal = Number(r.hd?.wartosc) || 0;
+                        let sVal = Number(r.sklep?.wartosc) || 0;
+
+                        sumaKawaSklep += kVal;
+                        sumaHdSklep += hVal;
+                        sumaSklepSklep += sVal;
+
+                        let osoby = r.sprzedawcy || [];
+                        let cnt = osoby.length;
+                        if (cnt > 0) {
+                            let kUdz = kVal / cnt;
+                            let hUdz = hVal / cnt;
+                            let sUdz = sVal / cnt;
+
+                            osoby.forEach(osoba => {
+                                if (!sprzedazPracownikow[osoba]) {
+                                    sprzedazPracownikow[osoba] = { kawa: 0, hd: 0, sklep: 0 };
+                                }
+                                sprzedazPracownikow[osoba].kawa += kUdz;
+                                sprzedazPracownikow[osoba].hd += hUdz;
+                                sprzedazPracownikow[osoba].sklep += sUdz;
+                            });
+                        }
+                    }
+                });
+
+                const dpSnap = await getDocs(collection(db, "premie_dodatkowe"));
+                let dodatkowePremieMap = {}; 
+                dpSnap.forEach(d => {
+                    let dp = d.data();
+                    if (dp.miesiac === m) {
+                        if (!dodatkowePremieMap[dp.pracownik]) dodatkowePremieMap[dp.pracownik] = [];
+                        dodatkowePremieMap[dp.pracownik].push({ id: d.id, ...dp });
+                    }
+                });
+
+                let wliczeniPracownicy = pracownicyList.filter(p => statusyPremiaMap[p] && statusyPremiaMap[p].wliczony);
+                let danePracownikowWyniki = {};
+
+                pracownicyList.forEach(prac => {
+                    let czyWliczony = statusyPremiaMap[prac] ? statusyPremiaMap[prac].wliczony : true;
+                    if (!czyWliczony) {
+                        danePracownikowWyniki[prac] = { kawa: 0, hd: 0, sklep: 0, dodatkowe: 0, total: 0, wliczony: false };
+                        return;
+                    }
+
+                    let pSprzedaz = sprzedazPracownikow[prac] || { kawa: 0, hd: 0, sklep: 0 };
+                    
+                    let udziałKawa = sumaKawaSklep > 0 ? (pSprzedaz.kawa / sumaKawaSklep) : 0;
+                    let udziałHd = sumaHdSklep > 0 ? (pSprzedaz.hd / sumaHdSklep) : 0;
+                    let udziałSklep = sumaSklepSklep > 0 ? (pSprzedaz.sklep / sumaSklepSklep) : 0;
+
+                    let kwotaKawa = (Number(pule.kawa) || 0) * udziałKawa;
+                    let kwotaHd = (Number(pule.hd) || 0) * udziałHd;
+                    let kwotaSklep = (Number(pule.sklep) || 0) * udziałSklep;
+
+                    let sumaDodatkowych = 0;
+                    if (dodatkowePremieMap[prac]) {
+                        dodatkowePremieMap[prac].forEach(dp => sumaDodatkowych += Number(dp.kwota) || 0);
+                    }
+
+                    let sumaTotal = kwotaKawa + kwotaHd + kwotaSklep + sumaDodatkowych;
+
+                    danePracownikowWyniki[prac] = {
+                        kawa: kwotaKawa,
+                        hd: kwotaHd,
+                        sklep: kwotaSklep,
+                        dodatkowe: sumaDodatkowych,
+                        total: sumaTotal,
+                        wliczony: true
+                    };
+                });
+
+                let rankingKawa = [...wliczeniPracownicy].sort((a, b) => danePracownikowWyniki[b].kawa - danePracownikowWyniki[a].kawa);
+                let rankingHd = [...wliczeniPracownicy].sort((a, b) => danePracownikowWyniki[b].hd - danePracownikowWyniki[a].hd);
+                let rankingSklep = [...wliczeniPracownicy].sort((a, b) => danePracownikowWyniki[b].sklep - danePracownikowWyniki[a].sklep);
+                let rankingTotal = [...wliczeniPracownicy].sort((a, b) => danePracownikowWyniki[b].total - danePracownikowWyniki[a].total);
+
+                function pobierzMiejsce(prac, ranking) {
+                    if (!danePracownikowWyniki[prac] || !danePracownikowWyniki[prac].wliczony) return "-";
+                    let idx = ranking.indexOf(prac);
+                    return idx !== -1 ? idx + 1 : "-";
+                }
+
+                let html = "";
+
+                if (czyAdmin) {
+                    html += `<h4>📊 Podsumowanie Premii Zespołu (${m})</h4>`;
+                    html += `<div class="table-responsive"><table class="standard-table">`;
+                    html += `<tr><th style="text-align:left; padding-left:8px;">Pracownik</th><th>☕ Kawa (zł)</th><th>🌭 HD (zł)</th><th>🛒 Sklep (zł)</th><th>➕ Dodatkowa</th><th>💰 RAZEM (TOTAL)</th></tr>`;
+                    
+                    let sumTotalAll = 0, sumKawaAll = 0, sumHdAll = 0, sumSklepAll = 0, sumDodAll = 0;
+
+                    pracownicyList.forEach(prac => {
+                        let w = danePracownikowWyniki[prac];
+                        let st = statusyPremiaMap[prac] || { wliczony: true, powod: "" };
+
+                        if (w.wliczony) {
+                            sumKawaAll += w.kawa; sumHdAll += w.hd; sumSklepAll += w.sklep; sumDodAll += w.dodatkowe; sumTotalAll += w.total;
+                        }
+
+                        let dodatkoweOpisyHtml = "";
+                        if (dodatkowePremieMap[prac]) {
+                            dodatkowePremieMap[prac].forEach(dp => {
+                                dodatkoweOpisyHtml += `<br><span style="font-size:0.75em; color:#6c757d;">${dp.opis}: <strong>${Number(dp.kwota).toFixed(2)} zł</strong> <button onclick="window.usunDodatkowaPremiaAdmin('${dp.id}')" style="background:#dc3545; padding:1px 4px; font-size:0.7em; width:auto; margin:0;">x</button></span>`;
+                            });
+                        }
+
+                        let powodInput = !st.wliczony ? `<br><input type="text" value="${st.powod || ''}" placeholder="Powód braku premii..." onchange="window.zapiszPowodBrakPremiiAdmin('${m}', '${prac}', this.value)" style="font-size:0.75em; padding:3px; margin-top:2px; width:140px;">` : '';
+
+                        html += `<tr>
+                            <td style="text-align:left; padding-left:8px; display:flex; align-items:center; gap:8px;">
+                                <input type="checkbox" ${st.wliczony ? 'checked' : ''} onchange="window.zmienWliczeniePracownikaAdmin('${m}', '${prac}', this.checked)" title="Kwalifikacja do premii">
+                                <div>
+                                    <strong>${prac}</strong>
+                                    ${powodInput}
+                                </div>
+                            </td>
+                            <td>${w.wliczony ? w.kawa.toFixed(2) + ' zł <span style="font-size:0.75em; color:#6c757d;">(#' + pobierzMiejsce(prac, rankingKawa) + ')</span>' : '-'}</td>
+                            <td>${w.wliczony ? w.hd.toFixed(2) + ' zł <span style="font-size:0.75em; color:#6c757d;">(#' + pobierzMiejsce(prac, rankingHd) + ')</span>' : '-'}</td>
+                            <td>${w.wliczony ? w.sklep.toFixed(2) + ' zł <span style="font-size:0.75em; color:#6c757d;">(#' + pobierzMiejsce(prac, rankingSklep) + ')</span>' : '-'}</td>
+                            <td>${w.dodatkowe.toFixed(2)} zł ${dodatkoweOpisyHtml}</td>
+                            <td class="val-green"><strong>${w.wliczony ? w.total.toFixed(2) + ' zł <span style="font-size:0.75em; color:#6c757d;">(#' + pobierzMiejsce(prac, rankingTotal) + ')</span>' : '0.00 zł (Brak)'}</strong></td>
+                        </tr>`;
+                    });
+
+                    html += `<tr style="font-weight:bold; background:var(--group-bg);">
+                        <td style="text-align:left; padding-left:8px;">SUMA (TOTAL)</td>
+                        <td>${sumKawaAll.toFixed(2)} zł</td>
+                        <td>${sumHdAll.toFixed(2)} zł</td>
+                        <td>${sumSklepAll.toFixed(2)} zł</td>
+                        <td>${sumDodAll.toFixed(2)} zł</td>
+                        <td class="val-green">${sumTotalAll.toFixed(2)} zł</td>
+                    </tr>`;
+                    html += `</table></div>`;
+
+                } else {
+                    let mojeImiePelne = currentUserData ? currentUserData.imie : "";
+                    let mojeImieKrotkie = mojeImiePelne.split(' ')[0];
+                    let mojeSt = statusyPremiaMap[mojeImieKrotkie] || { wliczony: true, powod: "" };
+                    let mojeW = danePracownikowWyniki[mojeImieKrotkie] || { kawa: 0, hd: 0, sklep: 0, dodatkowe: 0, total: 0, wliczony: false };
+
+                    let komunikatBrakPremii = "";
+                    if (!mojeSt.wliczony) {
+                        let powodSekcja = mojeSt.powod ? `<p style="font-size: 0.95em; color: #6c757d; margin-top: 5px;"><strong>Powód / Informacja:</strong> ${mojeSt.powod}</p>` : '';
+                        komunikatBrakPremii = `
+                            <div class="field-group" style="border-left: 4px solid #dc3545; background: var(--card-bg); padding: 15px; margin-bottom: 15px;">
+                                <h4 style="margin-top:0; color:#dc3545;">❌ Brak kwalifikacji do premii w bieżącym okresie (${m})</h4>
+                                <p style="font-size: 1.05em; font-weight: bold; margin-top: 5px;">W bieżącym okresie nie kwalifikujesz się do otrzymania premii.</p>
+                                ${powodSekcja}
+                            </div>
+                        `;
+                    }
+
+                    let mKawaMiejsce = pobierzMiejsce(mojeImieKrotkie, rankingKawa);
+                    let mHdMiejsce = pobierzMiejsce(mojeImieKrotkie, rankingHd);
+                    let mSklepMiejsce = pobierzMiejsce(mojeImieKrotkie, rankingSklep);
+                    let mTotalMiejsce = pobierzMiejsce(mojeImieKrotkie, rankingTotal);
+
+                    let dodatkoweOpisyPracownikaHtml = "";
+                    if (dodatkowePremieMap[mojeImieKrotkie]) {
+                        dodatkowePremieMap[mojeImieKrotkie].forEach(dp => {
+                            dodatkoweOpisyPracownikaHtml += `<div style="background:var(--group-bg); padding:8px; margin-top:5px; border-radius:4px; font-size:0.9em;">📝 ${dp.opis}: <strong>${Number(dp.kwota).toFixed(2)} zł</strong></div>`;
+                        });
+                    }
+
+                    let warunkiPracownikaHtml = `<div class="field-group" style="margin-top:15px; background:var(--card-bg); border:1px solid var(--border-color);"><label style="margin-bottom:8px;">📋 Status warunków premii w tym miesiącu:</label>`;
+                    let maWarunki = false;
+                    tymczasoweWarunkiAdmin.forEach(war => {
+                        if (war.docelowo === 'wszyscy' || war.docelowo === mojeImieKrotkie) {
+                            maWarunki = true;
+                            let spelnione = war.spelnioneMap ? !!war.spelnioneMap[mojeImieKrotkie] : false;
+                            let statusB = spelnione ? `<span class="badge-done">Spełniony</span>` : `<span class="badge-pending">Do spełnienia</span>`;
+                            warunkiPracownikaHtml += `<div style="display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid var(--border-color);"><span>${war.opis}</span>${statusB}</div>`;
+                        }
+                    });
+                    if (!maWarunki) warunkiPracownikaHtml += `<p style="font-size:0.85em; color:#6c757d; margin:0;">Brak wymaganych dodatkowych warunków.</p>`;
+                    warunkiPracownikaHtml += `</div>`;
+
+                    html += `
+                        ${komunikatBrakPremii}
+                        <div class="field-group" style="border-left: 4px solid #28a745;">
+                            <h4 style="margin-top:0;">👤 Twoja Premia Za Miesiąc: ${m}</h4>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+                                <div style="background:var(--card-bg); padding:10px; border-radius:6px; border:1px solid var(--border-color);">
+                                    <label>☕ Kawa:</label>
+                                    <div style="font-size: 1.2em; font-weight: bold; color: #007bff;">${mojeW.wliczony ? mojeW.kawa.toFixed(2) + ' zł' : '0.00 zł'}</div>
+                                    <div style="font-size: 0.85em; color: #6c757d; margin-top: 2px;">Pozycja: <strong>#${mKawaMiejsce}</strong></div>
+                                </div>
+                                <div style="background:var(--card-bg); padding:10px; border-radius:6px; border:1px solid var(--border-color);">
+                                    <label>🌭 HD:</label>
+                                    <div style="font-size: 1.2em; font-weight: bold; color: #007bff;">${mojeW.wliczony ? mojeW.hd.toFixed(2) + ' zł' : '0.00 zł'}</div>
+                                    <div style="font-size: 0.85em; color: #6c757d; margin-top: 2px;">Pozycja: <strong>#${mHdMiejsce}</strong></div>
+                                </div>
+                                <div style="background:var(--card-bg); padding:10px; border-radius:6px; border:1px solid var(--border-color);">
+                                    <label>🛒 Sklep:</label>
+                                    <div style="font-size: 1.2em; font-weight: bold; color: #007bff;">${mojeW.wliczony ? mojeW.sklep.toFixed(2) + ' zł' : '0.00 zł'}</div>
+                                    <div style="font-size: 0.85em; color: #6c757d; margin-top: 2px;">Pozycja: <strong>#${mSklepMiejsce}</strong></div>
+                                </div>
+                                <div style="background:var(--card-bg); padding:10px; border-radius:6px; border:1px solid var(--border-color);">
+                                    <label>➕ Premia dodatkowa:</label>
+                                    <div style="font-size: 1.2em; font-weight: bold; color: #17a2b8;">${mojeW.wliczony ? mojeW.dodatkowe.toFixed(2) + ' zł' : '0.00 zł'}</div>
+                                    ${dodatkoweOpisyPracownikaHtml}
+                                </div>
+                            </div>
+
+                            ${warunkiPracownikaHtml}
+
+                            <div style="margin-top: 15px; background: var(--card-bg); padding: 15px; border-radius: 6px; border: 2px solid #28a745; text-align: center;">
+                                <label style="font-size: 1em;">💰 SUMA TWOJEJ PREMIA (ŁĄCZNIE):</label>
+                                <div style="font-size: 1.8em; font-weight: bold; color: #28a745; margin-top: 5px;">${mojeW.total.toFixed(2)} zł</div>
+                                <div style="font-size: 0.9em; color: #6c757d; margin-top: 5px;">Zajmowana pozycja w klasyfikacji ogólnej: <strong>#${mTotalMiejsce}</strong></div>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                container.innerHTML = html;
+
+            } catch (e) {
+                container.innerHTML = "<span class='error'>Błąd podczas ładowania premii: " + e.message + "</span>";
+            }
+        };
+
+        window.zmienWliczeniePracownikaAdmin = async function(m, pracownik, wliczony) {
+            let powod = wliczony ? "" : "";
+            await window.zapiszWliczenieDoPremiiAdmin(m, pracownik, wliczony, powod);
+        };
+
+        window.zapiszPowodBrakPremiiAdmin = async function(m, pracownik, powod) {
+            await window.zapiszWliczenieDoPremiiAdmin(m, pracownik, false, powod);
+        };
 
         /* ==================== SPRAWDZANIE TERMINÓW BADAN / BHP ==================== */
 
@@ -1996,7 +2562,7 @@
             try {
                 const snap = await getDocs(collection(db, "uzytkownicy"));
                 let html = `<option value="">Wybierz pracownika</option>`;
-                snap.forEach(d => { html += `<option value="${d.data().imie}">${d.data().imie}</option>`; });
+                snap.forEach(d => { html += `<option value="${d.data().imie.split(' ')[0]}">${d.data().imie}</option>`; });
                 sel.innerHTML = html;
             } catch (e) { sel.innerHTML = `<option value="">Błąd ładowania</option>`; }
         }
@@ -2022,7 +2588,7 @@
             try {
                 const snap = await getDocs(collection(db, "misje"));
                 let html = `<table class="standard-table"><tr><th>Pracownik</th><th>Zadanie</th><th>Do kiedy</th><th>Status</th><th>Uwagi</th></tr>`;
-                let count = 0, czyAdmin = currentUserData && currentUserData.rola === 'admin', mojeImie = currentUserData ? currentUserData.imie : "";
+                let count = 0, czyAdmin = currentUserData && currentUserData.rola === 'admin', mojeImie = currentUserData ? currentUserData.imie.split(' ')[0] : "";
                 let noweDlaMnie = 0, dzisiajStr = new Date().toISOString().slice(0, 10);
 
                 for (const docSnap of snap.docs) {
