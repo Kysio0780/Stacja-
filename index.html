@@ -343,6 +343,30 @@
             width: auto;
         }
         .msg-tab-btn.active { background: #007bff; color: white; border-color: #007bff; }
+
+        .tps-icon-today {
+            display: inline-block;
+            background: #ffc107;
+            color: #000;
+            font-weight: bold;
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            margin-right: 6px;
+        }
+        .tps-icon-expired {
+            display: inline-block;
+            background: #dc3545;
+            color: #fff;
+            font-weight: bold;
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            margin-right: 6px;
+        }
+        .tps-row-discounted td {
+            background-color: rgba(40, 167, 69, 0.12) !important;
+        }
     </style>
 </head>
 <body>
@@ -417,7 +441,10 @@
                     💬 Wiadomości
                     <span id="wiadomosci-badge" class="notification-badge hidden">0</span>
                 </div>
-                <div class="tile" style="opacity: 0.4; cursor: not-allowed; border-style: dashed;">➕ Pusty kafelek</div>
+                <div class="tile" onclick="window.otworzModul('tpsy')" style="border-color: #ff9800; color: #ff9800; background: var(--group-bg); position: relative;">
+                    ⏳ TPSy
+                    <span id="tpsy-badge" class="notification-badge hidden" style="background: #ffc107; color: #000;" title="Dzisiaj kończy się TPS!">!</span>
+                </div>
 
                 <div class="tile admin-only-tile" onclick="window.otworzModul('pracownicy')" id="tile-pracownicy" style="border-color: #28a745; color: #28a745; display: none; position: relative;">
                     👥 Panel pracowników
@@ -425,6 +452,33 @@
                 </div>
                 <div class="tile admin-only-tile" onclick="window.otworzModul('statystyki')" id="tile-statystyki" style="border-color: #28a745; color: #28a745; display: none;">📊 Statystyki</div>
             </div>
+        </div>
+
+        <!-- MODUŁ TPSy -->
+        <div id="modul-tpsy" class="hidden">
+            <h3>⏳ Terminy Przydatności do Spożycia (TPSy)</h3>
+            
+            <button onclick="window.toggleFormularzDodajTps()" style="background: #28a745; margin: 0 0 12px 0;">➕ Dodaj</button>
+            
+            <div id="tpsy-dodaj-form" class="field-group hidden" style="border: 2px dashed #28a745; background: var(--card-bg);">
+                <label for="tps-nowy-nazwa">Nazwa towaru:</label>
+                <input type="text" id="tps-nowy-nazwa" autocomplete="off">
+                
+                <label for="tps-nowy-data">TPS:</label>
+                <input type="date" id="tps-nowy-data">
+                
+                <div style="display: flex; gap: 10px; margin-top: 8px;">
+                    <button onclick="window.zapiszNowyTps()" style="background: #28a745; margin: 0;">Zapisz towar</button>
+                    <button onclick="window.toggleFormularzDodajTps(false)" style="background: #6c757d; margin: 0;">Anuluj</button>
+                </div>
+            </div>
+
+            <div class="field-group" style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                <input type="checkbox" id="tpsy-filtr-ukryj-przeterminowane" onchange="window.renderujListeTps()">
+                <label for="tpsy-filtr-ukryj-przeterminowane" style="margin: 0; cursor: pointer;">Ukryj towary z przekroczonym TPS</label>
+            </div>
+
+            <div id="tpsy-lista-container">Ładowanie listy towarów...</div>
         </div>
         
         <!-- MODUŁ SPRZEDAŻY -->
@@ -966,6 +1020,7 @@
                     <li><strong>📋 Planogramy:</strong> Podgląd ułożenia towaru na poszczególnych strefach i półkach.</li>
                     <li><strong>🎯 Misje:</strong> Indywidualne zadania przypisywane przez kierownika.</li>
                     <li><strong>💬 Wiadomości:</strong> Wewnętrzna poczta e-mail z obsługą priorytetów i załącznikami.</li>
+                    <li><strong>⏳ TPSy:</strong> Kontrola kończących się terminów przydatności do spożycia.</li>
                     <li><strong>📅 Grafik:</strong> Podgląd grafiku miesięcznego oraz wysyłanie próśb o zmiany.</li>
                 </ul>
                 <div style="margin-top: 20px;">
@@ -1113,12 +1168,21 @@
         let aktualneDaneSprzatania = {};
         let aktualnyTabWiadomosci = "odebrane";
         let aktualniePodgladanaWiadomosc = null;
+        let listaTowarowTps = [];
 
         const DOMYSLNE_POLKI = [
             "Akcesoria", "Alkohol", "Chemia", "Kasa 1: 5 półek", "Kasa 1: 9 półek", 
             "Kasa 2: 5 półek", "Kasa 2: 9 półek", "Kawy / Sosy", "Lodówka mała", 
             "Lodówka Napoje", "Lodówka Piwo", "Oleje", "Piwo", "Soki i Woda", "Strefa zakasowa"
         ];
+
+        function pobierzDzisiejszaDateStr() {
+            const d = new Date();
+            const rok = d.getFullYear();
+            const mies = String(d.getMonth() + 1).padStart(2, '0');
+            const dzien = String(d.getDate()).padStart(2, '0');
+            return `${rok}-${mies}-${dzien}`;
+        }
 
         function ustawBiezacaDateWNaglowku() {
             const dataEl = document.getElementById('header-current-date');
@@ -1382,7 +1446,7 @@
 
         window.addEventListener("hashchange", () => {
             const hash = window.location.hash;
-            ['modul-sprzedaz', 'modul-premia', 'modul-grafik', 'modul-pracownicy', 'modul-sprzatanie', 'modul-planogram', 'modul-misje', 'modul-statystyki', 'modul-wiadomosci', 'menu-tiles'].forEach(id => {
+            ['modul-sprzedaz', 'modul-premia', 'modul-grafik', 'modul-pracownicy', 'modul-sprzatanie', 'modul-planogram', 'modul-misje', 'modul-statystyki', 'modul-wiadomosci', 'modul-tpsy', 'menu-tiles'].forEach(id => {
                 document.getElementById(id).classList.add('hidden');
             });
 
@@ -1392,7 +1456,12 @@
                     sprawdzPowiadomieniaMisje(currentUserData.imie, currentUserData.rola === 'admin');
                     sprawdzPowiadomieniaWiadomosci(currentUserData.imie);
                     sprawdzPowiadomieniaPracownicyGlobal();
+                    sprawdzPowiadomieniaTpsGlobal();
                 }
+            } else if (hash === "#tpsy") {
+                document.getElementById('modul-tpsy').classList.remove('hidden');
+                window.toggleFormularzDodajTps(false);
+                window.zaladujModulTps();
             } else if (hash === "#sprzedaz") {
                 document.getElementById('modul-sprzedaz').classList.remove('hidden');
                 window.pokazWidokMiesieczny();
@@ -1446,9 +1515,193 @@
 
         window.otworzModul = (nazwa) => { window.location.hash = "#" + nazwa; };
 
+        /* ==================== MODUŁ TPSy ==================== */
+
+        function ucieczkaHtml(tekst) {
+            if (!tekst) return "";
+            return String(tekst)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        async function sprawdzPowiadomieniaTpsGlobal() {
+            try {
+                const dzisiajStr = pobierzDzisiejszaDateStr();
+                const snap = await getDocs(collection(db, "tpsy"));
+                let jestDzisiaj = false;
+                snap.forEach(d => {
+                    const item = d.data();
+                    if (item.tps === dzisiajStr) {
+                        jestDzisiaj = true;
+                    }
+                });
+                const badge = document.getElementById('tpsy-badge');
+                if (badge) {
+                    if (jestDzisiaj) badge.classList.remove('hidden');
+                    else badge.classList.add('hidden');
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        window.toggleFormularzDodajTps = function(forceState) {
+            const form = document.getElementById('tpsy-dodaj-form');
+            if (typeof forceState === 'boolean') {
+                form.classList.toggle('hidden', !forceState);
+            } else {
+                form.classList.toggle('hidden');
+            }
+            if (!form.classList.contains('hidden')) {
+                document.getElementById('tps-nowy-nazwa').value = "";
+                document.getElementById('tps-nowy-data').value = "";
+                document.getElementById('tps-nowy-nazwa').focus();
+            }
+        };
+
+        window.zapiszNowyTps = async function() {
+            const nazwa = document.getElementById('tps-nowy-nazwa').value.trim();
+            const tps = document.getElementById('tps-nowy-data').value;
+
+            if (!nazwa || !tps) return alert("Wpisz nazwę towaru oraz wybierz datę TPS!");
+
+            try {
+                await addDoc(collection(db, "tpsy"), {
+                    nazwa: nazwa,
+                    tps: tps,
+                    przeceniony: false,
+                    komentarz: "",
+                    timestamp: Date.now()
+                });
+                window.toggleFormularzDodajTps(false);
+                await window.zaladujModulTps();
+                sprawdzPowiadomieniaTpsGlobal();
+            } catch (e) {
+                alert("Błąd zapisu: " + e.message);
+            }
+        };
+
+        window.zaladujModulTps = async function() {
+            const container = document.getElementById('tpsy-lista-container');
+            container.innerHTML = "Pobieranie listy towarów...";
+
+            try {
+                const snap = await getDocs(collection(db, "tpsy"));
+                listaTowarowTps = [];
+                snap.forEach(d => {
+                    listaTowarowTps.push({ id: d.id, ...d.data() });
+                });
+
+                listaTowarowTps.sort((a, b) => (a.tps || "").localeCompare(b.tps || ""));
+                window.renderujListeTps();
+                sprawdzPowiadomieniaTpsGlobal();
+            } catch (e) {
+                container.innerHTML = "<span class='error'>Błąd ładowania listy TPS: " + e.message + "</span>";
+            }
+        };
+
+        window.renderujListeTps = function() {
+            const container = document.getElementById('tpsy-lista-container');
+            const ukryjPrzeterminowane = document.getElementById('tpsy-filtr-ukryj-przeterminowane').checked;
+            const dzisiajStr = pobierzDzisiejszaDateStr();
+            const czyAdmin = currentUserData && currentUserData.rola === 'admin';
+
+            let przefiltrowane = listaTowarowTps.filter(item => {
+                if (ukryjPrzeterminowane && item.tps && item.tps < dzisiajStr) {
+                    return false;
+                }
+                return true;
+            });
+
+            if (przefiltrowane.length === 0) {
+                container.innerHTML = `<p style="color:#6c757d; text-align:center; padding:20px;">Brak pozycji do wyświetlenia.</p>`;
+                return;
+            }
+
+            let html = `<div class="table-responsive"><table class="standard-table">`;
+            html += `<tr>
+                <th style="text-align:left; padding-left:10px;">Nazwa</th>
+                <th>TPS</th>
+                <th style="width: 140px;">Komentarz</th>
+                <th>Przecena</th>
+                ${czyAdmin ? '<th>Usuń</th>' : ''}
+            </tr>`;
+
+            przefiltrowane.forEach(item => {
+                const czyDzisiaj = item.tps === dzisiajStr;
+                const czyPrzeterminowany = item.tps && item.tps < dzisiajStr;
+
+                let ikonaStatusu = "";
+                let dateStyle = "";
+                if (czyPrzeterminowany) {
+                    ikonaStatusu = `<span class="tps-icon-expired" title="TPS przekroczony">(!)</span>`;
+                    dateStyle = "color: #dc3545; font-weight: bold;";
+                } else if (czyDzisiaj) {
+                    ikonaStatusu = `<span class="tps-icon-today" title="TPS do dzisiaj">(!)</span>`;
+                    dateStyle = "color: #e0a800; font-weight: bold;";
+                }
+
+                let rowClass = item.przeceniony ? "tps-row-discounted" : "";
+
+                let przecenaInput = `<input type="checkbox" ${item.przeceniony ? 'checked' : ''} ${!czyAdmin ? 'disabled' : ''} onchange="window.zmienPrzeceneTps('${item.id}', this.checked)">`;
+                let adminCols = czyAdmin ? `<td><button onclick="window.usunTps('${item.id}')" style="background:#dc3545; padding:4px 10px; font-size:0.85em; margin:0; width:auto;">🗑️ Usuń</button></td>` : '';
+
+                html += `
+                    <tr class="${rowClass}">
+                        <td style="text-align:left; padding-left:10px;">${ikonaStatusu}<strong>${ucieczkaHtml(item.nazwa)}</strong></td>
+                        <td style="${dateStyle}">${ucieczkaHtml(item.tps)}</td>
+                        <td style="width: 140px; max-width: 140px;">
+                            <input type="text" value="${ucieczkaHtml(item.komentarz || '')}" onchange="window.zapiszKomentarzTps('${item.id}', this.value)" style="margin:0; padding:6px 8px; font-size:0.9em; width: 100%;">
+                        </td>
+                        <td>${przecenaInput}</td>
+                        ${adminCols}
+                    </tr>
+                `;
+            });
+
+            html += `</table></div>`;
+            container.innerHTML = html;
+        };
+
+        window.zmienPrzeceneTps = async function(id, czyPrzeceniony) {
+            if (!(currentUserData && currentUserData.rola === 'admin')) return alert("Brak uprawnień do zmiany przeceny!");
+            try {
+                await setDoc(doc(db, "tpsy", id), { przeceniony: czyPrzeceniony }, { merge: true });
+                const pozycja = listaTowarowTps.find(x => x.id === id);
+                if (pozycja) pozycja.przeceniony = czyPrzeceniony;
+                window.renderujListeTps();
+            } catch (e) {
+                alert("Błąd zapisu przeceny: " + e.message);
+            }
+        };
+
+        window.zapiszKomentarzTps = async function(id, komentarz) {
+            try {
+                await setDoc(doc(db, "tpsy", id), { komentarz: komentarz }, { merge: true });
+                const pozycja = listaTowarowTps.find(x => x.id === id);
+                if (pozycja) pozycja.komentarz = komentarz;
+            } catch (e) {
+                alert("Błąd zapisu komentarza: " + e.message);
+            }
+        };
+
+        window.usunTps = async function(id) {
+            if (!(currentUserData && currentUserData.rola === 'admin')) return;
+            if (!confirm("Czy na pewno chcesz usunąć ten towar z listy TPS?")) return;
+            try {
+                await deleteDoc(doc(db, "tpsy", id));
+                listaTowarowTps = listaTowarowTps.filter(x => x.id !== id);
+                window.renderujListeTps();
+                sprawdzPowiadomieniaTpsGlobal();
+            } catch (e) {
+                alert("Błąd usuwania: " + e.message);
+            }
+        };
+
         /* ==================== MODUŁ PREMIA ==================== */
 
-        let tymczasoweWarunkiAdmin = []; // [{id, opis, docelowo ('wszyscy' lub imie), spelnioneMap: {imie: true/false}}]
+        let tymczasoweWarunkiAdmin = [];
 
         async function pobierzListeWszystkichPracownikow() {
             let pracownicy = [];
@@ -1500,7 +1753,6 @@
                 return;
             }
 
-            let pracownicyList = await pobierzListeWszystkichPracownikow();
             let html = "";
             tymczasoweWarunkiAdmin.forEach((w, idx) => {
                 let docLabel = w.docelowo === 'wszyscy' ? 'Wszyscy' : `Pracownik: ${w.docelowo}`;
@@ -3128,7 +3380,7 @@
 
                 prosby.reverse().forEach(p => {
                     let badge = p.status === "zatwierdzone" ? `<span style="background:#28a745; color:white; padding:2px 6px; border-radius:4px; font-size:0.8em;">👍 Zatwierdzone</span>` : (p.status === "odrzucone" ? `<span style="background:#dc3545; color:white; padding:2px 6px; border-radius:4px; font-size:0.8em;">👎 Odrzucone</span>` : `<span style="background:#ffc107; color:black; padding:2px 6px; border-radius:4px; font-size:0.8em;">⏳ Oczekuje</span>`);
-                    let actions = (currentUserData?.rola === 'admin') ? `<div style="margin-top:6px; display:flex; gap:6px;"><button onclick="window.zmienStatusProsby('${p.id}', 'zatwierdzone')" style="background:#28a745; padding:4px; font-size:0.8em; width:auto;">👍 Zatwierdź</button><button onclick="window.zmienStatusProsby('${p.id}', 'odrzucone')" style="background:#dc3545; padding:4px; font-size:0.8em; width:auto;">👎 Odrzuć</button></div>` : "";
+                    let actions = (currentUserData?.rola === 'admin') ? `<div style="margin-top:6px; display:flex; gap:6px;"><button onclick="window.zmienStatusProsby('${p.id}', 'zatwierdzatne')" style="background:#28a745; padding:4px; font-size:0.8em; width:auto;">👍 Zatwierdź</button><button onclick="window.zmienStatusProsby('${p.id}', 'odrzucone')" style="background:#dc3545; padding:4px; font-size:0.8em; width:auto;">👎 Odrzuć</button></div>` : "";
                     let delBtn = (currentUserData?.rola === 'admin' || currentUserData?.imie.split(' ')[0] === p.autor) ? `<button onclick="window.usunProsbe('${p.id}')" style="background:#6c757d; padding:4px; font-size:0.8em; margin-top:6px; width:auto;">🗑️ Usuń</button>` : "";
 
                     html += `<div class="request-item"><div style="display:flex; justify-content:space-between;"><strong>👤 ${p.autor}</strong>${badge}</div><div style="font-size:0.8em; color:#6c757d;">(${p.data})</div><div>${p.tekst}</div>${actions}${delBtn}</div>`;
@@ -3386,8 +3638,10 @@
                         sprawdzPowiadomieniaMisje(currentUserData.imie, czyAdmin);
                         sprawdzPowiadomieniaWiadomosci(currentUserData.imie);
                         sprawdzPowiadomieniaPracownicyGlobal();
+                        sprawdzPowiadomieniaTpsGlobal();
                     } else {
                         profileLabel.innerText = user.email ? user.email.split('@')[0] : "Zalogowany";
+                        sprawdzPowiadomieniaTpsGlobal();
                     }
                 } catch(e) { 
                     console.error(e); 
