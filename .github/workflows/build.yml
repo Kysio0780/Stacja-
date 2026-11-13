@@ -1,0 +1,25 @@
+name: Buduj aplikację Gradle
+
+on:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Pobierz kod z repozytorium
+      uses: actions/checkout@v4
+
+    - name: Skonfiguruj środowisko Java (JDK)
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+
+    - name: Nadaj uprawnienia skryptowi Gradle (gradlew)
+      run: chmod +x gradlew
+
+    - name: Zbuduj projekt za pomocą Gradle
+      run: ./gradlew build
