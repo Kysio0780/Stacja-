@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>System Obsługi Sklepu</title>
     <link rel="manifest" href="manifest.json">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         :root {
             /* Paleta główna (spójna dla całej aplikacji) */
@@ -49,6 +50,16 @@
             --radius-md: 10px;
             --radius-lg: 14px;
             --base-font-size: 14px;
+
+            /* Kolory specyficzne dla grafiku */
+            --grafik-holiday-bg: #fef08a;
+            --grafik-holiday-text: #713f12;
+            --grafik-pink-bg: #fbcfe8;
+            --grafik-pink-text: #831843;
+            --grafik-leave-bg: #dbeafe;
+            --grafik-leave-text: #1e40af;
+            --grafik-l4-bg: #ffedd5;
+            --grafik-l4-text: #9a3412;
         }
 
         [data-theme="warm-light"] {
@@ -99,6 +110,14 @@
             --primary-soft: rgba(59, 130, 246, 0.15);
             --warning-bg: #451a03;
             --warning-text: #fcd34d;
+            --grafik-holiday-bg: #42380c;
+            --grafik-holiday-text: #fef08a;
+            --grafik-pink-bg: #501936;
+            --grafik-pink-text: #fbcfe8;
+            --grafik-leave-bg: #1e3a8a;
+            --grafik-leave-text: #dbeafe;
+            --grafik-l4-bg: #7c2d12;
+            --grafik-l4-text: #ffedd5;
         }
 
         [data-theme="midnight-blue"] {
@@ -117,6 +136,14 @@
             --primary-soft: rgba(56, 189, 248, 0.15);
             --warning-bg: #451a03;
             --warning-text: #fcd34d;
+            --grafik-holiday-bg: #42380c;
+            --grafik-holiday-text: #fef08a;
+            --grafik-pink-bg: #501936;
+            --grafik-pink-text: #fbcfe8;
+            --grafik-leave-bg: #1e3a8a;
+            --grafik-leave-text: #dbeafe;
+            --grafik-l4-bg: #7c2d12;
+            --grafik-l4-text: #ffedd5;
         }
 
         [data-theme="slate-dark"] {
@@ -135,6 +162,14 @@
             --primary-soft: rgba(99, 102, 241, 0.15);
             --warning-bg: #451a03;
             --warning-text: #fcd34d;
+            --grafik-holiday-bg: #42380c;
+            --grafik-holiday-text: #fef08a;
+            --grafik-pink-bg: #501936;
+            --grafik-pink-text: #fbcfe8;
+            --grafik-leave-bg: #1e3a8a;
+            --grafik-leave-text: #dbeafe;
+            --grafik-l4-bg: #7c2d12;
+            --grafik-l4-text: #ffedd5;
         }
 
         [data-fontsize="small"] { --base-font-size: 13px; }
@@ -176,7 +211,7 @@
             border-radius: var(--radius-lg);
             box-shadow: var(--shadow-md);
             border: 1px solid var(--border-color);
-            max-width: 960px;
+            max-width: 1080px;
             margin: 0 auto 20px auto;
             position: relative;
         }
@@ -196,7 +231,7 @@
             margin-bottom: 4px;
         }
 
-        input:not([type="checkbox"]), select, textarea {
+        input:not([type="checkbox"]):not([type="radio"]), select, textarea {
             width: 100%;
             padding: 8px 10px;
             margin: 4px 0 10px 0;
@@ -209,13 +244,13 @@
             transition: border-color 0.2s, box-shadow 0.2s;
         }
 
-        input:not([type="checkbox"]):focus, select:focus, textarea:focus {
+        input:not([type="checkbox"]):not([type="radio"]):focus, select:focus, textarea:focus {
             outline: none;
             border-color: var(--primary);
             box-shadow: 0 0 0 3px var(--primary-soft);
         }
 
-        input[type="checkbox"] {
+        input[type="checkbox"], input[type="radio"] {
             width: 18px;
             height: 18px;
             margin: 0;
@@ -256,6 +291,9 @@
 
         .btn-info { background: var(--info); }
         .btn-info:hover:not(:disabled) { background: var(--info-hover); }
+
+        .btn-warning { background: var(--warning); color: #ffffff; }
+        .btn-warning:hover:not(:disabled) { opacity: 0.9; }
 
         .btn-neutral { background: var(--neutral); }
         .btn-neutral:hover:not(:disabled) { background: var(--neutral-hover); }
@@ -528,7 +566,176 @@
 
         .cleaning-row { cursor: pointer; transition: background-color 0.15s; }
         .cleaning-row:hover td { background: var(--group-bg) !important; }
+        .future-row {
+            cursor: not-allowed;
+            opacity: 0.55;
+            background: var(--group-bg);
+        }
+        .future-row td { background: var(--group-bg) !important; }
         .sum-row td { font-weight: 700; background: var(--group-bg) !important; }
+
+        /* ==================== STYLE TABELI GRAFIKU ==================== */
+        .grafik-scroll-container {
+            max-height: 72vh;
+            overflow: auto;
+            -webkit-overflow-scrolling: touch;
+            position: relative;
+        }
+        table.grafik-grid-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 0.82em;
+            background: var(--card-bg);
+            color: var(--text-color);
+        }
+        table.grafik-grid-table th,
+        table.grafik-grid-table td {
+            border-right: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+            padding: 4px 5px;
+            text-align: center;
+            vertical-align: middle;
+        }
+        table.grafik-grid-table th:last-child,
+        table.grafik-grid-table td:last-child {
+            border-right: none;
+        }
+        table.grafik-grid-table thead tr:first-child th {
+            position: sticky;
+            top: 0;
+            z-index: 5;
+            background: var(--primary);
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 0.85em;
+            height: 30px;
+        }
+        table.grafik-grid-table thead tr:nth-child(2) th.sub-th {
+            position: sticky;
+            top: 30px;
+            z-index: 5;
+            background: var(--group-bg);
+            color: var(--text-color);
+            font-size: 0.76em;
+            padding: 3px 4px;
+            border-bottom: 2px solid var(--primary);
+        }
+        table.grafik-grid-table th.emp-group-end,
+        table.grafik-grid-table td.emp-group-end {
+            border-right: 2px solid var(--text-muted);
+        }
+        table.grafik-grid-table td.day-col {
+            position: sticky;
+            left: 0;
+            z-index: 3;
+            background: var(--card-bg);
+            font-weight: 700;
+            white-space: nowrap;
+            width: 56px;
+            min-width: 56px;
+            max-width: 68px;
+            padding: 3px 3px;
+            font-size: 0.9em;
+        }
+        table.grafik-grid-table thead tr:first-child th.day-col-th {
+            position: sticky;
+            left: 0;
+            top: 0;
+            z-index: 7;
+            width: 56px;
+            min-width: 56px;
+            max-width: 68px;
+            padding: 3px 3px;
+        }
+        tr.grafik-holiday-row td {
+            background-color: var(--grafik-holiday-bg) !important;
+            color: var(--grafik-holiday-text);
+        }
+        td.grafik-cell {
+            min-width: 44px;
+            height: 29px;
+            font-weight: 700;
+            transition: filter 0.12s, transform 0.1s;
+        }
+        td.grafik-cell.editable {
+            cursor: pointer;
+        }
+        td.grafik-cell.editable:hover {
+            outline: 2px solid var(--primary);
+            outline-offset: -2px;
+        }
+        td.cell-pink {
+            background-color: var(--grafik-pink-bg) !important;
+            color: var(--grafik-pink-text) !important;
+        }
+        td.cell-urlop {
+            background-color: var(--grafik-leave-bg) !important;
+            color: var(--grafik-leave-text) !important;
+            font-size: 0.8em;
+        }
+        td.cell-l4 {
+            background-color: var(--grafik-l4-bg) !important;
+            color: var(--grafik-l4-text) !important;
+            font-size: 0.8em;
+        }
+        tr.grafik-summary-row td {
+            background: var(--group-bg) !important;
+            font-weight: 700;
+        }
+        tr.grafik-summary-row td.summary-label {
+            text-align: left;
+            font-size: 0.74em;
+            line-height: 1.15;
+            white-space: normal;
+            word-break: break-word;
+            width: 56px;
+            min-width: 56px;
+            max-width: 68px;
+            padding: 4px 3px;
+            background: var(--group-bg) !important;
+        }
+        .grafik-stat-input {
+            width: 58px !important;
+            padding: 2px 4px !important;
+            margin: 0 !important;
+            text-align: center;
+            font-weight: 700;
+            font-size: 0.92em;
+        }
+        .day-alert-icon {
+            display: inline-block;
+            background: var(--danger);
+            color: #fff;
+            border-radius: 50%;
+            width: 15px;
+            height: 15px;
+            line-height: 15px;
+            font-size: 10px;
+            font-weight: 800;
+            margin-left: 2px;
+            cursor: help;
+        }
+        .grafik-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            font-size: 0.82em;
+            margin: 8px 0;
+            align-items: center;
+        }
+        .legend-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .legend-swatch {
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+            border: 1px solid var(--border-color);
+            display: inline-block;
+        }
 
         /* Kompaktowe kolumny i inputy w tabelach */
         .compact-input {
@@ -688,22 +895,6 @@
             height: 110px;
             object-fit: cover;
             border-radius: 4px;
-            cursor: pointer;
-        }
-
-        .grafik-preview-box {
-            text-align: center;
-            margin-top: 15px;
-            border: 2px dashed var(--border-color);
-            padding: 16px;
-            border-radius: var(--radius-md);
-            background: var(--preview-bg);
-        }
-        .grafik-preview-box img {
-            max-width: 100%;
-            height: auto;
-            border-radius: var(--radius-sm);
-            box-shadow: var(--shadow-md);
             cursor: pointer;
         }
 
@@ -920,7 +1111,7 @@
                 </div>
 
                 <label for="wybrany-miesiac">Wybierz miesiąc:</label>
-                <input type="month" id="wybrany-miesiac" onchange="window.zaladujMiesiacTabela()">
+                <input type="month" id="wybrany-miesiac" onchange="window.zaladujMiesiacTabela(); if (currentUserData?.rola === 'admin') pobierzRaportyDlaAdmina();">
                 
                 <div style="margin-top: 10px;">
                     <div class="collapsible-header" onclick="window.toggleCollapsible('plans-content', 'plans-arrow')">
@@ -934,10 +1125,14 @@
 
                 <div id="monthly-table-container" style="margin-top: 16px;">Ładowanie tabeli...</div>
                 
-                <div id="admin-daily-section" class="hidden">
-                    <hr style="margin: 24px 0; border: 0; border-top: 1px solid var(--border-color);">
-                    <h4>Ostatnie Raporty (Dziennik)</h4>
-                    <div id="reports-list">Ładowanie raportów...</div>
+                <div id="admin-daily-section" class="hidden" style="margin-top: 18px;">
+                    <div class="collapsible-header info" onclick="window.toggleCollapsible('reports-daily-content', 'reports-daily-arrow')">
+                        <span>📋 Ostatnie Raporty (Dziennik - bieżący okres)</span>
+                        <span id="reports-daily-arrow">▼ Rozwiń</span>
+                    </div>
+                    <div id="reports-daily-content" class="collapsible-content">
+                        <div id="reports-list">Ładowanie raportów...</div>
+                    </div>
                 </div>
             </div>
 
@@ -1157,6 +1352,9 @@
                     <select id="stats-okres-typ" onchange="window.toggleStatsCustomDates()">
                         <option value="biezacy">Bieżący miesiąc</option>
                         <option value="poprzedni">Poprzedni miesiąc</option>
+                        <option value="biezacy_kwartal">Bieżący kwartał</option>
+                        <option value="poprzedni_kwartal">Poprzedni kwartał</option>
+                        <option value="ten_rok">Ten rok</option>
                         <option value="30dni">Ostatnie 30 dni</option>
                         <option value="custom">Własny zakres dat (od-do)</option>
                     </select>
@@ -1244,7 +1442,7 @@
         <!-- MODAL MISJI -->
         <div id="modal-uniwersalna-misja" class="modal-overlay hidden">
             <div class="modal-content" style="max-width: 500px;">
-                <h4 id="modal-misja-tytul">🎯 Szczegóły Zadania</h4>
+                <h4 id="modal-misja-tytul">🎯 Szczegegóły Zadania</h4>
                 <input type="hidden" id="m-edit-misja-id">
 
                 <div id="admin-edit-misja-sekcja" class="hidden">
@@ -1289,39 +1487,142 @@
             </div>
         </div>
 
-        <!-- MODUŁ GRAFIK -->
+        <!-- ==================== MODUŁ GRAFIK (INTERAKTYWNY) ==================== -->
         <div id="modul-grafik" class="hidden">
             <div class="module-nav-bar">
                 <h3>📅 Grafik Pracy</h3>
                 <button class="btn-back" onclick="window.otworzModul('menu')">⬅ Menu</button>
             </div>
             
-            <label for="grafik-miesiac">Wybierz miesiąc:</label>
-            <input type="month" id="grafik-miesiac" onchange="window.zaladujGrafikObrazkowy()">
-
-            <div id="admin-grafik-panel" class="field-group hidden">
-                <h4>⚙️ Panel Kierownika: Zarządzaj Grafikiem</h4>
-                <label>Wybierz obraz grafiku:</label>
-                <input type="file" id="grafik-file-input" accept="image/*">
-                <div class="flex-row flex-row-mobile-col">
-                    <button onclick="window.zapiszGrafikObrazkowy()" class="btn-success" style="margin:0;">📤 Opublikuj / Nadpisz</button>
-                    <button onclick="window.usunGrafikObrazkowy()" class="btn-danger" style="margin:0;">🗑️ Usuń Grafik</button>
+            <div class="grid-2" style="align-items: end; margin-bottom: 10px;">
+                <div>
+                    <label for="grafik-miesiac">Wybierz miesiąc:</label>
+                    <input type="month" id="grafik-miesiac" onchange="window.zaladujGrafikInteraktywny()" style="margin-bottom:0;">
+                </div>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end;">
+                    <span id="grafik-status-badge"></span>
                 </div>
             </div>
 
-            <div class="grafik-preview-box" id="grafik-preview-container">
-                <p class="text-muted">Brak opublikowanego grafiku dla tego miesiąca.</p>
+            <!-- PANEL KIEROWNIKA (ADMINA) -->
+            <div id="admin-grafik-panel" class="field-group hidden" style="border-style: dashed; border-color: var(--primary);">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
+                    <h4 style="margin:0; color: var(--primary);">⚙️ Panel Kierownika: Edycja Grafiku</h4>
+                    <div class="flex-row" style="gap:6px; flex-wrap:wrap;">
+                        <button onclick="window.zapiszGrafikInteraktywny(false)" class="btn-info btn-sm">💾 Zapisz roboczy</button>
+                        <button id="btn-publikuj-grafik" onclick="window.zapiszGrafikInteraktywny(true)" class="btn-success btn-sm">📢 Opublikuj dla pracowników</button>
+                        <button id="btn-ukryj-grafik" onclick="window.cofnijPublikacjeGrafiku()" class="btn-warning btn-sm hidden">🔒 Cofnij publikację</button>
+                        <button onclick="window.otworzModalDrukuGrafiku()" class="btn-neutral btn-sm">🖨️ Drukuj / PDF</button>
+                    </div>
+                </div>
+
+                <!-- Dodawanie / Usuwanie pracowników w grafiku -->
+                <div style="background: var(--card-bg); padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                    <label style="margin-bottom:6px;">👥 Pracownicy w grafiku (kolejność kolumn):</label>
+                    <div id="grafik-pracownicy-chips" style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px;"></div>
+                    
+                    <div class="flex-row flex-row-mobile-col" style="gap:8px;">
+                        <select id="grafik-dodaj-pracownika-select" style="margin:0; flex:1;">
+                            <option value="">-- Wybierz pracownika z bazy --</option>
+                        </select>
+                        <button onclick="window.dodajPracownikaDoGrafikuZSelecta()" class="btn-success btn-auto btn-sm" style="padding:8px 12px;">➕ Dodaj do grafiku</button>
+                        <button onclick="window.przeniesUrlopyNaKolejnyMiesiac()" class="btn-info btn-auto btn-sm" style="padding:8px 12px;" title="Przenosi pozostały urlop z tego miesiąca na następny">⏭️ Przenieś urlopy na nast. m-c</button>
+                    </div>
+                </div>
             </div>
+
+            <!-- Pasek akcji dla pracownika (gdy grafik opublikowany) -->
+            <div id="pracownik-grafik-toolbar" class="hidden" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
+                <span class="text-muted">Widok aktualnego grafiku pracy.</span>
+                <button onclick="window.otworzModalDrukuGrafiku()" class="btn-neutral btn-sm">🖨️ Drukuj / PDF</button>
+            </div>
+
+            <!-- Alerty walidacji obsady -->
+            <div id="grafik-walidacja-box" class="hidden" style="margin-bottom: 10px;"></div>
+
+            <!-- Legenda -->
+            <div id="grafik-legenda-bar" class="grafik-legend hidden">
+                <span class="legend-item"><span class="legend-swatch" style="background: var(--grafik-holiday-bg);"></span> Niedziela / Święto (1 zm. Rano)</span>
+                <span class="legend-item"><span class="legend-swatch" style="background: var(--grafik-pink-bg);"></span> Prośba o wolne</span>
+                <span class="legend-item"><span class="legend-swatch" style="background: var(--grafik-leave-bg);"></span> Urlop (U)</span>
+                <span class="legend-item"><span class="legend-swatch" style="background: var(--grafik-l4-bg);"></span> Chorobowe (L4)</span>
+                <span class="text-muted" id="grafik-click-hint"></span>
+            </div>
+
+            <!-- Główna tabela grafiku -->
+            <div id="grafik-tabela-wrapper">Ładowanie grafiku...</div>
 
             <hr style="margin: 24px 0; border: 0; border-top: 1px solid var(--border-color);">
 
-            <h4>💬 Prośby i Uwagi dot. Zmian</h4>
+            <h4>💬 Prośby i Uwagi dot. Zmian w Grafiku</h4>
             <div class="field-group">
-                <textarea id="nowa-prosba-tekst" rows="3" placeholder="Wpisz swoją prośbę o zmianę (np. Proszę o wolne 15 września, zamienię się z...)"></textarea>
-                <button onclick="window.wyslijProsbe()" class="btn-info" style="margin:0;">Wyślij prośbę o zmianę</button>
+                <textarea id="nowa-prosba-tekst" rows="3" placeholder="Wpisz swoją prośbę o wolne lub propozycję zmiany w grafiku (np. Proszę o wolne 15 dnia miesiąca, zamienię się zmianą z...)"></textarea>
+                <button onclick="window.wyslijProsbe()" class="btn-info" style="margin:0;">📤 Wyślij prośbę / propozycję zmiany</button>
             </div>
 
             <div id="prośby-lista-container">Ładowanie próśb...</div>
+        </div>
+
+        <!-- MODAL EDYCJI KOMÓRKI GRAFIKU (ADMIN) -->
+        <div id="modal-grafik-komorka" class="modal-overlay hidden">
+            <div class="modal-content" style="max-width: 440px;">
+                <h4 id="modal-gk-tytul">✏️ Edycja dnia w grafiku</h4>
+                <input type="hidden" id="gk-emp-id">
+                <input type="hidden" id="gk-day">
+                <input type="hidden" id="gk-shift">
+
+                <div class="field-group">
+                    <label>Rodzaj wpisu:</label>
+                    <select id="gk-typ" onchange="window.zmienTypKomorkiGrafiku()">
+                        <option value="praca">🕒 Godziny pracy</option>
+                        <option value="urlop">🌴 Urlop wypoczynkowy (wlicza do bilansu)</option>
+                        <option value="l4">🏥 L4 / Zwolnienie lekarskie (wlicza do bilansu)</option>
+                        <option value="wolne_prosba">🌸 Wyróżnij na różowo (chęć dnia wolnego)</option>
+                        <option value="puste">🧹 Wyczyść komórkę</option>
+                    </select>
+
+                    <div id="gk-godziny-box" style="margin-top: 8px;">
+                        <label for="gk-godziny-val">Liczba godzin:</label>
+                        <input type="number" step="0.5" min="0" max="24" id="gk-godziny-val" placeholder="np. 12 lub 8">
+                        <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:4px;">
+                            <button type="button" class="btn-neutral btn-sm" onclick="document.getElementById('gk-godziny-val').value=12">12h</button>
+                            <button type="button" class="btn-neutral btn-sm" onclick="document.getElementById('gk-godziny-val').value=8">8h</button>
+                            <button type="button" class="btn-neutral btn-sm" onclick="document.getElementById('gk-godziny-val').value=6">6h</button>
+                            <button type="button" class="btn-neutral btn-sm" onclick="document.getElementById('gk-godziny-val').value=4">4h</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="field-group" style="background: var(--preview-bg);">
+                    <label style="display:flex; align-items:center; gap:8px; cursor:pointer; margin:0;">
+                        <input type="checkbox" id="gk-pink-mark">
+                        <span>🌸 Podświetl kratkę na różowo (sugestia wolnego)</span>
+                    </label>
+                </div>
+
+                <div class="flex-row" style="margin-top: 14px;">
+                    <button onclick="window.zastosujEdycjeKomorkiGrafiku()" class="btn-success" style="margin:0;">✔ Zastosuj</button>
+                    <button onclick="window.zamknijModalKomorkiGrafiku()" class="btn-neutral" style="margin:0;">Anuluj</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL DRUKU / PDF LISTY OBECNOŚCI -->
+        <div id="modal-grafik-druk" class="modal-overlay hidden">
+            <div class="modal-content" style="max-width: 480px;">
+                <h4>📥 Generuj PDF Listy Obecności</h4>
+                <p class="text-muted">Wybierz pracowników, którzy mają znaleźć się w pliku PDF (z kolumnami Godziny, OD, DO, Podpis). Domyślnie pominięto Umowy Zlecenie.</p>
+                
+                <div class="field-group">
+                    <label>Pracownicy do pliku PDF:</label>
+                    <div id="druk-pracownicy-lista" style="max-height: 220px; overflow-y: auto; background: var(--card-bg); padding: 10px; border: 1px solid var(--border-color); border-radius: var(--radius-sm);"></div>
+                </div>
+
+                <div class="flex-row" style="margin-top: 14px;">
+                    <button onclick="window.generujWydrukGrafikuPDF()" class="btn-success" style="margin:0;">📥 Pobierz PDF</button>
+                    <button onclick="window.zamknijModalDrukuGrafiku()" class="btn-neutral" style="margin:0;">Anuluj</button>
+                </div>
+            </div>
         </div>
 
         <!-- MODUŁ PLANOGRAMY -->
@@ -1464,7 +1765,7 @@
                     <li><strong>🎯 Misje:</strong> Indywidualne zadania przypisywane przez kierownika.</li>
                     <li><strong>💬 Wiadomości:</strong> Wewnętrzna poczta z obsługą priorytetów i załączników.</li>
                     <li><strong>⏳ TPSy:</strong> Kontrola kończących się terminów przydatności do spożycia.</li>
-                    <li><strong>📅 Grafik:</strong> Podgląd grafiku miesięcznego oraz wysyłanie próśb o zmiany.</li>
+                    <li><strong>📅 Grafik:</strong> Interaktywny grafik miesięczny, bilans godzin, urlopy i wydruk listy obecności.</li>
                 </ul>
                 <div style="margin-top: 18px;">
                     <button onclick="window.zamknijModalInfo()" class="btn-neutral" style="margin:0;">Rozumiem</button>
@@ -1659,9 +1960,12 @@
             "Lodówka Napoje", "Lodówka Piwo", "Oleje", "Piwo", "Soki i Woda", "Strefa zakasowa"
         ];
 
-        function pobierzDzisiejszaDateStr() {
-            const d = new Date();
+        function formatujDateLokalna(d) {
             return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        }
+
+        function pobierzDzisiejszaDateStr() {
+            return formatujDateLokalna(new Date());
         }
 
         function ustawBiezacaDateWNaglowku() {
@@ -1729,7 +2033,8 @@
             const modals = [
                 'modal-zoom-zdjecia', 'modal-polka', 'modal-planogram-szczegoly', 
                 'modal-zmien-haslo', 'modal-uniwersalna-misja', 'modal-szczegoly-pracownika', 
-                'modal-nowa-wiadomosc', 'modal-podglad-wiadomosci', 'modal-premia-warunki'
+                'modal-nowa-wiadomosc', 'modal-podglad-wiadomosci', 'modal-premia-warunki',
+                'modal-grafik-komorka', 'modal-grafik-druk'
             ];
             for (let mId of modals) {
                 const el = document.getElementById(mId);
@@ -1854,7 +2159,7 @@
             msg.style.color = "var(--danger)"; msg.innerText = "";
 
             if (!stareHaslo || !h1 || !h2) { msg.innerText = "Wypełnij wszystkie pola!"; return; }
-            if (h1 !== h2) { msg.innerText = "Hasła się nie zgadają!"; return; }
+            if (h1 !== h2) { msg.innerText = "Hasła się nie zgadzają!"; return; }
             if (h1.length < 6) { msg.innerText = "Nowe hasło musi mieć min. 6 znaków!"; return; }
 
             const user = auth.currentUser;
@@ -1907,7 +2212,7 @@
             } else if (hash === "#premia") {
                 document.getElementById('modul-premia').classList.remove('hidden');
                 if (!document.getElementById('premia-miesiac').value) {
-                    document.getElementById('premia-miesiac').value = new Date().toISOString().slice(0, 7);
+                    document.getElementById('premia-miesiac').value = pobierzBiezacyOkresSystemowy().miesiacStr;
                 }
                 const czyAdmin = currentUserData && currentUserData.rola === 'admin';
                 document.getElementById('admin-premia-panel').classList.toggle('hidden', !czyAdmin);
@@ -1916,9 +2221,8 @@
                 window.zaladujModulPremia();
             } else if (hash === "#grafik") {
                 document.getElementById('modul-grafik').classList.remove('hidden');
-                if(!document.getElementById('grafik-miesiac').value) document.getElementById('grafik-miesiac').value = new Date().toISOString().slice(0, 7);
-                document.getElementById('admin-grafik-panel').classList.toggle('hidden', !(currentUserData && currentUserData.rola === 'admin'));
-                window.zaladujGrafikObrazkowy();
+                if(!document.getElementById('grafik-miesiac').value) document.getElementById('grafik-miesiac').value = pobierzBiezacyOkresSystemowy().miesiacStr;
+                window.zaladujGrafikInteraktywny();
             } else if (hash === "#misje") {
                 document.getElementById('modul-misje').classList.remove('hidden');
                 document.getElementById('admin-misje-wrapper').classList.toggle('hidden', !(currentUserData && currentUserData.rola === 'admin'));
@@ -1951,6 +2255,970 @@
         });
 
         window.otworzModul = (nazwa) => { window.location.hash = "#" + nazwa; };
+
+        /* ==================== MODUŁ GRAFIK INTERAKTYWNY ==================== */
+        let aktualnyGrafikStan = null;
+        let bazaPracownikowGrafik = [];
+        let kwartalnePoprzednieMiesiace = {}; // { empId: { sumaPlan: 0, planWymiar: 0 } }
+
+        const DNI_TYG_KROTKIE = ['Nd', 'Pn', 'Wt', 'Śr', 'Cz', 'Pt', 'Sb'];
+        const NAZWY_MIESIECY_PL = [
+            'Styczeń', 'Luty', 'Marzec', 'Kwiecień', 'Maj', 'Czerwiec',
+            'Lipiec', 'Sierpień', 'Wrzesień', 'Październik', 'Listopad', 'Grudzień'
+        ];
+
+        // Obliczanie Wielkanocy algorytmem Meeusa/Jonesa/Butchera dla polskich świąt ruchomych
+        function obliczWielkanoc(rok) {
+            const a = rok % 19;
+            const b = Math.floor(rok / 100);
+            const c = rok % 100;
+            const d = Math.floor(b / 4);
+            const e = b % 4;
+            const f = Math.floor((b + 8) / 25);
+            const g = Math.floor((b - f + 1) / 3);
+            const h = (19 * a + b - d - g + 15) % 30;
+            const i = Math.floor(c / 4);
+            const k = c % 4;
+            const l = (32 + 2 * e + 2 * i - h - k) % 7;
+            const m = Math.floor((a + 11 * h + 22 * l) / 451);
+            const miesiac = Math.floor((h + l - 7 * m + 114) / 31);
+            const dzien = ((h + l - 7 * m + 114) % 31) + 1;
+            return new Date(rok, miesiac - 1, dzien);
+        }
+
+        function pobierzPolskieSwieta(rok) {
+            const swieta = new Set([
+                `${rok}-01-01`, // Nowy Rok
+                `${rok}-01-06`, // Trzech Króli
+                `${rok}-05-01`, // Święto Pracy
+                `${rok}-05-03`, // Święto Konstytucji 3 Maja
+                `${rok}-08-15`, // Wniebowzięcie NMP
+                `${rok}-11-01`, // Wszystkich Świętych
+                `${rok}-11-11`, // Święto Niepodległości
+                `${rok}-12-25`, // Boże Narodzenie I
+                `${rok}-12-26`  // Boże Narodzenie II
+            ]);
+            const wielkanoc = obliczWielkanoc(rok);
+            const ponWielk = new Date(wielkanoc); ponWielk.setDate(wielkanoc.getDate() + 1);
+            const zieloneSw = new Date(wielkanoc); zieloneSw.setDate(wielkanoc.getDate() + 49);
+            const bozeCialo = new Date(wielkanoc); bozeCialo.setDate(wielkanoc.getDate() + 60);
+
+            swieta.add(formatujDateLokalna(wielkanoc));
+            swieta.add(formatujDateLokalna(ponWielk));
+            swieta.add(formatujDateLokalna(zieloneSw));
+            swieta.add(formatujDateLokalna(bozeCialo));
+            return swieta;
+        }
+
+        // Wyliczenie nominalnego wymiaru czasu pracy wg Kodeksu Pracy (dni pn-pt minus święta nieprzypadające w niedzielę) * 8h
+        function obliczNominalnyWymiarMiesiaca(rok, miesiac1_12) {
+            const swieta = pobierzPolskieSwieta(rok);
+            const dniWMiesiacu = new Date(rok, miesiac1_12, 0).getDate();
+            let dniRobocze = 0;
+            for (let d = 1; d <= dniWMiesiacu; d++) {
+                const dt = new Date(rok, miesiac1_12 - 1, d);
+                const dow = dt.getDay(); // 0 = Nd, 6 = Sb
+                const ds = formatujDateLokalna(dt);
+                if (dow >= 1 && dow <= 5) {
+                    if (!swieta.has(ds)) dniRobocze++;
+                } else if (dow === 6 && swieta.has(ds)) {
+                    // Święto w sobotę obniża wymiar o 8h (1 dzień)
+                    dniRobocze--;
+                }
+            }
+            return Math.max(0, dniRobocze * 8);
+        }
+
+        function parsujMnoznikEtatu(umowa, etatStr) {
+            if (umowa === 'Zlecenie') return 0;
+            if (!etatStr || etatStr === '-' || etatStr === '1/1') return 1;
+            if (etatStr.includes('/')) {
+                const [l, m] = etatStr.split('/').map(Number);
+                if (m > 0 && !isNaN(l)) return l / m;
+            }
+            const num = parseFloat(etatStr.replace(',', '.'));
+            return !isNaN(num) && num > 0 ? num : 1;
+        }
+
+        function pobierzPoprzednieMiesiaceWKwartale(miesiacStr) {
+            const [rok, m] = miesiacStr.split('-').map(Number);
+            const posInQ = (m - 1) % 3; // 0 = 1. m-c kwartału, 1 = 2. m-c, 2 = 3. m-c
+            const lista = [];
+            for (let i = 1; i <= posInQ; i++) {
+                const prevM = m - i;
+                lista.push(`${rok}-${String(prevM).padStart(2, '0')}`);
+            }
+            return lista;
+        }
+
+        function pobierzPoprzedniMiesiacStr(miesiacStr) {
+            let [rok, m] = miesiacStr.split('-').map(Number);
+            m -= 1;
+            if (m < 1) { m = 12; rok -= 1; }
+            return `${rok}-${String(m).padStart(2, '0')}`;
+        }
+
+        function pobierzNastepnyMiesiacStr(miesiacStr) {
+            let [rok, m] = miesiacStr.split('-').map(Number);
+            m += 1;
+            if (m > 12) { m = 1; rok += 1; }
+            return `${rok}-${String(m).padStart(2, '0')}`;
+        }
+
+        function utworzDomyslneDniWolneMap(miesiacStr) {
+            const [rok, m] = miesiacStr.split('-').map(Number);
+            const swieta = pobierzPolskieSwieta(rok);
+            const dni = new Date(rok, m, 0).getDate();
+            const map = {};
+            for (let d = 1; d <= dni; d++) {
+                const dt = new Date(rok, m - 1, d);
+                const ds = formatujDateLokalna(dt);
+                if (dt.getDay() === 0 || swieta.has(ds)) {
+                    map[String(d)] = true;
+                }
+            }
+            return map;
+        }
+
+        window.zaladujGrafikInteraktywny = async function() {
+            const miesiacStr = document.getElementById('grafik-miesiac').value;
+            if (!miesiacStr) return;
+
+            const czyAdmin = currentUserData && currentUserData.rola === 'admin';
+            document.getElementById('admin-grafik-panel').classList.toggle('hidden', !czyAdmin);
+            document.getElementById('pracownik-grafik-toolbar').classList.toggle('hidden', czyAdmin);
+
+            const wrapper = document.getElementById('grafik-tabela-wrapper');
+            wrapper.innerHTML = "Pobieranie danych grafiku...";
+
+            try {
+                // Pobierz listę użytkowników z bazy
+                const usersSnap = await getDocs(collection(db, "uzytkownicy"));
+                bazaPracownikowGrafik = [];
+                usersSnap.forEach(d => {
+                    const u = d.data();
+                    bazaPracownikowGrafik.push({
+                        id: d.id,
+                        imie: u.imie,
+                        umowa: u.umowa || 'UoP',
+                        etat: u.etat || '1/1'
+                    });
+                });
+
+                // Pobierz grafik z Firestore
+                const docSnap = await getDoc(doc(db, "grafiki", miesiacStr));
+                const [rok, m] = miesiacStr.split('-').map(Number);
+                const nominalWymiar = obliczNominalnyWymiarMiesiaca(rok, m);
+
+                if (docSnap.exists()) {
+                    aktualnyGrafikStan = docSnap.data();
+                    if (!aktualnyGrafikStan.employees) aktualnyGrafikStan.employees = [];
+                    if (!aktualnyGrafikStan.entries) aktualnyGrafikStan.entries = {};
+                    if (!aktualnyGrafikStan.holidays) aktualnyGrafikStan.holidays = utworzDomyslneDniWolneMap(miesiacStr);
+                    if (typeof aktualnyGrafikStan.wymiarNominalny !== 'number') {
+                        aktualnyGrafikStan.wymiarNominalny = nominalWymiar;
+                    }
+                } else {
+                    // Nowy miesiąc: zainicjuj pracownikami z bazy (lub skopiuj listę z poprzedniego miesiąca)
+                    const prevM = pobierzPoprzedniMiesiacStr(miesiacStr);
+                    const prevSnap = await getDoc(doc(db, "grafiki", prevM));
+                    let startEmps = [];
+                    if (prevSnap.exists() && prevSnap.data().employees?.length > 0) {
+                        startEmps = prevSnap.data().employees.map(e => {
+                            const aktU = bazaPracownikowGrafik.find(u => u.id === e.id);
+                            const prevStats = e.stats || {};
+                            const prevUtil = obliczWykorzystanyUrlopPracownika(prevSnap.data(), e.id, prevStats);
+                            const prevDoWyk = Number(prevStats.urlopDoWykorzystania) || 0;
+                            const przeniesiony = Math.max(0, prevDoWyk - prevUtil);
+                            return {
+                                id: e.id,
+                                imie: aktU ? aktU.imie : e.imie,
+                                umowa: aktU ? aktU.umowa : (e.umowa || 'UoP'),
+                                etat: aktU ? aktU.etat : (e.etat || '1/1'),
+                                stats: {
+                                    wymiarCustom: null,
+                                    urlopZalegly: Number(prevStats.urlopZalegly) || 0,
+                                    urlopDoWykorzystania: przeniesiony,
+                                    urlopWykorzystanyCustom: null
+                                }
+                            };
+                        });
+                    } else {
+                        startEmps = bazaPracownikowGrafik.map(u => ({
+                            id: u.id,
+                            imie: u.imie,
+                            umowa: u.umowa,
+                            etat: u.etat,
+                            stats: {
+                                wymiarCustom: null,
+                                urlopZalegly: 0,
+                                urlopDoWykorzystania: 0,
+                                urlopWykorzystanyCustom: null
+                            }
+                        }));
+                    }
+
+                    aktualnyGrafikStan = {
+                        miesiac: miesiacStr,
+                        published: false,
+                        wymiarNominalny: nominalWymiar,
+                        holidays: utworzDomyslneDniWolneMap(miesiacStr),
+                        employees: startEmps,
+                        entries: {}
+                    };
+                }
+
+                // Pobierz dane z poprzednich miesięcy bieżącego kwartału dla sum kwartalnych
+                kwartalnePoprzednieMiesiace = {};
+                const prevQMonths = pobierzPoprzednieMiesiaceWKwartale(miesiacStr);
+                for (const pm of prevQMonths) {
+                    const pSnap = await getDoc(doc(db, "grafiki", pm));
+                    if (pSnap.exists()) {
+                        const pData = pSnap.data();
+                        (pData.employees || []).forEach(emp => {
+                            if (!kwartalnePoprzednieMiesiace[emp.id]) {
+                                kwartalnePoprzednieMiesiace[emp.id] = { sumaPlan: 0, planWymiar: 0 };
+                            }
+                            const sumaP = obliczSumaPlanPracownika(pData, emp.id);
+                            const wymP = pobierzWymiarPracownika(pData, emp);
+                            kwartalnePoprzednieMiesiace[emp.id].sumaPlan += sumaP;
+                            if (emp.umowa !== 'Zlecenie') {
+                                kwartalnePoprzednieMiesiace[emp.id].planWymiar += (sumaP - wymP);
+                            }
+                        });
+                    }
+                }
+
+                renderujGrafikInteraktywny();
+                zaladujProsby(miesiacStr);
+            } catch (e) {
+                wrapper.innerHTML = `<span class="error">Błąd ładowania grafiku: ${e.message}</span>`;
+            }
+        };
+
+        function obliczSumaPlanPracownika(grafikData, empId) {
+            let suma = 0;
+            const entries = grafikData.entries || {};
+            Object.keys(entries).forEach(key => {
+                if (key.startsWith(`${empId}_`)) {
+                    const cell = entries[key];
+                    if (cell && (cell.type === 'praca' || cell.type === 'urlop' || cell.type === 'l4')) {
+                        suma += Number(cell.hours) || 0;
+                    }
+                }
+            });
+            return suma;
+        }
+
+        function obliczWykorzystanyUrlopPracownika(grafikData, empId, statsObj) {
+            if (statsObj && statsObj.urlopWykorzystanyCustom !== null && statsObj.urlopWykorzystanyCustom !== undefined && statsObj.urlopWykorzystanyCustom !== '') {
+                return Number(statsObj.urlopWykorzystanyCustom) || 0;
+            }
+            let sumaUrlopu = 0;
+            const entries = grafikData.entries || {};
+            Object.keys(entries).forEach(key => {
+                if (key.startsWith(`${empId}_`)) {
+                    const cell = entries[key];
+                    if (cell && cell.type === 'urlop') {
+                        sumaUrlopu += Number(cell.hours) || 0;
+                    }
+                }
+            });
+            return sumaUrlopu;
+        }
+
+        function pobierzWymiarPracownika(grafikData, emp) {
+            if (emp.umowa === 'Zlecenie') return 0;
+            const st = emp.stats || {};
+            if (st.wymiarCustom !== null && st.wymiarCustom !== undefined && st.wymiarCustom !== '') {
+                return Number(st.wymiarCustom) || 0;
+            }
+            const nom = Number(grafikData.wymiarNominalny) || 0;
+            const mnoznik = parsujMnoznikEtatu(emp.umowa, emp.etat);
+            return Math.round(nom * mnoznik * 100) / 100;
+        }
+
+        function walidujObsadeGrafiku(grafikData, dniWMiesiacu) {
+            const bledyDni = {}; // { dayNum: [komunikaty] }
+            const listaAlertow = [];
+            const emps = grafikData.employees || [];
+            const entries = grafikData.entries || {};
+            const holidays = grafikData.holidays || {};
+
+            for (let d = 1; d <= dniWMiesiacu; d++) {
+                const isHoliday = !!holidays[String(d)];
+                let ranoCount = 0;
+                let zamkniecieCount = 0;
+
+                emps.forEach(emp => {
+                    const cRano = entries[`${emp.id}_${d}_rano`];
+                    const cZamk = entries[`${emp.id}_${d}_zamkniecie`];
+                    if (cRano && cRano.type === 'praca' && Number(cRano.hours) > 0) ranoCount++;
+                    if (cZamk && cZamk.type === 'praca' && Number(cZamk.hours) > 0) zamkniecieCount++;
+                });
+
+                const errs = [];
+                if (isHoliday) {
+                    if (ranoCount === 0) errs.push("Brak obsady na zmianie rannej (Niedziela/Święto)");
+                    else if (ranoCount > 1) errs.push(`Zdublowana obsada rano (${ranoCount} os. zamiast 1)`);
+                    if (zamkniecieCount > 0) errs.push(`W niedzielę/święto nie powinno być zmiany na zamknięciu (${zamkniecieCount} os.)`);
+                } else {
+                    if (ranoCount === 0) errs.push("Brak obsady rano (1 zmiana)");
+                    else if (ranoCount > 1) errs.push(`Zdublowana obsada rano (${ranoCount} os.)`);
+                    if (zamkniecieCount === 0) errs.push("Brak obsady na zamknięciu (2 zmiana)");
+                    else if (zamkniecieCount > 1) errs.push(`Zdublowana obsada na zamknięciu (${zamkniecieCount} os.)`);
+                }
+
+                if (errs.length > 0) {
+                    bledyDni[d] = errs;
+                    listaAlertow.push(`<strong>Dzień ${d}:</strong> ${errs.join('; ')}`);
+                }
+            }
+            return { bledyDni, listaAlertow };
+        }
+
+        function renderujGrafikInteraktywny() {
+            const czyAdmin = currentUserData && currentUserData.rola === 'admin';
+            const wrapper = document.getElementById('grafik-tabela-wrapper');
+            const statusBadge = document.getElementById('grafik-status-badge');
+            const walidacjaBox = document.getElementById('grafik-walidacja-box');
+            const legendaBar = document.getElementById('grafik-legenda-bar');
+
+            // Status publikacji
+            if (aktualnyGrafikStan.published) {
+                statusBadge.innerHTML = `<span class="badge badge-done">📢 Opublikowany</span>`;
+            } else {
+                statusBadge.innerHTML = `<span class="badge badge-pending">📝 Wersja robocza (ukryta przed pracownikami)</span>`;
+            }
+
+            if (czyAdmin) {
+                document.getElementById('btn-ukryj-grafik').classList.toggle('hidden', !aktualnyGrafikStan.published);
+                document.getElementById('grafik-click-hint').innerText = "💡 Kliknij kratkę pracownika, aby wpisać godziny/urlop/L4 lub wyróżnić na różowo. Kliknij numer dnia, aby przełączyć Święto/Roboczy.";
+                odswiezPanelPracownikowGrafiku();
+            } else {
+                document.getElementById('grafik-click-hint').innerText = "";
+            }
+
+            // Jeśli pracownik i grafik nie jest jeszcze opublikowany
+            if (!czyAdmin && !aktualnyGrafikStan.published) {
+                walidacjaBox.classList.add('hidden');
+                legendaBar.classList.add('hidden');
+                wrapper.innerHTML = `
+                    <div class="field-group" style="text-align:center; padding: 28px 16px; border-left: 4px solid var(--warning);">
+                        <h4 style="color: var(--warning); margin-bottom: 8px;">⏳ Grafik w trakcie przygotowania</h4>
+                        <p class="text-muted" style="margin:0;">Kierownik nie opublikował jeszcze grafiku na wybrany miesiąc. Możesz poniżej zgłosić swoje prośby o dni wolne.</p>
+                    </div>`;
+                return;
+            }
+
+            legendaBar.classList.remove('hidden');
+
+            const [rok, m] = aktualnyGrafikStan.miesiac.split('-').map(Number);
+            const dniWMiesiacu = new Date(rok, m, 0).getDate();
+            const emps = aktualnyGrafikStan.employees || [];
+            const entries = aktualnyGrafikStan.entries || {};
+            const holidays = aktualnyGrafikStan.holidays || {};
+
+            // Walidacja obsady (pokazujemy adminowi na bieżąco)
+            const { bledyDni, listaAlertow } = walidujObsadeGrafiku(aktualnyGrafikStan, dniWMiesiacu);
+            if (czyAdmin && listaAlertow.length > 0) {
+                walidacjaBox.classList.remove('hidden');
+                walidacjaBox.innerHTML = `
+                    <div class="collapsible-header danger" onclick="window.toggleCollapsible('grafik-alerty-szczegoly', 'grafik-alerty-arrow')" style="padding: 8px 12px; font-size:0.9em;">
+                        <span>⚠️ Alerty obsady zmian (${listaAlertow.length} dni wymaga uwagi)</span>
+                        <span id="grafik-alerty-arrow">▼ Rozwiń</span>
+                    </div>
+                    <div id="grafik-alerty-szczegoly" class="collapsible-content" style="max-height: 160px; overflow-y: auto; font-size: 0.85em;">
+                        <ul style="margin:0; padding-left:18px;">${listaAlertow.map(a => `<li>${a}</li>`).join('')}</ul>
+                    </div>`;
+            } else {
+                walidacjaBox.classList.add('hidden');
+            }
+
+            if (emps.length === 0) {
+                wrapper.innerHTML = `<p class="text-muted" style="text-align:center; padding:20px;">Brak pracowników w grafiku. Dodaj pracownika powyżej.</p>`;
+                return;
+            }
+
+            // Budowa tabeli (z przypiętym nagłówkiem oraz kompaktową, zawijaną kolumną Dzień)
+            let html = `<div class="table-responsive grafik-scroll-container"><table class="grafik-grid-table">
+                <thead>
+                    <tr>
+                        <th rowspan="2" class="day-col-th">Dzień</th>`;
+
+            emps.forEach((emp, idx) => {
+                const isLast = idx === emps.length - 1;
+                const uzTag = emp.umowa === 'Zlecenie' ? ' <span style="font-weight:400; font-size:0.8em;">(UZ)</span>' : '';
+                html += `<th colspan="2" class="${isLast ? '' : 'emp-group-end'}">${ucieczkaHtml(emp.imie)}${uzTag}</th>`;
+            });
+            html += `</tr><tr>`;
+
+            emps.forEach((emp, idx) => {
+                const isLast = idx === emps.length - 1;
+                html += `<th class="sub-th" title="Zmiana ranna (od otwarcia)">Rano</th>
+                         <th class="sub-th ${isLast ? '' : 'emp-group-end'}" title="Zmiana popołudniowa (do zamknięcia)">Zamk.</th>`;
+            });
+            html += `</tr></thead><tbody>`;
+
+            // Wiersze dni miesiąca
+            for (let d = 1; d <= dniWMiesiacu; d++) {
+                const dt = new Date(rok, m - 1, d);
+                const dowName = DNI_TYG_KROTKIE[dt.getDay()];
+                const isHoliday = !!holidays[String(d)];
+                const rowClass = isHoliday ? 'grafik-holiday-row' : '';
+                const dayErrs = bledyDni[d];
+                const alertHtml = (czyAdmin && dayErrs) ? `<span class="day-alert-icon" title="${ucieczkaHtml(dayErrs.join(' | '))}">!</span>` : '';
+                const dayClickAttr = czyAdmin ? `onclick="window.przelaczSwietoDnia(${d})" style="cursor:pointer;" title="Kliknij, aby przełączyć tryb: Dzień powszedni (2 zmiany) / Święto-Niedziela (1 zmiana ranna)"` : '';
+
+                html += `<tr class="${rowClass}">
+                    <td class="day-col" ${dayClickAttr}>${d} <span class="text-muted" style="font-weight:500;">${dowName}</span>${alertHtml}</td>`;
+
+                emps.forEach((emp, idx) => {
+                    const isLast = idx === emps.length - 1;
+                    ['rano', 'zamkniecie'].forEach((shift, sIdx) => {
+                        const key = `${emp.id}_${d}_${shift}`;
+                        const cell = entries[key] || {};
+                        let cellText = '';
+                        let cellClasses = ['grafik-cell'];
+                        if (czyAdmin) cellClasses.push('editable');
+                        if (sIdx === 1 && !isLast) cellClasses.push('emp-group-end');
+
+                        if (cell.pink) cellClasses.push('cell-pink');
+
+                        if (cell.type === 'praca' && cell.hours) {
+                            cellText = cell.hours;
+                        } else if (cell.type === 'urlop') {
+                            cellClasses.push('cell-urlop');
+                            cellText = `U ${cell.hours || ''}`;
+                        } else if (cell.type === 'l4') {
+                            cellClasses.push('cell-l4');
+                            cellText = `L4 ${cell.hours || ''}`;
+                        }
+
+                        const clickCell = czyAdmin ? `onclick="window.otworzModalKomorkiGrafiku('${emp.id}', ${d}, '${shift}')"` : '';
+                        html += `<td class="${cellClasses.join(' ')}" ${clickCell}>${cellText}</td>`;
+                    });
+                });
+
+                html += `</tr>`;
+            }
+
+            // PODSUMOWANIE NA DOLE TABELI
+            const obliczStatystykiDlaEmp = (emp) => {
+                const isUZ = emp.umowa === 'Zlecenie';
+                const st = emp.stats || {};
+                const sumaPlan = obliczSumaPlanPracownika(aktualnyGrafikStan, emp.id);
+                const prevQ = kwartalnePoprzednieMiesiace[emp.id] || { sumaPlan: 0, planWymiar: 0 };
+                const sumaKwartal = prevQ.sumaPlan + sumaPlan;
+
+                if (isUZ) {
+                    return { isUZ: true, sumaPlan, sumaKwartal };
+                }
+
+                const wymiar = pobierzWymiarPracownika(aktualnyGrafikStan, emp);
+                const planWymiar = sumaPlan - wymiar;
+                const planWymiarKwartal = prevQ.planWymiar + planWymiar;
+                const urlopZalegly = Number(st.urlopZalegly) || 0;
+                const urlopDoWyk = Number(st.urlopDoWykorzystania) || 0;
+                const urlopWykorzystany = obliczWykorzystanyUrlopPracownika(aktualnyGrafikStan, emp.id, st);
+                const urlopPozostalo = urlopDoWyk - urlopWykorzystany;
+
+                return {
+                    isUZ: false, wymiar, sumaPlan, sumaKwartal,
+                    planWymiar, planWymiarKwartal,
+                    urlopZalegly, urlopDoWyk, urlopWykorzystany, urlopPozostalo
+                };
+            };
+
+            const empStatsList = emps.map(e => ({ emp: e, s: obliczStatystykiDlaEmp(e) }));
+
+            const renderStatRow = (label, renderCellFn) => {
+                let r = `<tr class="grafik-summary-row"><td class="day-col summary-label">${label}</td>`;
+                empStatsList.forEach(({ emp, s }, idx) => {
+                    const isLast = idx === empStatsList.length - 1;
+                    r += `<td colspan="2" class="${isLast ? '' : 'emp-group-end'}">${renderCellFn(emp, s)}</td>`;
+                });
+                return r + `</tr>`;
+            };
+
+            // 1. Wymiar czasu pracy
+            html += renderStatRow('Wymiar godzin', (emp, s) => {
+                if (s.isUZ) return `<span class="text-muted">UZ</span>`;
+                if (czyAdmin) {
+                    return `<input type="number" step="0.5" class="grafik-stat-input" value="${s.wymiar}" onchange="window.zmienStatystykePracownikaGrafik('${emp.id}', 'wymiarCustom', this.value)" title="Nominalny wymiar etatu (${emp.etat}) - kliknij aby nadpisać">`;
+                }
+                return `${s.wymiar}`;
+            });
+
+            // 2. Suma Plan
+            html += renderStatRow('Suma Plan', (emp, s) => `<strong>${s.sumaPlan}</strong>`);
+
+            // 3. Suma Plan w Kwartale
+            html += renderStatRow('Suma Plan w Kwartale', (emp, s) => `${s.sumaKwartal}`);
+
+            // 4. Plan - wymiar
+            html += renderStatRow('Plan - wymiar', (emp, s) => {
+                if (s.isUZ) return `-`;
+                const cls = s.planWymiar > 0 ? 'val-green' : (s.planWymiar < 0 ? 'val-red' : '');
+                return `<span class="${cls}">${s.planWymiar}</span>`;
+            });
+
+            // 5. Plan - wymiar Kwartalnie
+            html += renderStatRow('Plan - wymiar Kwartalnie', (emp, s) => {
+                if (s.isUZ) return `-`;
+                const cls = s.planWymiarKwartal > 0 ? 'val-green' : (s.planWymiarKwartal < 0 ? 'val-red' : '');
+                return `<span class="${cls}">${s.planWymiarKwartal}</span>`;
+            });
+
+            // 6. Urlop zaległy z zeszłego roku
+            html += renderStatRow(`Urlop zaległy z ${rok - 1}`, (emp, s) => {
+                if (s.isUZ) return `-`;
+                if (czyAdmin) {
+                    return `<input type="number" step="1" class="grafik-stat-input" value="${s.urlopZalegly}" onchange="window.zmienStatystykePracownikaGrafik('${emp.id}', 'urlopZalegly', this.value)">`;
+                }
+                return `${s.urlopZalegly}`;
+            });
+
+            // 7. Urlop do wykorzystania
+            html += renderStatRow('Urlop do wykorzystania', (emp, s) => {
+                if (s.isUZ) return `-`;
+                if (czyAdmin) {
+                    return `<input type="number" step="1" class="grafik-stat-input" value="${s.urlopDoWyk}" onchange="window.zmienStatystykePracownikaGrafik('${emp.id}', 'urlopDoWykorzystania', this.value)">`;
+                }
+                return `${s.urlopDoWyk}`;
+            });
+
+            // 8. Urlop wykorzystany
+            html += renderStatRow('Urlop wykorzystany', (emp, s) => {
+                if (s.isUZ) return `-`;
+                if (czyAdmin) {
+                    return `<input type="number" step="1" class="grafik-stat-input" value="${s.urlopWykorzystany}" onchange="window.zmienStatystykePracownikaGrafik('${emp.id}', 'urlopWykorzystanyCustom', this.value)" title="Wylicza się automatycznie z wpisów 'U' w grafiku. Możesz nadpisać ręcznie.">`;
+                }
+                return `${s.urlopWykorzystany}`;
+            });
+
+            // 9. Pozostało do wykorzystania
+            html += renderStatRow('Pozostało do wykorzystania', (emp, s) => {
+                if (s.isUZ) return `-`;
+                const cls = s.urlopPozostalo < 0 ? 'val-red' : 'val-green';
+                return `<span class="${cls}">${s.urlopPozostalo}</span>`;
+            });
+
+            html += `</tbody></table></div>`;
+            wrapper.innerHTML = html;
+        }
+
+        function odswiezPanelPracownikowGrafiku() {
+            const chipsContainer = document.getElementById('grafik-pracownicy-chips');
+            const selectEl = document.getElementById('grafik-dodaj-pracownika-select');
+            const emps = aktualnyGrafikStan.employees || [];
+
+            chipsContainer.innerHTML = emps.map((emp, idx) => `
+                <span style="display:inline-flex; align-items:center; gap:5px; background:var(--group-bg); border:1px solid var(--border-color); padding:4px 8px; border-radius:999px; font-size:0.85em; font-weight:600;">
+                    ${idx > 0 ? `<button type="button" onclick="window.przesunPracownikaWGrafiku(${idx}, -1)" style="background:none; color:var(--text-color); padding:0 2px; margin:0; width:auto; font-size:0.9em;" title="Przesuń w lewo">◀</button>` : ''}
+                    <span>${ucieczkaHtml(emp.imie)} (${emp.umowa === 'Zlecenie' ? 'UZ' : emp.etat})</span>
+                    ${idx < emps.length - 1 ? `<button type="button" onclick="window.przesunPracownikaWGrafiku(${idx}, 1)" style="background:none; color:var(--text-color); padding:0 2px; margin:0; width:auto; font-size:0.9em;" title="Przesuń w prawo">▶</button>` : ''}
+                    <button type="button" onclick="window.usunPracownikaZGrafiku('${emp.id}')" style="background:none; color:var(--danger); padding:0 2px; margin:0; width:auto; font-weight:800;" title="Usuń z tego grafiku">✕</button>
+                </span>
+            `).join('') || `<span class="text-muted">Brak dodanych pracowników</span>`;
+
+            const obecneIds = new Set(emps.map(e => e.id));
+            let optHtml = `<option value="">-- Wybierz pracownika z bazy --</option>`;
+            bazaPracownikowGrafik.forEach(u => {
+                if (!obecneIds.has(u.id)) {
+                    optHtml += `<option value="${u.id}">${ucieczkaHtml(u.imie)} (${u.umowa === 'Zlecenie' ? 'UZ' : u.etat})</option>`;
+                }
+            });
+            selectEl.innerHTML = optHtml;
+        }
+
+        window.dodajPracownikaDoGrafikuZSelecta = function() {
+            const sel = document.getElementById('grafik-dodaj-pracownika-select');
+            const uid = sel.value;
+            if (!uid) return alert("Wybierz pracownika z listy!");
+            const user = bazaPracownikowGrafik.find(u => u.id === uid);
+            if (!user) return;
+
+            aktualnyGrafikStan.employees.push({
+                id: user.id,
+                imie: user.imie,
+                umowa: user.umowa,
+                etat: user.etat,
+                stats: {
+                    wymiarCustom: null,
+                    urlopZalegly: 0,
+                    urlopDoWykorzystania: 0,
+                    urlopWykorzystanyCustom: null
+                }
+            });
+            renderujGrafikInteraktywny();
+        };
+
+        window.usunPracownikaZGrafiku = function(empId) {
+            if (!confirm("Usunąć tego pracownika z widoku grafiku dla tego miesiąca?")) return;
+            aktualnyGrafikStan.employees = aktualnyGrafikStan.employees.filter(e => e.id !== empId);
+            renderujGrafikInteraktywny();
+        };
+
+        window.przesunPracownikaWGrafiku = function(index, dir) {
+            const arr = aktualnyGrafikStan.employees;
+            const target = index + dir;
+            if (target < 0 || target >= arr.length) return;
+            [arr[index], arr[target]] = [arr[target], arr[index]];
+            renderujGrafikInteraktywny();
+        };
+
+        window.przelaczSwietoDnia = function(day) {
+            if (!(currentUserData && currentUserData.rola === 'admin')) return;
+            const key = String(day);
+            aktualnyGrafikStan.holidays[key] = !aktualnyGrafikStan.holidays[key];
+            renderujGrafikInteraktywny();
+        };
+
+        window.zmienStatystykePracownikaGrafik = function(empId, pole, val) {
+            const emp = aktualnyGrafikStan.employees.find(e => e.id === empId);
+            if (!emp) return;
+            if (!emp.stats) emp.stats = {};
+            if (val === '' || val === null) {
+                emp.stats[pole] = null;
+            } else {
+                emp.stats[pole] = Number(val);
+            }
+            renderujGrafikInteraktywny();
+        };
+
+        /* Modal edycji pojedynczej kratki grafiku */
+        window.otworzModalKomorkiGrafiku = function(empId, day, shift) {
+            if (!(currentUserData && currentUserData.rola === 'admin')) return;
+            const emp = aktualnyGrafikStan.employees.find(e => e.id === empId);
+            if (!emp) return;
+
+            const key = `${empId}_${day}_${shift}`;
+            const cell = aktualnyGrafikStan.entries[key];
+
+            document.getElementById('gk-emp-id').value = empId;
+            document.getElementById('gk-day').value = day;
+            document.getElementById('gk-shift').value = shift;
+            document.getElementById('modal-gk-tytul').innerText = `✏️ ${emp.imie} — Dzień ${day} (${shift === 'rano' ? 'Rano' : 'Zamknięcie'})`;
+
+            const typSelect = document.getElementById('gk-typ');
+            if (!cell || (!cell.type && !cell.pink) || (cell.type === 'puste' && !cell.pink)) {
+                // Pusta kratka -> domyślnie "Godziny pracy"
+                typSelect.value = 'praca';
+                document.getElementById('gk-godziny-val').value = 12;
+                document.getElementById('gk-pink-mark').checked = false;
+            } else {
+                // Istniejący wpis -> zachowaj zapisany typ
+                if (cell.type === 'puste' && cell.pink) {
+                    typSelect.value = 'wolne_prosba';
+                } else {
+                    typSelect.value = cell.type || 'praca';
+                }
+                document.getElementById('gk-godziny-val').value = cell.hours || (typSelect.value === 'praca' ? 12 : 8);
+                document.getElementById('gk-pink-mark').checked = !!cell.pink;
+            }
+
+            window.zmienTypKomorkiGrafiku();
+            document.getElementById('modal-grafik-komorka').classList.remove('hidden');
+        };
+
+        window.zmienTypKomorkiGrafiku = function() {
+            const typ = document.getElementById('gk-typ').value;
+            const godzBox = document.getElementById('gk-godziny-box');
+            const pinkChk = document.getElementById('gk-pink-mark');
+
+            godzBox.classList.toggle('hidden', typ === 'wolne_prosba' || typ === 'puste');
+            if (typ === 'wolne_prosba') pinkChk.checked = true;
+            if (typ === 'puste') pinkChk.checked = false;
+            if ((typ === 'urlop' || typ === 'l4') && !document.getElementById('gk-godziny-val').value) {
+                document.getElementById('gk-godziny-val').value = 8;
+            }
+        };
+
+        window.zastosujEdycjeKomorkiGrafiku = function() {
+            const empId = document.getElementById('gk-emp-id').value;
+            const day = document.getElementById('gk-day').value;
+            const shift = document.getElementById('gk-shift').value;
+            const typ = document.getElementById('gk-typ').value;
+            const hours = Number(document.getElementById('gk-godziny-val').value) || 0;
+            const pink = document.getElementById('gk-pink-mark').checked;
+            const key = `${empId}_${day}_${shift}`;
+
+            if (typ === 'puste' && !pink) {
+                delete aktualnyGrafikStan.entries[key];
+            } else if (typ === 'wolne_prosba') {
+                aktualnyGrafikStan.entries[key] = { type: 'puste', hours: 0, pink: true };
+            } else {
+                aktualnyGrafikStan.entries[key] = {
+                    type: hours > 0 ? typ : 'puste',
+                    hours: hours > 0 ? hours : 0,
+                    pink
+                };
+            }
+
+            window.zamknijModalKomorkiGrafiku();
+            renderujGrafikInteraktywny();
+        };
+
+        window.zamknijModalKomorkiGrafiku = () => document.getElementById('modal-grafik-komorka').classList.add('hidden');
+
+        /* Zapisywanie, publikacja i przenoszenie urlopów */
+        window.zapiszGrafikInteraktywny = async function(opublikuj) {
+            if (!(currentUserData && currentUserData.rola === 'admin')) return alert("Brak uprawnień!");
+            const miesiacStr = aktualnyGrafikStan.miesiac;
+            if (opublikuj) aktualnyGrafikStan.published = true;
+
+            try {
+                await setDoc(doc(db, "grafiki", miesiacStr), aktualnyGrafikStan);
+                renderujGrafikInteraktywny();
+                alert(opublikuj ? "📢 Grafik został zapisany i opublikowany dla pracowników!" : "💾 Zapisano wersję roboczą grafiku.");
+            } catch (e) {
+                alert("Błąd zapisu grafiku: " + e.message);
+            }
+        };
+
+        window.cofnijPublikacjeGrafiku = async function() {
+            if (!confirm("Czy na pewno chcesz ukryć grafik przed pracownikami (powrót do wersji roboczej)?")) return;
+            aktualnyGrafikStan.published = false;
+            await window.zapiszGrafikInteraktywny(false);
+        };
+
+        window.przeniesUrlopyNaKolejnyMiesiac = async function() {
+            if (!(currentUserData && currentUserData.rola === 'admin')) return;
+            const biezacyM = aktualnyGrafikStan.miesiac;
+            const nastepnyM = pobierzNastepnyMiesiacStr(biezacyM);
+
+            if (!confirm(`Czy przenieść pozostały do wykorzystania urlop z miesiąca ${biezacyM} do pozycji „Urlop do wykorzystania” w miesiącu ${nastepnyM}?`)) return;
+
+            try {
+                // Najpierw zapisz obecny miesiąc
+                await setDoc(doc(db, "grafiki", biezacyM), aktualnyGrafikStan);
+
+                const nextRef = doc(db, "grafiki", nastepnyM);
+                const nextSnap = await getDoc(nextRef);
+                const [nRok, nM] = nastepnyM.split('-').map(Number);
+
+                let nextData = nextSnap.exists() ? nextSnap.data() : {
+                    miesiac: nastepnyM,
+                    published: false,
+                    wymiarNominalny: obliczNominalnyWymiarMiesiaca(nRok, nM),
+                    holidays: utworzDomyslneDniWolneMap(nastepnyM),
+                    employees: [],
+                    entries: {}
+                };
+
+                aktualnyGrafikStan.employees.forEach(emp => {
+                    if (emp.umowa === 'Zlecenie') return;
+                    const st = emp.stats || {};
+                    const doWyk = Number(st.urlopDoWykorzystania) || 0;
+                    const wyk = obliczWykorzystanyUrlopPracownika(aktualnyGrafikStan, emp.id, st);
+                    const pozostalo = Math.max(0, doWyk - wyk);
+
+                    let targetEmp = (nextData.employees || []).find(e => e.id === emp.id);
+                    if (!targetEmp) {
+                        targetEmp = {
+                            id: emp.id,
+                            imie: emp.imie,
+                            umowa: emp.umowa,
+                            etat: emp.etat,
+                            stats: { wymiarCustom: null, urlopZalegly: Number(st.urlopZalegly) || 0, urlopDoWykorzystania: pozostalo, urlopWykorzystanyCustom: null }
+                        };
+                        nextData.employees.push(targetEmp);
+                    } else {
+                        if (!targetEmp.stats) targetEmp.stats = {};
+                        targetEmp.stats.urlopDoWykorzystania = pozostalo;
+                    }
+                });
+
+                await setDoc(nextRef, nextData);
+                alert(`✅ Przeniesiono pozostałe godziny urlopu do grafiku na miesiąc ${nastepnyM}!`);
+            } catch (e) {
+                alert("Błąd podczas przenoszenia urlopów: " + e.message);
+            }
+        };
+
+        /* Modal Drukowania / Bezpośredniego Pobierania PDF Listy Obecności */
+        window.otworzModalDrukuGrafiku = function() {
+            const listaDiv = document.getElementById('druk-pracownicy-lista');
+            const emps = aktualnyGrafikStan?.employees || [];
+            if (emps.length === 0) return alert("Brak pracowników w grafiku do wydruku.");
+
+            listaDiv.innerHTML = emps.map(emp => {
+                const isUZ = emp.umowa === 'Zlecenie';
+                return `<label style="display:flex; align-items:center; gap:8px; margin:6px 0; cursor:pointer; font-weight:normal;">
+                    <input type="checkbox" name="druk-emp-chk" value="${emp.id}" ${isUZ ? '' : 'checked'}>
+                    <span><strong>${ucieczkaHtml(emp.imie)}</strong> (${isUZ ? 'Umowa Zlecenie' : 'UoP ' + emp.etat})</span>
+                </label>`;
+            }).join('');
+
+            document.getElementById('modal-grafik-druk').classList.remove('hidden');
+        };
+
+        window.zamknijModalDrukuGrafiku = () => document.getElementById('modal-grafik-druk').classList.add('hidden');
+
+        window.generujWydrukGrafikuPDF = async function() {
+            const wybraneIds = Array.from(document.querySelectorAll('input[name="druk-emp-chk"]:checked')).map(cb => cb.value);
+            if (wybraneIds.length === 0) return alert("Zaznacz przynajmniej jednego pracownika do wygenerowania PDF!");
+
+            const wybraneEmps = aktualnyGrafikStan.employees.filter(e => wybraneIds.includes(e.id));
+            const [rok, m] = aktualnyGrafikStan.miesiac.split('-').map(Number);
+            const dniWMiesiacu = new Date(rok, m, 0).getDate();
+            const nazwaMiesiaca = `${NAZWY_MIESIECY_PL[m - 1].toUpperCase()} ${rok}`;
+            const nazwaPlikuPdf = `Grafik na ${NAZWY_MIESIECY_PL[m - 1]} ${rok}.pdf`;
+            const holidays = aktualnyGrafikStan.holidays || {};
+            const entries = aktualnyGrafikStan.entries || {};
+
+            let thead1 = `<tr><th rowspan="2" style="width:28px;">Dzień</th>`;
+            let thead2 = `<tr>`;
+            wybraneEmps.forEach(emp => {
+                thead1 += `<th colspan="5" style="border-left:2px solid #000;">${ucieczkaHtml(emp.imie)}</th>`;
+                thead2 += `<th colspan="2" style="border-left:2px solid #000;">Godziny</th><th>OD</th><th>DO</th><th>Podpis</th>`;
+            });
+            thead1 += `</tr>`;
+            thead2 += `</tr>`;
+
+            let tbody = ``;
+            for (let d = 1; d <= dniWMiesiacu; d++) {
+                const isHol = !!holidays[String(d)];
+                const bg = isHol ? 'background:#fef08a;' : '';
+                tbody += `<tr style="${bg}"><td style="font-weight:bold;">${d}</td>`;
+
+                wybraneEmps.forEach(emp => {
+                    const cRano = entries[`${emp.id}_${d}_rano`] || {};
+                    const cZamk = entries[`${emp.id}_${d}_zamkniecie`] || {};
+
+                    const formatPrintCell = (c) => {
+                        if (c.type === 'praca' && c.hours) return c.hours;
+                        if (c.type === 'urlop') return `U ${c.hours || ''}`;
+                        if (c.type === 'l4') return `L4 ${c.hours || ''}`;
+                        return '';
+                    };
+
+                    const rVal = formatPrintCell(cRano);
+                    const zVal = formatPrintCell(cZamk);
+
+                    tbody += `
+                        <td style="border-left:2px solid #000; width:24px;">${rVal}</td>
+                        <td style="width:24px;">${zVal}</td>
+                        <td style="width:32px;"></td>
+                        <td style="width:32px;"></td>
+                        <td style="width:58px;"></td>`;
+                });
+                tbody += `</tr>`;
+            }
+
+            // Podsumowanie na dole pliku PDF
+            const summaryMetrics = [
+                { label: 'Suma Plan', fn: (emp) => obliczSumaPlanPracownika(aktualnyGrafikStan, emp.id) },
+                { label: 'Plan - wymiar', fn: (emp) => emp.umowa === 'Zlecenie' ? '-' : (obliczSumaPlanPracownika(aktualnyGrafikStan, emp.id) - pobierzWymiarPracownika(aktualnyGrafikStan, emp)) },
+                { label: 'Urlop do wyk.', fn: (emp) => emp.umowa === 'Zlecenie' ? '-' : (Number(emp.stats?.urlopDoWykorzystania) || 0) },
+                { label: 'Urlop wyk.', fn: (emp) => emp.umowa === 'Zlecenie' ? '-' : obliczWykorzystanyUrlopPracownika(aktualnyGrafikStan, emp.id, emp.stats) },
+                { label: 'Pozostało urlopu', fn: (emp) => emp.umowa === 'Zlecenie' ? '-' : ((Number(emp.stats?.urlopDoWykorzystania) || 0) - obliczWykorzystanyUrlopPracownika(aktualnyGrafikStan, emp.id, emp.stats)) }
+            ];
+
+            summaryMetrics.forEach(metric => {
+                tbody += `<tr style="background:#f1f5f9; font-weight:bold;"><td>${metric.label}</td>`;
+                wybraneEmps.forEach(emp => {
+                    tbody += `<td colspan="2" style="border-left:2px solid #000;">${metric.fn(emp)}</td><td colspan="3"></td>`;
+                });
+                tbody += `</tr>`;
+            });
+
+            const pdfContainer = document.createElement('div');
+            pdfContainer.style.cssText = 'background:#ffffff; color:#000000; font-family:Arial,sans-serif; padding:6px; width:1080px;';
+            pdfContainer.innerHTML = `
+                <style>
+                    .pdf-export-table { width: 100%; border-collapse: collapse; font-size: 9px; color: #000; }
+                    .pdf-export-table th, .pdf-export-table td { border: 1px solid #444; padding: 2px 2px; text-align: center; }
+                    .pdf-export-table th { background: #e2e8f0; font-weight: bold; }
+                </style>
+                <h2 style="text-align:center; margin:0 0 6px 0; font-size:13px; color:#000;">LISTA OBECNOŚCI / GRAFIK ZA MIESIĄC: ${nazwaMiesiaca}</h2>
+                <table class="pdf-export-table">
+                    <thead>${thead1}${thead2}</thead>
+                    <tbody>${tbody}</tbody>
+                </table>
+            `;
+
+            window.zamknijModalDrukuGrafiku();
+
+            if (typeof window.html2pdf !== 'undefined') {
+                const opt = {
+                    margin: [5, 5, 5, 5],
+                    filename: nazwaPlikuPdf,
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+                };
+                try {
+                    await window.html2pdf().set(opt).from(pdfContainer).save();
+                } catch (err) {
+                    alert("Błąd podczas zapisywania pliku PDF: " + err.message);
+                }
+            } else {
+                alert("Nie udało się załadować generatora PDF (sprawdź połączenie z internetem).");
+            }
+        };
+
+        /* Prośby o zmiany w grafiku */
+        window.wyslijProsbe = async function() {
+            const wybranyMiesiac = document.getElementById('grafik-miesiac').value;
+            const tekst = document.getElementById('nowa-prosba-tekst').value.trim();
+            if (!wybranyMiesiac || !tekst) return alert("Uzupełnij miesiąc i treść prośby!");
+            try {
+                await addDoc(collection(db, "prosby_o_zmiany"), {
+                    miesiac: wybranyMiesiac, autor: currentUserData?.imie.split(' ')[0] || "Pracownik",
+                    tekst, status: "oczekujace", data: new Date().toLocaleString()
+                });
+                document.getElementById('nowa-prosba-tekst').value = "";
+                zaladujProsby(wybranyMiesiac);
+            } catch (e) { alert("Błąd."); }
+        };
+
+        window.zmienStatusProsby = async function(id, status) {
+            await setDoc(doc(db, "prosby_o_zmiany", id), { status }, { merge: true });
+            zaladujProsby(document.getElementById('grafik-miesiac').value);
+        };
+
+        window.usunProsbe = async function(id) {
+            if (confirm("Usunąć prośbę?")) {
+                await deleteDoc(doc(db, "prosby_o_zmiany", id));
+                zaladujProsby(document.getElementById('grafik-miesiac').value);
+            }
+        };
+
+        async function zaladujProsby(miesiac) {
+            const listaContainer = document.getElementById('prośby-lista-container');
+            listaContainer.innerHTML = "Pobieranie próśb...";
+            try {
+                const snap = await getDocs(collection(db, "prosby_o_zmiany"));
+                const prosby = [];
+                snap.forEach(d => { if (d.data().miesiac === miesiac) prosby.push({ id: d.id, ...d.data() }); });
+                if (prosby.length === 0) { listaContainer.innerHTML = "<p class='text-muted'>Brak próśb w tym miesiącu.</p>"; return; }
+
+                let html = "";
+                prosby.reverse().forEach(p => {
+                    const badge = p.status === "zatwierdzone"
+                        ? `<span class="badge badge-done">👍 Zatwierdzone</span>`
+                        : (p.status === "odrzucone" ? `<span class="badge badge-danger">👎 Odrzucone</span>` : `<span class="badge badge-pending">⏳ Oczekuje</span>`);
+                    
+                    const actions = (currentUserData?.rola === 'admin')
+                        ? `<button onclick="window.zmienStatusProsby('${p.id}', 'zatwierdzone')" class="btn-success btn-sm">👍 Zatwierdź</button>
+                           <button onclick="window.zmienStatusProsby('${p.id}', 'odrzucone')" class="btn-danger btn-sm">👎 Odrzuć</button>`
+                        : "";
+                    const delBtn = (currentUserData?.rola === 'admin' || currentUserData?.imie.split(' ')[0] === p.autor)
+                        ? `<button onclick="window.usunProsbe('${p.id}')" class="btn-neutral btn-sm">🗑️ Usuń</button>`
+                        : "";
+
+                    html += `<div class="request-item">
+                        <div style="display:flex; justify-content:space-between; align-items:center;"><strong>👤 ${p.autor}</strong>${badge}</div>
+                        <div class="text-muted" style="font-size:0.8em; margin-bottom:6px;">${p.data}</div>
+                        <div style="margin-bottom:8px;">${ucieczkaHtml(p.tekst)}</div>
+                        <div class="flex-row" style="gap:6px; flex-wrap:wrap;">${actions}${delBtn}</div>
+                    </div>`;
+                });
+                listaContainer.innerHTML = html;
+            } catch (e) { listaContainer.innerHTML = "Błąd."; }
+        }
 
         /* ==================== MODUŁ TPSy ==================== */
         function ucieczkaHtml(tekst) {
@@ -2639,7 +3907,7 @@
                     const czyNieprzeczytana = (aktualnyTabWiadomosci === 'odebrane' && st && !st.przeczytane);
                     const badgeUnread = czyNieprzeczytana ? `<span class="badge badge-danger" style="margin-right:4px;">NOWA</span>` : '';
                     const badgeWazne = w.wazne ? `<span class="badge badge-pending" style="margin-right:4px;">⭐ WAŻNE</span>` : '';
-                    const badgeZdjecie = w.zdjiecie ? `<span class="badge badge-info">📷 Zdjęcie</span>` : '';
+                    const badgeZdjecie = w.zdjecie ? `<span class="badge badge-info">📷 Zdjęcie</span>` : '';
                     const adminDeleteBtn = czyAdmin ? `<button onclick="event.stopPropagation(); window.usunWiadomoscAdminBezposrednio('${w.id}')" class="btn-danger btn-sm">🗑️</button>` : '';
 
                     html += `<div class="msg-item ${czyNieprzeczytana ? 'unread' : ''} ${w.wazne ? 'important' : ''}" onclick="window.otworzPodgladWiadomosci('${w.id}')">
@@ -2761,20 +4029,30 @@
             const typOkresu = document.getElementById('stats-okres-typ').value;
             let dOd = "", dDo = "";
             const teraz = new Date();
-            const biezacyMiesiacCode = teraz.toISOString().slice(0, 7);
+            const rok = teraz.getFullYear();
+            const miesiac = teraz.getMonth();
 
             if (typOkresu === 'biezacy') {
-                dOd = `${biezacyMiesiacCode}-01`;
-                dDo = new Date(teraz.getFullYear(), teraz.getMonth() + 1, 0).toISOString().slice(0, 10);
+                dOd = formatujDateLokalna(new Date(rok, miesiac, 1));
+                dDo = formatujDateLokalna(new Date(rok, miesiac + 1, 0));
             } else if (typOkresu === 'poprzedni') {
-                const prev = new Date(teraz.getFullYear(), teraz.getMonth() - 1, 1);
-                const prevCode = prev.toISOString().slice(0, 7);
-                dOd = `${prevCode}-01`;
-                dDo = new Date(prev.getFullYear(), prev.getMonth() + 1, 0).toISOString().slice(0, 10);
+                dOd = formatujDateLokalna(new Date(rok, miesiac - 1, 1));
+                dDo = formatujDateLokalna(new Date(rok, miesiac, 0));
+            } else if (typOkresu === 'biezacy_kwartal') {
+                const startMiesiacKwartalu = Math.floor(miesiac / 3) * 3;
+                dOd = formatujDateLokalna(new Date(rok, startMiesiacKwartalu, 1));
+                dDo = formatujDateLokalna(new Date(rok, startMiesiacKwartalu + 3, 0));
+            } else if (typOkresu === 'poprzedni_kwartal') {
+                const startMiesiacPoprzedniegoKwartalu = (Math.floor(miesiac / 3) - 1) * 3;
+                dOd = formatujDateLokalna(new Date(rok, startMiesiacPoprzedniegoKwartalu, 1));
+                dDo = formatujDateLokalna(new Date(rok, startMiesiacPoprzedniegoKwartalu + 3, 0));
+            } else if (typOkresu === 'ten_rok') {
+                dOd = formatujDateLokalna(new Date(rok, 0, 1));
+                dDo = formatujDateLokalna(new Date(rok, 11, 31));
             } else if (typOkresu === '30dni') {
-                const d30 = new Date(); d30.setDate(d30.getDate() - 30);
-                dOd = d30.toISOString().slice(0, 10);
-                dDo = teraz.toISOString().slice(0, 10);
+                const d30 = new Date(rok, miesiac, teraz.getDate() - 30);
+                dOd = formatujDateLokalna(d30);
+                dDo = formatujDateLokalna(teraz);
             } else if (typOkresu === 'custom') {
                 dOd = document.getElementById('stats-date-from').value;
                 dDo = document.getElementById('stats-date-to').value;
@@ -2857,25 +4135,55 @@
                 }
 
                 if (document.getElementById('chk-stat-plany').checked) {
-                    const miesiacKlucz = dOd.slice(0, 7);
-                    const pDoc = await getDoc(doc(db, "plany_miesieczne", miesiacKlucz));
-                    const plany = pDoc.exists() ? pDoc.data() : { kawa: 0, hd: 0, sklep: 0 };
+                    const miesiaceWZakresie = [];
+                    let [curRok, curMies] = dOd.slice(0, 7).split('-').map(Number);
+                    const [endRok, endMies] = dDo.slice(0, 7).split('-').map(Number);
 
-                    let sKawaW = 0, sHdW = 0, sSklepW = 0, ostatniDzienRaportu = 0;
-                    const [rRok, rMies] = miesiacKlucz.split('-').map(Number);
-                    const dniWMiesiacu = new Date(rRok, rMies, 0).getDate();
+                    while (curRok < endRok || (curRok === endRok && curMies <= endMies)) {
+                        miesiaceWZakresie.push(`${curRok}-${String(curMies).padStart(2, '0')}`);
+                        curMies++;
+                        if (curMies > 12) { curMies = 1; curRok++; }
+                    }
+
+                    const planyDocs = await Promise.all(miesiaceWZakresie.map(mk => getDoc(doc(db, "plany_miesieczne", mk))));
+                    const plany = { kawa: 0, hd: 0, sklep: 0 };
+                    planyDocs.forEach(pd => {
+                        if (pd.exists()) {
+                            const dataP = pd.data();
+                            plany.kawa += Number(dataP.kawa) || 0;
+                            plany.hd += Number(dataP.hd) || 0;
+                            plany.sklep += Number(dataP.sklep) || 0;
+                        }
+                    });
+
+                    let sKawaW = 0, sHdW = 0, sSklepW = 0;
+                    let ostatniaDataRaportu = "";
 
                     przefiltrowaneRaporty.forEach(r => {
                         sKawaW += Number(r.kawa?.wartosc) || 0;
                         sHdW += Number(r.hd?.wartosc) || 0;
                         sSklepW += Number(r.sklep?.wartosc) || 0;
-                        if (r.data?.startsWith(miesiacKlucz)) {
-                            const dzien = parseInt(r.data.split('-')[2], 10);
-                            if (dzien > ostatniDzienRaportu) ostatniDzienRaportu = dzien;
-                        }
+                        if (r.data && r.data > ostatniaDataRaportu) ostatniaDataRaportu = r.data;
                     });
 
-                    const ptProporcja = ostatniDzienRaportu / dniWMiesiacu;
+                    const [odR, odM, odD] = dOd.split('-').map(Number);
+                    const [doR, doM, doD] = dDo.split('-').map(Number);
+                    const startDate = new Date(odR, odM - 1, odD);
+                    const endDate = new Date(doR, doM - 1, doD);
+                    const dniWOkresie = Math.max(1, Math.round((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1);
+
+                    let przepracowaneDni = 0;
+                    if (ostatniaDataRaportu) {
+                        const [ostR, ostM, ostD] = ostatniaDataRaportu.split('-').map(Number);
+                        const lastReportDate = new Date(ostR, ostM - 1, ostD);
+                        przepracowaneDni = Math.min(dniWOkresie, Math.max(0, Math.round((lastReportDate - startDate) / (1000 * 60 * 60 * 24)) + 1));
+                    }
+
+                    const ptProporcja = przepracowaneDni / dniWOkresie;
+                    const etykietaOkresuPlanu = miesiaceWZakresie.length === 1
+                        ? miesiaceWZakresie[0]
+                        : `${miesiaceWZakresie[0]} – ${miesiaceWZakresie[miesiaceWZakresie.length - 1]}`;
+
                     const rowPlan = (nazwa, wyk, plan) => {
                         const planProp = plan * ptProporcja;
                         const diff100 = wyk - plan;
@@ -2895,8 +4203,8 @@
                     };
 
                     htmlWynik += `<div class="field-group" style="border-left:4px solid var(--info);">
-                        <h4>🎯 Realizacja Planów (${miesiacKlucz})</h4>
-                        <p class="text-muted">Proporcja wg ostatniego raportu: Dzień ${ostatniDzienRaportu} z ${dniWMiesiacu} (${(ptProporcja*100).toFixed(1)}%)</p>
+                        <h4>🎯 Realizacja Planów (${etykietaOkresuPlanu})</h4>
+                        <p class="text-muted">Proporcja wg ostatniego raportu: Dzień ${przepracowaneDni} z ${dniWOkresie} (${(ptProporcja*100).toFixed(1)}%)</p>
                         <div class="table-responsive"><table class="standard-table">
                             <tr><th>Kategoria</th><th>Wykonano</th><th>Plan</th><th>% Planu</th><th>Różn.</th><th>Plan prop.</th><th>% Prop.</th><th>Różn. prop.</th></tr>
                             ${rowPlan('☕ KAWA', sKawaW, plany.kawa || 0)}
@@ -2961,7 +4269,7 @@
                 dataGraniczna.setMonth(dataGraniczna.getMonth() - parseInt(wybor));
             }
 
-            if (!confirm(`⚠️ OSTRZEŻENIE: Zamierzasz trwale usunąć dane starsze niż ${dataGraniczna.toISOString().slice(0, 10)}.\nKontynuować?`)) return;
+            if (!confirm(`⚠️ OSTRZEŻENIE: Zamierzasz trwale usunąć dane starsze niż ${formatujDateLokalna(dataGraniczna)}.\nKontynuować?`)) return;
             if (!confirm(`🔴 DRUGIE POTWIERDZENIE: Tej operacji NIE DA SIĘ cofnąć. Kliknij OK, aby wykonać usunięcie.`)) return;
 
             try {
@@ -3195,674 +4503,564 @@
             try {
                 const lista = await pobierzListePolokDlaPlanogramu();
                 if (lista.includes(nazwa)) return alert("Taka strefa już istnieje!");
-                lista.push(nazwa); lista.sort();
+                lista.push(nazwa);
+                lista.sort((a, b) => a.localeCompare(b));
                 await setDoc(doc(db, "system_ustawienia", "planogramy_kategorie"), { lista });
                 document.getElementById('nowa-polka-nazwa').value = "";
                 window.zaladujPlanogramyMenu();
-            } catch (e) { alert("Błąd."); }
+            } catch (e) { alert("Błąd zapisu."); }
         };
 
-        window.usunPolkeZListyPlanogramu = async function(polkaNazwa) {
-            if (!confirm(`Usunąć strefę "${polkaNazwa}" z listy?`)) return;
+        window.usunPolkeZListyPlanogramu = async function(nazwa) {
+            if (!confirm(`Usunąć strefę "${nazwa}" z listy?`)) return;
             try {
-                const lista = (await pobierzListePolokDlaPlanogramu()).filter(p => p !== polkaNazwa);
+                let lista = await pobierzListePolokDlaPlanogramu();
+                lista = lista.filter(item => item !== nazwa);
                 await setDoc(doc(db, "system_ustawienia", "planogramy_kategorie"), { lista });
-                await deleteDoc(doc(db, "planogramy", polkaNazwa));
+                await deleteDoc(doc(db, "planogramy", nazwa));
                 window.zaladujPlanogramyMenu();
-            } catch (e) { alert("Błąd."); }
+            } catch (e) { alert("Błąd usuwania."); }
         };
 
-        let wymawiajacyPolkaPlanogram = "";
-        window.otworzModalPlanogramu = async function(polkaNazwa) {
-            wymawiajacyPolkaPlanogram = polkaNazwa;
-            document.getElementById('modal-planogram-tytul').innerText = `📋 Planogram: ${polkaNazwa}`;
-            const trescDiv = document.getElementById('modal-planogram-tresc');
-            trescDiv.innerHTML = "Pobieranie zdjęć...";
+        let aktualnieOtwartyPlanogram = null;
+        window.otworzModalPlanogramu = async function(nazwaPolki) {
+            aktualnieOtwartyPlanogram = nazwaPolki;
+            document.getElementById('modal-planogram-tytul').innerText = `📋 Planogram: ${nazwaPolki}`;
+            document.getElementById('modal-planogram-tresc').innerHTML = "Pobieranie danych...";
+            const czyAdmin = currentUserData && currentUserData.rola === 'admin';
+            document.getElementById('admin-planogram-edycja').classList.toggle('hidden', !czyAdmin);
+            document.getElementById('admin-planogram-file').value = "";
             document.getElementById('modal-planogram-szczegoly').classList.remove('hidden');
-            document.getElementById('admin-planogram-edycja').classList.toggle('hidden', !(currentUserData && currentUserData.rola === 'admin'));
 
             try {
-                const docSnap = await getDoc(doc(db, "planogramy", polkaNazwa));
-                const listaZdjec = docSnap.exists() ? (docSnap.data().zdjęcia || (docSnap.data().plik ? [docSnap.data().plik] : [])) : [];
-                if (listaZdjec.length > 0) {
-                    let galleryHtml = `<p class="text-muted" style="margin-bottom: 8px;">Ostatnia modyfikacja: <strong>${docSnap.data().dataUmieszczenia || '-'}</strong></p><div class="planogram-gallery">`;
-                    listaZdjec.forEach((imgSrc, idx) => {
-                        galleryHtml += `<div class="planogram-thumb-box"><img src="${imgSrc}" onclick="window.otworzZoomZdjecia('${imgSrc}')">`;
-                        if (currentUserData?.rola === 'admin') galleryHtml += `<button class="btn-danger btn-sm" style="width:100%; margin-top:4px;" onclick="window.usunPojedynczeZdjeciePlanogramu(${idx})">🗑️ Usuń</button>`;
-                        galleryHtml += `</div>`;
+                const docSnap = await getDoc(doc(db, "planogramy", nazwaPolki));
+                const data = docSnap.exists() ? docSnap.data() : null;
+                let zdjeciaList = data?.zdjęcia ? data.zdjęcia : (data?.plik ? [data.plik] : []);
+
+                if (zdjeciaList.length > 0) {
+                    let galeriaHtml = `<p class="text-muted">Zaktualizowano: <strong>${data.dataUmieszczenia || 'bd'}</strong> (${data.autor || 'Admin'})</p><div class="planogram-gallery">`;
+                    zdjeciaList.forEach((src, idx) => {
+                        const delBtn = czyAdmin ? `<button onclick="window.usunPojedynczeZdjeciePlanogramu(${idx})" class="btn-danger btn-sm" style="margin-top:6px; width:100%;">🗑️ Usuń</button>` : '';
+                        galeriaHtml += `<div class="planogram-thumb-box"><img src="${src}" onclick="window.otworzZoomZdjecia('${src}')">${delBtn}</div>`;
                     });
-                    trescDiv.innerHTML = galleryHtml + `</div>`;
+                    document.getElementById('modal-planogram-tresc').innerHTML = galeriaHtml + `</div>`;
                 } else {
-                    trescDiv.innerHTML = `<p class="text-muted" style="text-align: center; padding: 20px;">Brak zdjęć planogramu dla tej strefy.</p>`;
+                    document.getElementById('modal-planogram-tresc').innerHTML = "<p class='text-muted'>Brak dodanych zdjęć dla tej półki.</p>";
                 }
-            } catch (e) { trescDiv.innerHTML = "Błąd pobierania."; }
+            } catch (e) { document.getElementById('modal-planogram-tresc').innerHTML = "<span class='error'>Błąd pobierania danych.</span>"; }
         };
 
-        window.zamknijModalPlanogramu = () => document.getElementById('modal-planogram-szczegoly').classList.add('hidden');
+        window.zamknijModalPlanogramu = () => {
+            document.getElementById('modal-planogram-szczegoly').classList.add('hidden');
+            aktualnieOtwartyPlanogram = null;
+        };
 
         window.dodajZdjeciaDoPlanogramu = async function() {
             const fileInput = document.getElementById('admin-planogram-file');
-            if (fileInput.files.length === 0) return alert("Wybierz zdjęcia!");
-            const wczytaneBase64 = await Promise.all(Array.from(fileInput.files).map(file => new Promise(resolve => kompresujObraz(file, resolve))));
+            if (!fileInput.files || fileInput.files.length === 0) return alert("Wybierz przynajmniej jedno zdjęcie!");
+
+            const compressedResults = await Promise.all(
+                Array.from(fileInput.files).map(f => new Promise(res => kompresujObraz(f, res)))
+            );
 
             try {
-                const docRef = doc(db, "planogramy", wymawiajacyPolkaPlanogram);
+                const docRef = doc(db, "planogramy", aktualnieOtwartyPlanogram);
                 const docSnap = await getDoc(docRef);
-                const istniejace = docSnap.exists() ? (docSnap.data().zdjęcia || (docSnap.data().plik ? [docSnap.data().plik] : [])) : [];
+                let obecneZdjecia = [];
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    obecneZdjecia = data.zdjęcia ? data.zdjęcia : (data.plik ? [data.plik] : []);
+                }
+                const zaktualizowaneZdjecia = [...obecneZdjecia, ...compressedResults];
                 await setDoc(docRef, {
-                    polka: wymawiajacyPolkaPlanogram,
-                    zdjęcia: istniejace.concat(wczytaneBase64),
-                    dataUmieszczenia: new Date().toLocaleString(),
-                    autor: currentUserData ? currentUserData.imie.split(' ')[0] : "Admin"
+                    nazwa: aktualnieOtwartyPlanogram, zdjęcia: zaktualizowaneZdjecia,
+                    dataUmieszczenia: new Date().toLocaleDateString(), autor: currentUserData.imie
                 });
-                fileInput.value = "";
-                window.otworzModalPlanogramu(wymawiajacyPolkaPlanogram);
+                alert(`Dodano ${compressedResults.length} zdjęć!`);
+                window.otworzModalPlanogramu(aktualnieOtwartyPlanogram);
                 window.zaladujPlanogramyMenu();
-            } catch (err) { alert("Błąd zapisu."); }
+            } catch (e) { alert("Błąd zapisu: " + e.message); }
         };
 
         window.usunPojedynczeZdjeciePlanogramu = async function(index) {
             if (!confirm("Usunąć to zdjęcie?")) return;
             try {
-                const docRef = doc(db, "planogramy", wymawiajacyPolkaPlanogram);
-                const istniejace = (await getDoc(docRef)).data().zdjęcia || [];
-                istniejace.splice(index, 1);
-                if (istniejace.length > 0) await setDoc(docRef, { zdjęcia: istniejace, dataUmieszczenia: new Date().toLocaleString() }, { merge: true });
-                else await deleteDoc(docRef);
-                window.otworzModalPlanogramu(wymawiajacyPolkaPlanogram);
-                window.zaladujPlanogramyMenu();
-            } catch (e) { alert("Błąd."); }
+                const docRef = doc(db, "planogramy", aktualnieOtwartyPlanogram);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    let zdj = data.zdjęcia ? data.zdjęcia : (data.plik ? [data.plik] : []);
+                    zdj.splice(index, 1);
+                    if (zdj.length === 0) await deleteDoc(docRef);
+                    else await setDoc(docRef, { zdjęcia: zdj }, { merge: true });
+                    window.otworzModalPlanogramu(aktualnieOtwartyPlanogram);
+                    window.zaladujPlanogramyMenu();
+                }
+            } catch (e) { alert("Błąd usuwania."); }
         };
 
         /* ==================== SPRZĄTANIE ==================== */
         window.zaladujSprzatanie = async function() {
-            const miesiac = document.getElementById('sprzatanie-miesiac').value;
-            const okres = document.getElementById('sprzatanie-okres').value;
+            const wybranyMiesiac = document.getElementById('sprzatanie-miesiac').value;
+            const wybranyOkres = document.getElementById('sprzatanie-okres').value;
             const container = document.getElementById('sprzatanie-container');
             const infoTryb = document.getElementById('info-tryb-pracy');
-            if (!miesiac) return;
+            if (!wybranyMiesiac) return;
+            container.innerHTML = "Pobieranie danych...";
 
             const biezacy = pobierzBiezacyOkresSystemowy();
+            const jestBiezacy = (wybranyMiesiac === biezacy.miesiacStr && wybranyOkres === biezacy.okresStr);
+            const jestPrzyszlosc = (wybranyMiesiac > biezacy.miesiacStr) || (wybranyMiesiac === biezacy.miesiacStr && wybranyOkres === "16-koniec" && biezacy.okresStr === "1-15");
             const czyAdmin = currentUserData && currentUserData.rola === 'admin';
-            const czyBiezacyOkres = (miesiac === biezacy.miesiacStr && okres === biezacy.okresStr);
 
-            if (!czyAdmin && !czyBiezacyOkres) infoTryb.innerHTML = `<span class="val-red">🔒 Archiwum: Tylko do odczytu.</span>`;
-            else if (czyAdmin) infoTryb.innerHTML = `<span class="val-green">⚙️ Tryb kierownika: Pełne uprawnienia edycji.</span>`;
-            else infoTryb.innerHTML = `<span style="color: var(--primary);">✏️ Bieżący okres: Możesz wypełniać zadania.</span>`;
+            if (jestPrzyszlosc && !czyAdmin) infoTryb.innerHTML = `<span class="val-red">🔒 Okres przyszły: Zablokowany.</span>`;
+            else if (jestBiezacy) infoTryb.innerHTML = `<span class="val-green">🟢 Okres bieżący: Kliknij wiersz, aby zapisać kontrolę.</span>`;
+            else infoTryb.innerHTML = `<span style="color: var(--primary);">📖 ${czyAdmin ? 'Tryb Administratora: Pełna edycja i reset.' : 'Archiwum: Podgląd.'}</span>`;
 
-            container.innerHTML = "Pobieranie listy...";
             try {
-                const docSnap = await getDoc(doc(db, "sprzatanie", `${miesiac}_${okres}`));
-                aktualneDaneSprzatania = docSnap.exists() ? docSnap.data().półki || {} : {};
+                const [listaPolok, docSnap] = await Promise.all([
+                    pobierzListePolokDlaPlanogramu(),
+                    getDoc(doc(db, "sprzatanie", `${wybranyMiesiac}_${wybranyOkres}`))
+                ]);
+                aktualneDaneSprzatania = docSnap.exists() ? (docSnap.data().półki || {}) : {};
+                let html = `<div class="table-responsive"><table class="cleaning-table"><tr><th style="text-align:left;">Półka / Strefa</th><th style="width: 100px;">Status</th><th style="width: 100px;">Data</th><th style="width: 110px;">Osoba</th></tr>`;
+                
+                listaPolok.forEach((polka, index) => {
+                    const p = aktualneDaneSprzatania[index] || {};
+                    const isDone = (p.czystosc && p.daty && p.planogram);
+                    const statusHtml = isDone ? `<span class="badge badge-done">✔ Gotowe</span>` : `<span class="badge badge-pending">⏳ Brak</span>`;
+                    const rowClass = (jestPrzyszlosc && !czyAdmin) ? "future-row" : "cleaning-row";
+                    const clickAttr = (jestPrzyszlosc && !czyAdmin) ? "" : `onclick="window.otworzModalPolki(${index}, '${polka}', ${jestBiezacy})"`;
 
-                let html = `<div class="table-responsive"><table class="cleaning-table"><tr><th style="text-align:left;">Półka / Strefa</th><th style="width: 120px;">Status</th><th>Ostatnio sprawdzał</th></tr>`;
-                DOMYSLNE_POLKI.forEach((polka, index) => {
-                    const pData = aktualneDaneSprzatania[index] || { czystosc: false, daty: false, planogram: false, podpis: "-" };
-                    const zrobione = pData.czystosc && pData.daty && pData.planogram;
-                    let statusBadge = zrobione ? `<span class="badge badge-done">✔ Zrobione</span>` : `<span class="badge badge-pending">⏳ Do zrobienia</span>`;
-                    if (zrobione && pData.komentarz) statusBadge += ` <span class="badge badge-pending">⚠️</span>`;
-                    if (pData.zdjecie) statusBadge += ` <span class="badge badge-info">📷</span>`;
-
-                    html += `<tr class="cleaning-row" onclick="window.otworzModalPolki(${index})">
+                    html += `<tr class="${rowClass}" ${clickAttr}>
                         <td style="text-align:left;"><strong>${polka}</strong></td>
-                        <td>${statusBadge}</td>
-                        <td class="text-muted">${pData.podpis !== "-" ? `${pData.podpis} (${pData.dataSprawdzenia || ''})` : "-"}</td>
+                        <td>${statusHtml}</td>
+                        <td>${p.dataSprawdzenia || '-'}</td>
+                        <td>${p.podpis || '-'}</td>
                     </tr>`;
                 });
                 container.innerHTML = html + `</table></div>`;
-            } catch (e) { container.innerHTML = "Błąd pobierania."; }
+            } catch (e) { container.innerHTML = "Błąd ładowania."; }
         };
 
-        window.otworzModalPolki = function(index) {
-            const polkaNazwa = DOMYSLNE_POLKI[index];
-            const pData = aktualneDaneSprzatania[index] || { czystosc: false, daty: false, planogram: false, komentarz: "", zdjecie: "" };
-            const zrobione = pData.czystosc && pData.daty && pData.planogram;
-            const czyAdmin = currentUserData && currentUserData.rola === 'admin';
-            
-            const miesiac = document.getElementById('sprzatanie-miesiac').value;
-            const okres = document.getElementById('sprzatanie-okres').value;
-            const biezacy = pobierzBiezacyOkresSystemowy();
-            const czyBiezacyOkres = (miesiac === biezacy.miesiacStr && okres === biezacy.okresStr);
-
-            document.getElementById('modal-polka-tytuł').innerText = `🧹 Półka: ${polkaNazwa}`;
+        window.otworzModalPolki = function(index, nazwaPolki, jestBiezacy) {
             document.getElementById('modal-polka-index').value = index;
-            
-            document.getElementById('m-czystosc').checked = pData.czystosc || false;
-            document.getElementById('m-daty').checked = pData.daty || false;
-            document.getElementById('m-planogram').checked = pData.planogram || false;
-            document.getElementById('m-komentarz').value = pData.komentarz || '';
+            document.getElementById('modal-polka-tytuł').innerText = `🧹 ${nazwaPolki}`;
+            const p = aktualneDaneSprzatania[index] || {};
+            const czyAdmin = currentUserData && currentUserData.rola === 'admin';
+            const moznaEdytowac = jestBiezacy || czyAdmin;
+
+            document.getElementById('m-czystosc').checked = p.czystosc || false;
+            document.getElementById('m-daty').checked = p.daty || false;
+            document.getElementById('m-planogram').checked = p.planogram || false;
+            document.getElementById('m-komentarz').value = p.komentarz || "";
             document.getElementById('m-zdjecie').value = "";
 
-            const tylkoDoOdczytu = !czyAdmin && (!czyBiezacyOkres || zrobione);
-            ['m-czystosc', 'm-daty', 'm-planogram', 'm-komentarz', 'm-zdjecie'].forEach(id => document.getElementById(id).disabled = tylkoDoOdczytu);
-            document.getElementById('btn-zapisz-polka').style.display = tylkoDoOdczytu ? 'none' : 'inline-flex';
-            document.getElementById('btn-usun-polka').style.display = (czyAdmin && pData.podpis !== "-") ? 'inline-flex' : 'none';
+            document.getElementById('m-zdjecie-preview').innerHTML = p.zdjecie
+                ? `<p class="text-muted">Zapisane zdjęcie:</p><img src="${p.zdjecie}" onclick="window.otworzZoomZdjecia('${p.zdjecie}')" style="max-width: 100%; max-height: 150px; border-radius: var(--radius-sm); cursor: pointer;">`
+                : "";
 
-            document.getElementById('m-zdjecie-preview').innerHTML = pData.zdjecie
-                ? `<p class="val-green" style="font-size:0.85em;">Załączone zdjęcie:</p><img src="${pData.zdjecie}" onclick="window.otworzZoomZdjecia('${pData.zdjecie}')" style="max-height: 150px; border-radius: var(--radius-sm); cursor: pointer;">`
-                : `<p class="text-muted">Brak zdjęcia</p>`;
+            ['m-czystosc', 'm-daty', 'm-planogram', 'm-komentarz', 'm-zdjecie'].forEach(id => document.getElementById(id).disabled = !moznaEdytowac);
+            document.getElementById('btn-zapisz-polka').style.display = moznaEdytowac ? 'inline-flex' : 'none';
+            document.getElementById('btn-usun-polka').style.display = (czyAdmin && p.dataSprawdzenia) ? 'inline-flex' : 'none';
             document.getElementById('modal-polka').classList.remove('hidden');
         };
 
         window.zamknijModalPolki = () => document.getElementById('modal-polka').classList.add('hidden');
 
-        window.zapiszSzczegolyPolki = async function() {
+        window.zapiszSzczegolyPolki = function() {
             const index = document.getElementById('modal-polka-index').value;
-            const miesiac = document.getElementById('sprzatanie-miesiac').value;
-            const okres = document.getElementById('sprzatanie-okres').value;
             const fileInput = document.getElementById('m-zdjecie');
-            const stareDane = aktualneDaneSprzatania[index] || {};
-
-            const zapiszDoBazy = async (imgSrc) => {
+            const executeSave = async (zdjecieBase64) => {
+                const obecneDane = aktualneDaneSprzatania[index] || {};
+                aktualneDaneSprzatania[index] = {
+                    czystosc: document.getElementById('m-czystosc').checked,
+                    daty: document.getElementById('m-daty').checked,
+                    planogram: document.getElementById('m-planogram').checked,
+                    komentarz: document.getElementById('m-komentarz').value,
+                    zdjecie: zdjecieBase64 || obecneDane.zdjecie || null,
+                    dataSprawdzenia: new Date().toLocaleDateString(),
+                    podpis: currentUserData.imie.split(' ')[0]
+                };
+                const docId = `${document.getElementById('sprzatanie-miesiac').value}_${document.getElementById('sprzatanie-okres').value}`;
                 try {
-                    aktualneDaneSprzatania[index] = {
-                        nazwa: DOMYSLNE_POLKI[index],
-                        czystosc: document.getElementById('m-czystosc').checked,
-                        daty: document.getElementById('m-daty').checked,
-                        planogram: document.getElementById('m-planogram').checked,
-                        komentarz: document.getElementById('m-komentarz').value.trim(),
-                        zdjecie: imgSrc || stareDane.zdjecie || "",
-                        podpis: currentUserData ? currentUserData.imie.split(' ')[0] : "Pracownik",
-                        dataSprawdzenia: new Date().toLocaleString()
-                    };
-                    await setDoc(doc(db, "sprzatanie", `${miesiac}_${okres}`), { półki: aktualneDaneSprzatania }, { merge: true });
+                    await setDoc(doc(db, "sprzatanie", docId), { półki: aktualneDaneSprzatania }, { merge: true });
                     window.zamknijModalPolki();
                     window.zaladujSprzatanie();
-                } catch (e) { alert("Błąd zapisu."); }
+                } catch (e) { alert("Błąd zapisu: " + e.message); }
             };
-
-            if (fileInput.files?.length > 0) kompresujObraz(fileInput.files[0], zapiszDoBazy);
-            else await zapiszDoBazy(null);
+            if (fileInput.files?.length > 0) kompresujObraz(fileInput.files[0], executeSave);
+            else executeSave(null);
         };
 
         window.usunPotwierdzeniePolki = async function() {
-            if (!confirm("Zresetować tę półkę?")) return;
+            if (!confirm("Zresetować potwierdzenie kontroli dla tej półki?")) return;
             const index = document.getElementById('modal-polka-index').value;
-            const miesiac = document.getElementById('sprzatanie-miesiac').value;
-            const okres = document.getElementById('sprzatanie-okres').value;
-            aktualneDaneSprzatania[index] = { nazwa: DOMYSLNE_POLKI[index], czystosc: false, daty: false, planogram: false, komentarz: "", zdjecie: "", podpis: "-", dataSprawdzenia: new Date().toLocaleString() };
-            await setDoc(doc(db, "sprzatanie", `${miesiac}_${okres}`), { półki: aktualneDaneSprzatania }, { merge: true });
-            window.zamknijModalPolki();
-            window.zaladujSprzatanie();
-        };
-
-        /* ==================== PRACOWNICY ==================== */
-        window.dodajPracownika = async function() {
-            const imie = document.getElementById('new-p-imie').value.trim();
-            const login = document.getElementById('new-p-login').value.trim();
-            const haslo = document.getElementById('new-p-haslo').value;
-            const rola = document.getElementById('new-p-rola').value;
-            const umowa = document.getElementById('new-p-umowa').value;
-            const etat = umowa === 'UoP' ? (document.getElementById('new-p-etat').value === 'inny' ? document.getElementById('new-p-etat-custom').value.trim() : document.getElementById('new-p-etat').value) : "-";
-            const badania = document.getElementById('new-p-badania').value;
-            const sanepid = document.getElementById('new-p-sanepid').value;
-            const bhp = document.getElementById('new-p-bhp').value;
-
-            if (!imie || !login || !haslo) return alert("Uzupełnij pola pracownika!");
+            aktualneDaneSprzatania[index] = {
+                czystosc: false, daty: false, planogram: false, komentarz: "", zdjecie: null,
+                dataSprawdzenia: new Date().toLocaleDateString() + " (Reset)", podpis: "-"
+            };
+            const docId = `${document.getElementById('sprzatanie-miesiac').value}_${document.getElementById('sprzatanie-okres').value}`;
             try {
-                const cred = await createUserWithEmailAndPassword(auth, `${login}@sp580.pl`, haslo);
-                await setDoc(doc(db, "uzytkownicy", cred.user.uid), { imie, login, rola, umowa, etat, badania, sanepid, bhp });
-                alert(`Dodano pracownika: ${imie}`);
-                ['new-p-imie', 'new-p-login', 'new-p-haslo', 'new-p-badania', 'new-p-sanepid', 'new-p-bhp'].forEach(id => document.getElementById(id).value = "");
-                window.zaladujlistePracownikow();
-                sprawdzPowiadomieniaPracownicyGlobal();
-            } catch (e) { alert("Błąd: " + e.message); }
+                await setDoc(doc(db, "sprzatanie", docId), { półki: aktualneDaneSprzatania }, { merge: true });
+                window.zamknijModalPolki();
+                window.zaladujSprzatanie();
+            } catch (e) { alert("Błąd resetowania."); }
         };
 
+        /* ==================== SPRZEDAŻ ==================== */
+        window.pokazWidokMiesieczny = function() {
+            document.getElementById('view-daily').classList.add('hidden');
+            document.getElementById('view-monthly').classList.remove('hidden');
+            if(!document.getElementById('wybrany-miesiac').value) document.getElementById('wybrany-miesiac').value = pobierzBiezacyOkresSystemowy().miesiacStr;
+            window.zaladujMiesiacTabela();
+            if (currentUserData?.rola === 'admin') pobierzRaportyDlaAdmina();
+        };
+
+        window.otworzDzien = async function(dataStr) {
+            window.location.hash = "#dzien";
+            document.getElementById('raport-data').value = dataStr;
+            const czyAdmin = currentUserData && currentUserData.rola === 'admin';
+            document.getElementById('raport-data').disabled = !czyAdmin;
+            await zaladujCheckboxySprzedawcow(dataStr);
+        };
+
+        async function zaladujCheckboxySprzedawcow(dataStr) {
+            const container = document.getElementById('sprzedawcy-checkboxes-container');
+            container.innerHTML = "Pobieranie listy...";
+            try {
+                const [uSnap, rDoc] = await Promise.all([
+                    getDocs(collection(db, "uzytkownicy")),
+                    getDoc(doc(db, "sprzedaz", dataStr))
+                ]);
+                const zapisani = rDoc.exists() ? (rDoc.data().sprzedawcy || []) : [];
+
+                if (rDoc.exists()) {
+                    const d = rDoc.data();
+                    document.getElementById('kawa-ilosc').value = d.kawa?.ilosc || "";
+                    document.getElementById('kawa-wartosc').value = d.kawa?.wartosc || "";
+                    document.getElementById('hd-ilosc').value = d.hd?.ilosc || "";
+                    document.getElementById('hd-wartosc').value = d.hd?.wartosc || "";
+                    document.getElementById('sklep-wartosc').value = d.sklep?.wartosc || "";
+                } else {
+                    ['kawa-ilosc', 'kawa-wartosc', 'hd-ilosc', 'hd-wartosc', 'sklep-wartosc'].forEach(id => document.getElementById(id).value = "");
+                }
+
+                let html = "";
+                uSnap.forEach(docSnap => {
+                    const imieKrotkie = docSnap.data().imie.split(' ')[0];
+                    const isChecked = zapisani.length > 0
+                        ? zapisani.includes(imieKrotkie)
+                        : (currentUserData && imieKrotkie === currentUserData.imie.split(' ')[0]);
+                    html += `<label style="display:flex; align-items:center; gap:8px; margin:5px 0; cursor:pointer; font-weight:normal;"><input type="checkbox" name="raport-sprzedawca" value="${imieKrotkie}" ${isChecked ? 'checked' : ''}> ${docSnap.data().imie}</label>`;
+                });
+                container.innerHTML = html;
+            } catch (e) { container.innerHTML = "Błąd ładowania."; }
+        }
+
+        window.zmienDateWFormularzu = () => zaladujCheckboxySprzedawcow(document.getElementById('raport-data').value);
+
+        window.zaladujMiesiacTabela = async function() {
+            const wybranyMiesiac = document.getElementById('wybrany-miesiac').value;
+            if (!wybranyMiesiac) return;
+            const tableContainer = document.getElementById('monthly-table-container');
+            const plansContainer = document.getElementById('plans-container');
+            tableContainer.innerHTML = "Pobieranie danych...";
+            const [rok, miesiac] = wybranyMiesiac.split('-').map(Number);
+            const dniWMiesiacu = new Date(rok, miesiac, 0).getDate();
+
+            try {
+                const [snap, planDoc] = await Promise.all([
+                    getDocs(collection(db, "sprzedaz")),
+                    getDoc(doc(db, "plany_miesieczne", wybranyMiesiac))
+                ]);
+
+                const raporty = {};
+                let sKawaI = 0, sKawaW = 0, sHdI = 0, sHdW = 0, sSklepW = 0, sTotalW = 0;
+
+                snap.forEach(d => {
+                    if (d.id.startsWith(wybranyMiesiac)) {
+                        const r = d.data();
+                        raporty[d.id] = r;
+                        const kI = Number(r.kawa?.ilosc)||0, kW = Number(r.kawa?.wartosc)||0;
+                        const hI = Number(r.hd?.ilosc)||0, hW = Number(r.hd?.wartosc)||0;
+                        const sW = Number(r.sklep?.wartosc)||0;
+                        sKawaI += kI; sKawaW += kW; sHdI += hI; sHdW += hW; sSklepW += sW; sTotalW += (kW + hW + sW);
+                    }
+                });
+
+                const czyAdmin = currentUserData && currentUserData.rola === 'admin';
+                const plany = planDoc.exists() ? planDoc.data() : { kawa: 0, hd: 0, sklep: 0 };
+                let ostatniDzienRaportu = 0;
+                for (let d = 1; d <= dniWMiesiacu; d++) {
+                    if (raporty[`${wybranyMiesiac}-${String(d).padStart(2, '0')}`]) ostatniDzienRaportu = d;
+                }
+                const pt = ostatniDzienRaportu / dniWMiesiacu;
+
+                const rowPlan = (nazwa, katKey, wyk, plan) => {
+                    const pProp = plan * pt, d100 = wyk - plan, dProp = wyk - pProp;
+                    const p100 = plan > 0 ? (wyk / plan) * 100 : 0, pP = pProp > 0 ? (wyk / pProp) * 100 : 0;
+                    const planCell = czyAdmin ? `<input type="number" step="0.01" id="plan-input-${katKey}" value="${plan}" onchange="window.zapiszPlanMiesieczny()" class="compact-input">` : `${plan.toFixed(2)}`;
+                    return `<tr><td><strong>${nazwa}</strong></td><td>${wyk.toFixed(2)}</td><td>${planCell}</td><td class="${p100>=100?'val-green':'val-red'}">${p100.toFixed(1)}%</td><td class="${d100>=0?'val-green':'val-red'}">${d100.toFixed(2)}</td><td>${pProp.toFixed(2)}</td><td class="${pP>=100?'val-green':'val-red'}">${pP.toFixed(1)}%</td><td class="${dProp>=0?'val-green':'val-red'}">${dProp.toFixed(2)}</td></tr>`;
+                };
+
+                plansContainer.innerHTML = `<p class="text-muted">Proporcja wg ostatniego raportu: Dzień ${ostatniDzienRaportu} z ${dniWMiesiacu} (${(pt*100).toFixed(1)}%)</p>
+                <div class="table-responsive"><table class="month-table"><tr><th>Kat.</th><th>Wykon.</th><th>Plan</th><th>% Planu</th><th>Różnica</th><th>Plan prop.</th><th>% Prop.</th><th>Różnica</th></tr>
+                ${rowPlan('☕ Kawa', 'kawa', sKawaW, plany.kawa || 0)}
+                ${rowPlan('🌭 HD', 'hd', sHdW, plany.hd || 0)}
+                ${rowPlan('🛒 Sklep', 'sklep', sSklepW, plany.sklep || 0)}</table></div>`;
+
+                let tableHtml = `<div class="table-responsive"><table class="month-table"><tr><th style="width: 45px;">Dzień</th><th>Kawa (szt / zł)</th><th>HD (szt / zł)</th><th>Sklep (zł)</th><th>Suma (zł)</th></tr>`;
+                for (let d = 1; d <= dniWMiesiacu; d++) {
+                    const dStr = `${wybranyMiesiac}-${String(d).padStart(2, '0')}`;
+                    const r = raporty[dStr];
+                    if (r) {
+                        const sumD = (Number(r.kawa?.wartosc)||0) + (Number(r.hd?.wartosc)||0) + (Number(r.sklep?.wartosc)||0);
+                        tableHtml += `<tr class="cleaning-row" onclick="window.otworzDzien('${dStr}')"><td><strong>${d}</strong></td><td>${r.kawa?.ilosc||0} / ${(Number(r.kawa?.wartosc)||0).toFixed(2)}</td><td>${r.hd?.ilosc||0} / ${(Number(r.hd?.wartosc)||0).toFixed(2)}</td><td>${(Number(r.sklep?.wartosc)||0).toFixed(2)}</td><td><strong>${sumD.toFixed(2)}</strong></td></tr>`;
+                    } else {
+                        tableHtml += `<tr class="cleaning-row" style="opacity:0.75;" onclick="window.otworzDzien('${dStr}')"><td>${d}</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>`;
+                    }
+                }
+                tableHtml += `<tr class="sum-row"><td>SUMA</td><td>${sKawaI} / ${sKawaW.toFixed(2)}</td><td>${sHdI} / ${sHdW.toFixed(2)}</td><td>${sSklepW.toFixed(2)}</td><td>${sTotalW.toFixed(2)}</td></tr></table></div>`;
+                tableContainer.innerHTML = tableHtml;
+            } catch (e) { tableContainer.innerHTML = "Błąd ładowania."; }
+        };
+
+        window.zapiszPlanMiesieczny = async function() {
+            const wybranyMiesiac = document.getElementById('wybrany-miesiac').value;
+            try {
+                await setDoc(doc(db, "plany_miesieczne", wybranyMiesiac), {
+                    kawa: Number(document.getElementById('plan-input-kawa').value) || 0,
+                    hd: Number(document.getElementById('plan-input-hd').value) || 0,
+                    sklep: Number(document.getElementById('plan-input-sklep').value) || 0
+                });
+                window.zaladujMiesiacTabela();
+            } catch (e) { alert("Błąd zapisu planu."); }
+        };
+
+        window.zapiszSprzedaz = async function() {
+            const data = document.getElementById('raport-data').value;
+            const zaznaczeni = Array.from(document.querySelectorAll('input[name="raport-sprzedawca"]:checked')).map(cb => cb.value);
+            if (!data || zaznaczeni.length === 0) return alert("Wybierz datę oraz zaznacz minimum jednego sprzedawcę!");
+
+            const btn = document.getElementById('btn-zapisz-raport');
+            btn.disabled = true; btn.innerText = "Zapisywanie...";
+
+            try {
+                await setDoc(doc(db, "sprzedaz", data), {
+                    data, sprzedawcy: zaznaczeni,
+                    kawa: { ilosc: Number(document.getElementById('kawa-ilosc').value)||0, wartosc: Number(document.getElementById('kawa-wartosc').value)||0 },
+                    hd: { ilosc: Number(document.getElementById('hd-ilosc').value)||0, wartosc: Number(document.getElementById('hd-wartosc').value)||0 },
+                    sklep: { wartosc: Number(document.getElementById('sklep-wartosc').value)||0 },
+                    ostatniaModyfikacjaPrzez: currentUserData ? currentUserData.imie.split(' ')[0] : "Pracownik",
+                    czasModyfikacji: new Date().toLocaleString()
+                });
+                alert("Raport został zapisany!");
+                window.location.hash = "#sprzedaz";
+            } catch (e) { alert("Błąd zapisu: " + e.message); }
+            finally { btn.disabled = false; btn.innerText = "💾 Zapisz / Aktualizuj Raport"; }
+        };
+
+        async function pobierzRaportyDlaAdmina() {
+            const list = document.getElementById('reports-list');
+            const mStr = document.getElementById('wybrany-miesiac').value;
+            try {
+                const snap = await getDocs(collection(db, "sprzedaz"));
+                let html = "";
+                snap.forEach(d => {
+                    const r = d.data();
+                    if (r.data && r.data.startsWith(mStr)) {
+                        const osoby = r.sprzedawcy ? r.sprzedawcy.join(', ') : (r.pracownik || 'Brak');
+                        html += `<div class="report-box" onclick="window.otworzDzien('${r.data}')">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                                <strong>📅 ${r.data}</strong>
+                                <span class="badge badge-info">${osoby}</span>
+                            </div>
+                            <div style="font-size:0.9em;">☕ ${r.kawa?.ilosc||0} (${(Number(r.kawa?.wartosc)||0).toFixed(2)} zł) | 🌭 ${r.hd?.ilosc||0} (${(Number(r.hd?.wartosc)||0).toFixed(2)} zł) | 🛒 ${(Number(r.sklep?.wartosc)||0).toFixed(2)} zł</div>
+                            <div class="audit-info">Edycja: ${r.ostatniaModyfikacjaPrzez} (${r.czasModyfikacji})</div>
+                        </div>`;
+                    }
+                });
+                list.innerHTML = html || "<p class='text-muted'>Brak raportów w wybranym miesiącu.</p>";
+            } catch (e) { list.innerHTML = "Błąd."; }
+        }
+
+        /* ==================== ZARZĄDZANIE PRACOWNIKAMI ==================== */
         window.zaladujlistePracownikow = async function() {
             const container = document.getElementById('pracownicy-list-container');
             container.innerHTML = "Pobieranie listy...";
             try {
                 const snap = await getDocs(collection(db, "uzytkownicy"));
-                let table = `<div class="table-responsive"><table class="standard-table"><tr><th style="text-align:left;">Imię i nazwisko</th><th>Rola</th><th>Umowa / Etat</th><th>Badania / Sanepid / BHP</th><th style="width: 70px;">Akcje</th></tr>`;
-                snap.forEach(d => {
-                    const p = d.data(), id = d.id;
-                    const badaniaInfo = `Badania: ${formatujDateZIkona(p.badania)}<br>Sanepid: ${formatujDateZIkona(p.sanepid)}<br>BHP: ${formatujDateZIkona(p.bhp)}`;
-                    table += `<tr>
-                        <td style="text-align:left;"><strong>${p.imie}</strong></td>
-                        <td><span class="badge ${p.rola === 'admin' ? 'badge-info' : 'badge-done'}">${p.rola}</span></td>
-                        <td>${p.umowa} (${p.etat})</td>
-                        <td style="font-size:0.85em; text-align:left;">${badaniaInfo}</td>
-                        <td><button onclick="window.pokazSzczegolyPracownika('${id}', '${p.imie}', '${p.login||''}', '${p.rola}', '${p.umowa}', '${p.etat}', '${p.badania||''}', '${p.sanepid||''}', '${p.bhp||''}')" class="btn-sm">✏️ Edytuj</button></td>
+                let html = `<div class="table-responsive"><table class="standard-table"><tr><th style="text-align:left;">Pracownik</th><th>Umowa / Etat</th><th>🩺 Badania</th><th>🦠 Sanepid</th><th>🛡️ BHP</th></tr>`;
+                snap.forEach(docSnap => {
+                    const p = docSnap.data(), id = docSnap.id;
+                    const umowaTxt = p.umowa === 'Zlecenie' ? 'Zlecenie' : `UoP (${p.etat || '1/1'})`;
+                    html += `<tr class="cleaning-row" onclick="window.otworzEdycjePracownika('${id}', '${p.uid||''}', '${p.imie}', '${p.login}', '${p.rola}', '${p.umowa||'UoP'}', '${p.etat||'1/1'}', '${p.badania||''}', '${p.sanepid||''}', '${p.bhp||''}')">
+                        <td style="text-align:left;"><strong>${p.imie}</strong><br><span class="text-muted" style="font-size:0.8em;">${p.login} (${p.rola === 'admin' ? 'Admin' : 'Pracownik'})</span></td>
+                        <td>${umowaTxt}</td>
+                        <td>${formatujDateZIkona(p.badania)}</td>
+                        <td>${formatujDateZIkona(p.sanepid)}</td>
+                        <td>${formatujDateZIkona(p.bhp)}</td>
                     </tr>`;
                 });
-                container.innerHTML = table + `</table></div>`;
+                container.innerHTML = html + `</table></div>`;
                 sprawdzPowiadomieniaPracownicyGlobal();
-            } catch (e) { container.innerHTML = "Błąd."; }
+            } catch (e) { container.innerHTML = "Błąd ładowania."; }
         };
 
-        window.pokazSzczegolyPracownika = function(id, imie, login, rola, umowa, etat, badania, sanepid, bhp) {
+        window.otworzEdycjePracownika = function(id, uid, imie, login, rola, umowa, etat, badania, sanepid, bhp) {
             document.getElementById('edit-p-id').value = id;
-            document.getElementById('edit-p-uid').value = id;
+            document.getElementById('edit-p-uid').value = uid;
             document.getElementById('edit-p-imie').value = imie;
             document.getElementById('edit-p-login').value = login;
             document.getElementById('edit-p-nowe-haslo').value = "";
             document.getElementById('edit-p-rola').value = rola;
             document.getElementById('edit-p-umowa').value = umowa;
-            document.getElementById('edit-p-badania').value = badania !== 'undefined' ? badania : '';
-            document.getElementById('edit-p-sanepid').value = sanepid !== 'undefined' ? sanepid : '';
-            document.getElementById('edit-p-bhp').value = bhp !== 'undefined' ? bhp : '';
-
-            window.toggleEtatPole('edit');
-            if (umowa === 'UoP') {
-                const etatSelect = document.getElementById('edit-p-etat'), etatCustom = document.getElementById('edit-p-etat-custom');
-                if (Array.from(etatSelect.options).some(o => o.value === etat)) {
-                    etatSelect.value = etat; etatCustom.classList.add('hidden');
-                } else {
-                    etatSelect.value = 'inny'; etatCustom.value = etat; etatCustom.classList.remove('hidden');
-                }
+            
+            const standardoweEtaty = ['1/1', '3/4', '1/2', '1/4'];
+            const etatSelect = document.getElementById('edit-p-etat');
+            const etatCustomInput = document.getElementById('edit-p-etat-custom');
+            
+            if (standardoweEtaty.includes(etat)) {
+                etatSelect.value = etat; etatCustomInput.classList.add('hidden');
+            } else {
+                etatSelect.value = 'inny'; etatCustomInput.value = etat; etatCustomInput.classList.remove('hidden');
             }
+
+            document.getElementById('edit-p-badania').value = badania;
+            document.getElementById('edit-p-sanepid').value = sanepid;
+            document.getElementById('edit-p-bhp').value = bhp;
+            window.toggleEtatPole('edit');
             document.getElementById('modal-szczegoly-pracownika').classList.remove('hidden');
         };
+
         window.zamknijEdycjePracownika = () => document.getElementById('modal-szczegoly-pracownika').classList.add('hidden');
 
         window.zapiszEdycjePracownika = async function() {
             const id = document.getElementById('edit-p-id').value;
-            const imie = document.getElementById('edit-p-imie').value.trim();
-            const login = document.getElementById('edit-p-login').value.trim();
-            const noweHasloAdmin = document.getElementById('edit-p-nowe-haslo').value;
-            const rola = document.getElementById('edit-p-rola').value;
             const umowa = document.getElementById('edit-p-umowa').value;
-            const etat = umowa === 'UoP' ? (document.getElementById('edit-p-etat').value === 'inny' ? document.getElementById('edit-p-etat-custom').value.trim() : document.getElementById('edit-p-etat').value) : "-";
-            const badania = document.getElementById('edit-p-badania').value;
-            const sanepid = document.getElementById('edit-p-sanepid').value;
-            const bhp = document.getElementById('edit-p-bhp').value;
+            const noweHasloAdmin = document.getElementById('edit-p-nowe-haslo').value.trim();
 
-            if (!imie) return alert("Imię nie może być puste!");
+            if (noweHasloAdmin && noweHasloAdmin.length < 6) {
+                return alert("Nowe hasło musi mieć minimum 6 znaków!");
+            }
+
+            let etat = '-';
+            if (umowa === 'UoP') {
+                const selEtat = document.getElementById('edit-p-etat').value;
+                etat = (selEtat === 'inny') ? document.getElementById('edit-p-etat-custom').value.trim() : selEtat;
+            }
+
             try {
-                await setDoc(doc(db, "uzytkownicy", id), { imie, login, rola, umowa, etat, badania, sanepid, bhp }, { merge: true });
-                if (noweHasloAdmin && noweHasloAdmin.trim().length > 0) {
-                    if (noweHasloAdmin.length < 6) return alert("Nowe hasło musi mieć co najmniej 6 znaków!");
-                    const currentUser = auth.currentUser;
-                    if (currentUser && currentUser.email === `${login}@sp580.pl`) {
-                        await updatePassword(currentUser, noweHasloAdmin);
+                await setDoc(doc(db, "uzytkownicy", id), {
+                    imie: document.getElementById('edit-p-imie').value.trim(),
+                    login: document.getElementById('edit-p-login').value.trim().toLowerCase(),
+                    rola: document.getElementById('edit-p-rola').value,
+                    umowa, etat,
+                    badania: document.getElementById('edit-p-badania').value,
+                    sanepid: document.getElementById('edit-p-sanepid').value,
+                    bhp: document.getElementById('edit-p-bhp').value
+                }, { merge: true });
+
+                if (noweHasloAdmin) {
+                    const user = auth.currentUser;
+                    if (user && document.getElementById('edit-p-uid').value === user.uid) {
+                        await updatePassword(user, noweHasloAdmin);
+                        alert("Zaktualizowano profil oraz Twoje własne hasło!");
                     } else {
-                        alert("⚠️ Zmiana hasła dla innego konta wymaga uprawnień administratora Firebase. Dane profilu zaktualizowano.");
+                        alert("Dane zaktualizowane.\n\nUwaga: Ze względów bezpieczeństwa Firebase, hasło innego pracownika można zresetować z poziomu konsoli Firebase lub pracownik może je zmienić samodzielnie po zalogowaniu.");
                     }
+                } else {
+                    alert("Zaktualizowano dane pracownika!");
                 }
+
                 window.zamknijEdycjePracownika();
                 window.zaladujlistePracownikow();
-                alert("Zaktualizowano dane pracownika!");
             } catch (e) { alert("Błąd zapisu: " + e.message); }
         };
 
         window.usunPracownikaZModala = async function() {
             const id = document.getElementById('edit-p-id').value;
             const imie = document.getElementById('edit-p-imie').value;
-            if (confirm(`Czy na pewno chcesz trwale usunąć pracownika: ${imie}?`)) {
+            if (confirm(`Czy na pewno chcesz trwale usunąć pracownika ${imie} z bazy danych?`)) {
                 try {
                     await deleteDoc(doc(db, "uzytkownicy", id));
                     window.zamknijEdycjePracownika();
                     window.zaladujlistePracownikow();
-                    alert("Usunięto pracownika z systemu.");
-                } catch (e) { alert("Błąd usuwania: " + e.message); }
+                } catch (e) { alert("Błąd usuwania."); }
             }
         };
 
-        /* ==================== GRAFIK ==================== */
-        window.zaladujGrafikObrazkowy = async function() {
-            const wybranyMiesiac = document.getElementById('grafik-miesiac').value;
-            const previewContainer = document.getElementById('grafik-preview-container');
-            if (!wybranyMiesiac) return;
-            previewContainer.innerHTML = "Pobieranie grafiku...";
-            try {
-                const docSnap = await getDoc(doc(db, "grafik_obrazy", wybranyMiesiac));
-                if (docSnap.exists() && docSnap.data().zdjecie) {
-                    const imgSrc = docSnap.data().zdjecie;
-                    previewContainer.innerHTML = `<img src="${imgSrc}" onclick="window.otworzZoomZdjecia('${imgSrc}')" title="Kliknij, aby powiększyć">`;
-                } else {
-                    previewContainer.innerHTML = `<p class="text-muted">Brak opublikowanego grafiku.</p>`;
-                }
-                zaladujProsby(wybranyMiesiac);
-            } catch (e) { previewContainer.innerHTML = "Błąd."; }
-        };
+        window.dodajPracownika = async function() {
+            const imie = document.getElementById('new-p-imie').value.trim();
+            const login = document.getElementById('new-p-login').value.trim().toLowerCase();
+            const haslo = document.getElementById('new-p-haslo').value;
+            const rola = document.getElementById('new-p-rola').value;
+            const umowa = document.getElementById('new-p-umowa').value;
+            const badania = document.getElementById('new-p-badania').value;
+            const sanepid = document.getElementById('new-p-sanepid').value;
+            const bhp = document.getElementById('new-p-bhp').value;
 
-        window.zapiszGrafikObrazkowy = async function() {
-            const wybranyMiesiac = document.getElementById('grafik-miesiac').value;
-            const fileInput = document.getElementById('grafik-file-input');
-            if (!wybranyMiesiac || fileInput.files.length === 0) return alert("Wybierz miesiąc i plik!");
-            
-            kompresujObraz(fileInput.files[0], async (dataUrl) => {
-                try {
-                    await setDoc(doc(db, "grafik_obrazy", wybranyMiesiac), { zdjecie: dataUrl, zaktualizowal: currentUserData?.imie.split(' ')[0] || "Kierownik" });
-                    fileInput.value = "";
-                    window.zaladujGrafikObrazkowy();
-                } catch (e) { alert("Błąd zapisu grafiku."); }
-            });
-        };
-
-        window.usunGrafikObrazkowy = async function() {
-            if (confirm("Usunąć grafik?")) {
-                await deleteDoc(doc(db, "grafik_obrazy", document.getElementById('grafik-miesiac').value));
-                window.zaladujGrafikObrazkowy();
+            let etat = '-';
+            if (umowa === 'UoP') {
+                const selEtat = document.getElementById('new-p-etat').value;
+                etat = (selEtat === 'inny') ? document.getElementById('new-p-etat-custom').value.trim() : selEtat;
             }
-        };
 
-        window.wyslijProsbe = async function() {
-            const wybranyMiesiac = document.getElementById('grafik-miesiac').value;
-            const tekst = document.getElementById('nowa-prosba-tekst').value.trim();
-            if (!wybranyMiesiac || !tekst) return alert("Uzupełnij miesiąc i treść prośby!");
+            if (!imie || !login || !haslo) return alert("Wypełnij Imię, Login oraz Hasło!");
+
+            const secondaryApp = initializeApp(firebaseConfig, "Secondary");
+            const secondaryAuth = getAuth(secondaryApp);
             try {
-                await addDoc(collection(db, "prosby_o_zmiany"), {
-                    miesiac: wybranyMiesiac, autor: currentUserData?.imie.split(' ')[0] || "Pracownik",
-                    tekst, status: "oczekujace", data: new Date().toLocaleString()
+                const userCredential = await createUserWithEmailAndPassword(secondaryAuth, `${login}@sp580.pl`, haslo);
+                await setDoc(doc(db, "uzytkownicy", userCredential.user.uid), {
+                    uid: userCredential.user.uid, imie, login, rola, umowa, etat, badania, sanepid, bhp
                 });
-                document.getElementById('nowa-prosba-tekst').value = "";
-                zaladujProsby(wybranyMiesiac);
-            } catch (e) { alert("Błąd."); }
+                await signOut(secondaryAuth);
+                alert(`Dodano pracownika: ${imie}`);
+                ['new-p-imie', 'new-p-login', 'new-p-haslo', 'new-p-badania', 'new-p-sanepid', 'new-p-bhp', 'new-p-etat-custom'].forEach(id => document.getElementById(id).value = "");
+                window.zaladujlistePracownikow();
+            } catch (error) { alert("Błąd dodawania pracownika: " + error.message); }
         };
 
-        window.zmienStatusProsby = async function(id, status) {
-            await setDoc(doc(db, "prosby_o_zmiany", id), { status }, { merge: true });
-            zaladujProsby(document.getElementById('grafik-miesiac').value);
-        };
-
-        window.usunProsbe = async function(id) {
-            if (confirm("Usunąć prośbę?")) {
-                await deleteDoc(doc(db, "prosby_o_zmiany", id));
-                zaladujProsby(document.getElementById('grafik-miesiac').value);
-            }
-        };
-
-        async function zaladujProsby(miesiac) {
-            const listaContainer = document.getElementById('prośby-lista-container');
-            listaContainer.innerHTML = "Pobieranie próśb...";
-            try {
-                const snap = await getDocs(collection(db, "prosby_o_zmiany"));
-                const prosby = [];
-                snap.forEach(d => { if (d.data().miesiac === miesiac) prosby.push({ id: d.id, ...d.data() }); });
-                if (prosby.length === 0) { listaContainer.innerHTML = "<p class='text-muted'>Brak próśb w tym miesiącu.</p>"; return; }
-
-                let html = "";
-                prosby.reverse().forEach(p => {
-                    const badge = p.status === "zatwierdzone"
-                        ? `<span class="badge badge-done">👍 Zatwierdzone</span>`
-                        : (p.status === "odrzucone" ? `<span class="badge badge-danger">👎 Odrzucone</span>` : `<span class="badge badge-pending">⏳ Oczekuje</span>`);
-                    
-                    const actions = (currentUserData?.rola === 'admin')
-                        ? `<button onclick="window.zmienStatusProsby('${p.id}', 'zatwierdzone')" class="btn-success btn-sm">👍 Zatwierdź</button>
-                           <button onclick="window.zmienStatusProsby('${p.id}', 'odrzucone')" class="btn-danger btn-sm">👎 Odrzuć</button>`
-                        : "";
-                    const delBtn = (currentUserData?.rola === 'admin' || currentUserData?.imie.split(' ')[0] === p.autor)
-                        ? `<button onclick="window.usunProsbe('${p.id}')" class="btn-neutral btn-sm">🗑️ Usuń</button>`
-                        : "";
-
-                    html += `<div class="request-item">
-                        <div style="display:flex; justify-content:space-between; align-items:center;"><strong>👤 ${p.autor}</strong>${badge}</div>
-                        <div class="text-muted" style="font-size:0.8em; margin-bottom:6px;">${p.data}</div>
-                        <div style="margin-bottom:8px;">${ucieczkaHtml(p.tekst)}</div>
-                        <div class="flex-row" style="gap:6px; flex-wrap:wrap;">${actions}${delBtn}</div>
-                    </div>`;
-                });
-                listaContainer.innerHTML = html;
-            } catch (e) { listaContainer.innerHTML = "Błąd."; }
-        }
-
-        /* ==================== SPRZEDAŻ ==================== */
-        window.pokazWidokMiesieczny = function() {
-            document.getElementById('view-monthly').classList.remove('hidden');
-            document.getElementById('view-daily').classList.add('hidden');
-            if(!document.getElementById('wybrany-miesiac').value) document.getElementById('wybrany-miesiac').value = new Date().toISOString().slice(0, 7);
-            window.zaladujMiesiacTabela();
-            if (currentUserData?.rola === 'admin') {
-                document.getElementById('admin-daily-section').classList.remove('hidden');
-                pobierzRaportyDlaAdmina();
-            }
-        };
-
-        window.przejdzDoDnia = function(ds) {
-            window.location.hash = "#dzien";
-            document.getElementById('view-monthly').classList.add('hidden');
-            document.getElementById('view-daily').classList.remove('hidden');
-            document.getElementById('raport-data').value = ds;
-            sprawdzWczytajDaneDlaDaty();
-        };
-
-        window.zmienDateWFormularzu = () => sprawdzWczytajDaneDlaDaty();
-
-        async function pobierzPracownikowDoCheckboxow(zaznaczeni = []) {
-            const container = document.getElementById('sprzedawcy-checkboxes-container');
-            try {
-                const snap = await getDocs(collection(db, "uzytkownicy"));
-                let html = "";
-                snap.forEach(d => {
-                    const imieKrotkie = d.data().imie.split(' ')[0];
-                    html += `<label style="display:flex; align-items:center; gap:8px; margin:5px 0; cursor:pointer; font-weight:normal;"><input type="checkbox" name="sprzedawca-chk" value="${imieKrotkie}" ${zaznaczeni.includes(imieKrotkie)?'checked':''}> ${imieKrotkie}</label>`;
-                });
-                container.innerHTML = html || "Brak pracowników.";
-            } catch (e) { container.innerHTML = "Błąd."; }
-        }
-
-        async function sprawdzWczytajDaneDlaDaty() {
-            const d = document.getElementById('raport-data').value;
-            if (!d) return;
-            const snap = await getDoc(doc(db, "sprzedaz", d));
-            const wybrane = snap.exists() ? (snap.data().sprzedawcy || []) : [];
-            if (snap.exists()) {
-                document.getElementById('kawa-ilosc').value = snap.data().kawa?.ilosc || '';
-                document.getElementById('kawa-wartosc').value = snap.data().kawa?.wartosc || '';
-                document.getElementById('hd-ilosc').value = snap.data().hd?.ilosc || '';
-                document.getElementById('hd-wartosc').value = snap.data().hd?.wartosc || '';
-                document.getElementById('sklep-wartosc').value = snap.data().sklep?.wartosc || '';
-            } else {
-                ['kawa-ilosc', 'kawa-wartosc', 'hd-ilosc', 'hd-wartosc', 'sklep-wartosc'].forEach(id => document.getElementById(id).value = '');
-            }
-            await pobierzPracownikowDoCheckboxow(wybrane);
-        }
-
+        /* ==================== LOGOWANIE I AUTORYZACJA ==================== */
         window.zaloguj = async function() {
-            const login = document.getElementById('login-input').value.trim();
-            const haslo = document.getElementById('password-input').value;
-            const err = document.getElementById('error-msg');
-            err.innerText = "";
-            if (!login || !haslo) { err.innerText = "Wpisz login i hasło."; return; }
+            const login = document.getElementById('login-input').value.trim().toLowerCase();
+            const pass = document.getElementById('password-input').value;
+            document.getElementById('error-msg').innerText = "";
+            if (!login || !pass) return;
             try {
-                await signInWithEmailAndPassword(auth, `${login}@sp580.pl`, haslo);
-            } catch (error) { err.innerText = "Błąd: Nieprawidłowy login lub hasło."; }
+                await signInWithEmailAndPassword(auth, `${login}@sp580.pl`, pass);
+            } catch (error) { document.getElementById('error-msg').innerText = "Błąd: Niepoprawny login lub hasło."; }
         };
 
-        window.wyloguj = () => signOut(auth);
+        window.wyloguj = () => { window.location.hash = ""; signOut(auth); };
 
-        window.zapiszSprzedaz = async function() {
-            const data = document.getElementById('raport-data').value;
-            const sprzedawcy = Array.from(document.querySelectorAll('input[name="sprzedawca-chk"]:checked')).map(cb => cb.value);
-            if (!data || sprzedawcy.length === 0) return alert("Wybierz datę i min. 1 sprzedawcę!");
-
-            const btnZapisz = document.getElementById('btn-zapisz-raport');
-            btnZapisz.disabled = true;
-            btnZapisz.innerText = "Zapisywanie...";
-
-            const docRef = doc(db, "sprzedaz", data);
-            const docSnap = await getDoc(docRef);
-            const imieAkt = currentUserData ? currentUserData.imie.split(' ')[0] : "Użytkownik";
-            const nowStr = new Date().toLocaleString();
-
-            const dane = {
-                data, sprzedawcy,
-                kawa: { ilosc: Number(document.getElementById('kawa-ilosc').value)||0, wartosc: Number(document.getElementById('kawa-wartosc').value)||0 },
-                hd: { ilosc: Number(document.getElementById('hd-ilosc').value)||0, wartosc: Number(document.getElementById('hd-wartosc').value)||0 },
-                sklep: { wartosc: Number(document.getElementById('sklep-wartosc').value)||0 }
-            };
-
-            if (docSnap.exists()) {
-                dane.utworzyl = docSnap.data().utworzyl;
-                dane.dataUtworzenia = docSnap.data().dataUtworzenia || nowStr;
-                dane.zmodyfikowal = imieAkt;
-                dane.dataModyfikacji = nowStr;
-            } else {
-                dane.utworzyl = imieAkt;
-                dane.dataUtworzenia = nowStr;
-            }
-
-            try {
-                await setDoc(docRef, dane);
-                btnZapisz.disabled = false;
-                btnZapisz.innerText = "💾 Zapisz / Aktualizuj Raport";
-                
-                document.getElementById('view-daily').classList.add('hidden');
-                document.getElementById('view-monthly').classList.remove('hidden');
-                history.replaceState(null, "", "#sprzedaz");
-                window.zaladujMiesiacTabela();
-                if (currentUserData?.rola === 'admin') pobierzRaportyDlaAdmina();
-
-                setTimeout(() => alert("Zapisano pomyślnie!"), 50);
-            } catch (e) {
-                alert("Błąd zapisu raportu: " + e.message);
-                btnZapisz.disabled = false;
-                btnZapisz.innerText = "💾 Zapisz / Aktualizuj Raport";
-            }
-        };
-
-        window.usunRaportSprzedazy = async function(dataId) {
-            if (!confirm(`Czy na pewno chcesz usunąć raport sprzedaży z dnia ${dataId}?`)) return;
-            try {
-                await deleteDoc(doc(db, "sprzedaz", dataId));
-                alert("Raport został usunięty z serwera.");
-                pobierzRaportyDlaAdmina();
-                window.zaladujMiesiacTabela();
-            } catch (e) { alert("Błąd podczas usuwania raportu: " + e.message); }
-        };
-
-        async function pobierzRaportyDlaAdmina() {
-            const listDiv = document.getElementById('reports-list');
-            try {
-                const snap = await getDocs(collection(db, "sprzedaz"));
-                const raporty = snap.docs.map(d => d.data());
-                
-                raporty.sort((a, b) => new Date(b.dataModyfikacji || b.dataUtworzenia || b.data).getTime() - new Date(a.dataModyfikacji || a.dataUtworzenia || a.data).getTime());
-
-                let html = "";
-                raporty.forEach(r => {
-                    let audit = `Utworzył: <strong>${r.utworzyl || 'Nieznany'}</strong> (${r.dataUtworzenia || ''})`;
-                    if (r.zmodyfikowal) audit += ` | Korekta: ${r.zmodyfikowal} (${r.dataModyfikacji})`;
-                    
-                    const adminDeleteBtn = (currentUserData?.rola === 'admin')
-                        ? `<button onclick="event.stopPropagation(); window.usunRaportSprzedazy('${r.data}')" class="btn-danger btn-sm" style="margin-top:8px;">🗑️ Usuń raport</button>`
-                        : "";
-
-                    html += `<div class="report-box" onclick="window.przejdzDoDnia('${r.data}')">
-                        <strong>📅 ${r.data}</strong> | Sprzedawcy: <strong>${r.sprzedawcy?.join(', ')}</strong><br>
-                        ☕ Kawa: ${r.kawa.ilosc} / ${r.kawa.wartosc} zł | 🌭 HD: ${r.hd.ilosc} / ${r.hd.wartosc} zł | 🛒 Sklep: ${r.sklep.wartosc} zł
-                        <div class="audit-info">${audit}</div>${adminDeleteBtn}
-                    </div>`;
-                });
-                listDiv.innerHTML = html || "Brak raportów.";
-            } catch (e) { listDiv.innerHTML = "Błąd."; }
-        }
-
-        window.zapiszPlanyMiesieczne = async function() {
-            if (!(currentUserData && currentUserData.rola === 'admin')) return alert("Brak uprawnień!");
-            const m = document.getElementById('wybrany-miesiac').value;
-            if (!m) return;
-            await setDoc(doc(db, "plany_miesieczne", m), {
-                kawa: Number(document.getElementById('input-plan-kawa').value)||0,
-                hd: Number(document.getElementById('input-plan-hd').value)||0,
-                sklep: Number(document.getElementById('input-plan-sklep').value)||0
-            });
-            alert("Zapisano plany!");
-            window.zaladujMiesiacTabela();
-        };
-
-        window.zaladujMiesiacTabela = async function() {
-            const container = document.getElementById('monthly-table-container');
-            const plansContainer = document.getElementById('plans-container');
-            const m = document.getElementById('wybrany-miesiac').value;
-            if (!m) return;
-            container.innerHTML = "Pobieranie...";
-
-            try {
-                const [snap, pDoc] = await Promise.all([
-                    getDocs(collection(db, "sprzedaz")),
-                    getDoc(doc(db, "plany_miesieczne", m))
-                ]);
-
-                const mapa = {};
-                snap.forEach(d => { if (d.data().data?.startsWith(m)) mapa[d.data().data] = d.data(); });
-                const plany = pDoc.exists() ? pDoc.data() : { kawa: 0, hd: 0, sklep: 0 };
-
-                const [rok, mies] = m.split('-').map(Number);
-                const dni = new Date(rok, mies, 0).getDate();
-                let sKawaI = 0, sKawaW = 0, sHdI = 0, sHdW = 0, sSklepW = 0;
-                let table = `<div class="table-responsive"><table class="month-table"><tr><th style="width: 55px;">Dzień</th><th>Sprzedawcy</th><th style="width: 90px;">Kawa (szt/zł)</th><th style="width: 90px;">HD (szt/zł)</th><th style="width: 80px;">Sklep (zł)</th></tr>`;
-
-                for (let d = 1; d <= dni; d++) {
-                    const ds = String(d).padStart(2, '0'), pd = `${m}-${ds}`, r = mapa[pd];
-                    if (r) {
-                        sKawaI += Number(r.kawa?.ilosc)||0; sKawaW += Number(r.kawa?.wartosc)||0;
-                        sHdI += Number(r.hd?.ilosc)||0; sHdW += Number(r.hd?.wartosc)||0;
-                        sSklepW += Number(r.sklep?.wartosc)||0;
-                        table += `<tr class="cleaning-row" onclick="window.przejdzDoDnia('${pd}')"><td><strong>${ds}</strong></td><td>${r.sprzedawcy?.join(', ')}</td><td>${r.kawa?.ilosc}/${r.kawa?.wartosc}</td><td>${r.hd?.ilosc}/${r.hd?.wartosc}</td><td>${r.sklep?.wartosc}</td></tr>`;
-                    } else {
-                        table += `<tr class="cleaning-row" onclick="window.przejdzDoDnia('${pd}')" style="color:var(--text-muted);"><td><strong>${ds}</strong></td><td>-</td><td>-</td><td>-</td><td>-</td></tr>`;
-                    }
-                }
-                table += `<tr class="sum-row"><td colspan="2">SUMA</td><td>${sKawaI} / ${sKawaW.toFixed(2)}</td><td>${sHdI} / ${sHdW.toFixed(2)}</td><td>${sSklepW.toFixed(2)}</td></tr></table></div>`;
-                container.innerHTML = table;
-
-                const czyAdmin = currentUserData && currentUserData.rola === 'admin';
-                const d68K = sKawaW - (plany.kawa*0.68), d68H = sHdW - (plany.hd*0.68), d68S = sSklepW - (plany.sklep*0.68);
-                const d100K = sKawaW - plany.kawa, d100H = sHdW - plany.hd, d100S = sSklepW - plany.sklep;
-
-                plansContainer.innerHTML = `
-                    <div class="table-responsive">
-                        <table class="standard-table" style="margin-top:0;">
-                            <tr><th>Wskaźnik</th><th>KAWA (zł)</th><th>HD (zł)</th><th>SKLEP (zł)</th></tr>
-                            <tr><td><strong>Plan kwotowy</strong></td>
-                                <td><input type="number" step="0.01" id="input-plan-kawa" value="${plany.kawa||''}" ${czyAdmin?'':'readonly'} class="compact-input"></td>
-                                <td><input type="number" step="0.01" id="input-plan-hd" value="${plany.hd||''}" ${czyAdmin?'':'readonly'} class="compact-input"></td>
-                                <td><input type="number" step="0.01" id="input-plan-sklep" value="${plany.sklep||''}" ${czyAdmin?'':'readonly'} class="compact-input"></td>
-                            </tr>
-                            <tr><td><strong>Do 68%</strong></td><td class="${d68K>=0?'val-green':'val-red'}">${d68K.toFixed(2)} zł</td><td class="${d68H>=0?'val-green':'val-red'}">${d68H.toFixed(2)} zł</td><td class="${d68S>=0?'val-green':'val-red'}">${d68S.toFixed(2)} zł</td></tr>
-                            <tr><td><strong>Do 100%</strong></td><td class="${d100K>=0?'val-green':'val-red'}">${d100K.toFixed(2)} zł</td><td class="${d100H>=0?'val-green':'val-red'}">${d100H.toFixed(2)} zł</td><td class="${d100S>=0?'val-green':'val-red'}">${d100S.toFixed(2)} zł</td></tr>
-                        </table>
-                    </div>${czyAdmin?'<button onclick="window.zapiszPlanyMiesieczne()" class="btn-success" style="margin-top:8px;">💾 Zapisz plany</button>':''}`;
-            } catch (e) { container.innerHTML = "Błąd tabeli."; }
-        };
-
-        /* ==================== AUTH STATE ==================== */
         onAuthStateChanged(auth, async (user) => {
-            const loginScr = document.getElementById('login-screen');
-            const appScr = document.getElementById('app-screen');
-            const profileLabel = document.getElementById('profile-btn-label');
-
             if (user) {
-                loginScr.classList.add('hidden');
-                appScr.classList.remove('hidden');
-                if (!window.location.hash || window.location.hash === "#login") window.location.hash = "#menu";
-                else window.dispatchEvent(new Event('hashchange'));
-                
-                try {
-                    const snap = await getDoc(doc(db, "uzytkownicy", user.uid));
-                    if (snap.exists()) {
-                        currentUserData = snap.data();
-                        const imieKrotkie = currentUserData.imie.split(' ')[0];
-                        profileLabel.innerText = imieKrotkie;
-
-                        const czyAdmin = currentUserData.rola === 'admin';
-                        document.querySelectorAll('.admin-only-tile').forEach(el => {
-                            el.style.display = czyAdmin ? "flex" : "none";
-                        });
-
-                        sprawdzPowiadomieniaMisje(imieKrotkie, czyAdmin);
-                        sprawdzPowiadomieniaWiadomosci(currentUserData.imie);
-                        sprawdzPowiadomieniaPracownicyGlobal();
-                        sprawdzPowiadomieniaTpsGlobal();
-                    } else {
-                        profileLabel.innerText = user.email ? user.email.split('@')[0] : "Zalogowany";
-                        sprawdzPowiadomieniaTpsGlobal();
-                    }
-                } catch(e) { 
-                    console.error(e); 
-                    profileLabel.innerText = "Zalogowany";
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('app-screen').classList.remove('hidden');
+                ustawBiezacaDateWNaglowku();
+                const docSnap = await getDoc(doc(db, "uzytkownicy", user.uid));
+                if (docSnap.exists()) {
+                    currentUserData = docSnap.data();
+                    const imieKrotkie = currentUserData.imie.split(' ')[0];
+                    document.getElementById('profile-btn-label').innerText = imieKrotkie;
+                    const czyAdmin = currentUserData.rola === 'admin';
+                    document.getElementById('admin-daily-section').classList.toggle('hidden', !czyAdmin);
+                    document.getElementById('tile-pracownicy').style.display = czyAdmin ? 'flex' : 'none';
+                    document.getElementById('tile-statystyki').style.display = czyAdmin ? 'flex' : 'none';
+                    
+                    sprawdzPowiadomieniaMisje(imieKrotkie, czyAdmin);
+                    sprawdzPowiadomieniaWiadomosci(currentUserData.imie);
+                    sprawdzPowiadomieniaPracownicyGlobal();
+                    sprawdzPowiadomieniaTpsGlobal();
+                    window.dispatchEvent(new HashChangeEvent("hashchange"));
                 }
             } else {
                 currentUserData = null;
-                appScr.classList.add('hidden');
-                loginScr.classList.remove('hidden');
-                profileLabel.innerText = "Zaloguj";
-                document.getElementById('login-input').value = "";
-                document.getElementById('password-input').value = "";
-                document.getElementById('error-msg').innerText = "";
+                document.getElementById('login-screen').classList.remove('hidden');
+                document.getElementById('app-screen').classList.add('hidden');
             }
         });
     </script>
