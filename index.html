@@ -103,6 +103,7 @@
                 <div class="tile" onclick="window.otworzModul('grafik')">
                     <span class="tile-icon">📅</span>
                     <span>Grafik</span>
+                    <span id="grafik-badge" class="notification-badge warning hidden" title="Potwierdź dzisiejszą obecność">!</span>
                 </div>
                 <div class="tile tile-info" onclick="window.otworzModul('wiadomosci')">
                     <span class="tile-icon">💬</span>
@@ -114,6 +115,14 @@
                     <span>TPSy</span>
                     <span id="tpsy-badge" class="notification-badge warning hidden" title="Dzisiaj kończy się TPS!">!</span>
                 </div>
+                <div class="tile tile-info" onclick="window.otworzModul('liczenie')">
+                    <span class="tile-icon">🧮</span>
+                    <span>Liczenie</span>
+                </div>
+                <div class="tile tile-info" onclick="window.otworzModul('raporty')">
+                    <span class="tile-icon">📑</span>
+                    <span>Raporty</span>
+                </div>
                 <div class="tile tile-success admin-only-tile" onclick="window.otworzModul('pracownicy')" id="tile-pracownicy" style="display: none;">
                     <span class="tile-icon">👥</span>
                     <span>Pracownicy</span>
@@ -122,6 +131,10 @@
                 <div class="tile tile-success admin-only-tile" onclick="window.otworzModul('statystyki')" id="tile-statystyki" style="display: none;">
                     <span class="tile-icon">📈</span>
                     <span>Statystyki</span>
+                </div>
+                <div class="tile tile-success admin-only-tile" onclick="window.otworzModul('finanse')" id="tile-finanse" style="display: none;">
+                    <span class="tile-icon">💹</span>
+                    <span>Finanse</span>
                 </div>
             </div>
         </div>
@@ -587,7 +600,10 @@
             <!-- Pasek akcji dla pracownika (gdy grafik opublikowany) -->
             <div id="pracownik-grafik-toolbar" class="hidden" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
                 <span class="text-muted">Widok aktualnego grafiku pracy.</span>
-                <button onclick="window.otworzModalDrukuGrafiku()" class="btn-neutral btn-sm">🖨️ Drukuj / PDF</button>
+                <div class="flex-row" style="gap:6px; flex-wrap:wrap;">
+                    <button onclick="window.otworzModalObecnosciGrafiku()" class="btn-success btn-sm">✅ Potwierdź obecność</button>
+                    <button onclick="window.otworzModalDrukuGrafiku()" class="btn-neutral btn-sm">🖨️ Drukuj / PDF</button>
+                </div>
             </div>
 
             <!-- Alerty walidacji obsady -->
@@ -643,9 +659,58 @@
                     <p class="text-muted" style="margin:0; font-size:0.86em;">💡 Wybierz „Niedostępny (X)”, aby w kratce pojawił się znak X — bez zmiany koloru.</p>
                 </div>
 
+                <div class="field-group" style="border-style: dashed; border-color: var(--info); background: var(--card-bg);">
+                    <label style="color: var(--info); margin-bottom: 6px;">✅ Potwierdzenie obecności (dzień wybranej komórki)</label>
+                    <div class="grid-2">
+                        <div>
+                            <label for="gk-obecnosc-od">Od:</label>
+                            <input type="time" id="gk-obecnosc-od">
+                        </div>
+                        <div>
+                            <label for="gk-obecnosc-do">Do:</label>
+                            <input type="time" id="gk-obecnosc-do">
+                        </div>
+                    </div>
+                    <p id="gk-obecnosc-info" class="text-muted" style="font-size:0.82em; margin:6px 0;"></p>
+                    <div class="flex-row" style="gap:6px; flex-wrap:wrap;">
+                        <button type="button" onclick="window.zapiszObecnoscZKomorkiGrafiku()" class="btn-info btn-sm" style="margin:0;">💾 Zapisz potwierdzenie</button>
+                        <button type="button" onclick="window.usunObecnoscZKomorkiGrafiku()" class="btn-neutral btn-sm" style="margin:0;">🗑️ Usuń potwierdzenie</button>
+                    </div>
+                </div>
+
                 <div class="flex-row" style="margin-top: 14px;">
                     <button onclick="window.zastosujEdycjeKomorkiGrafiku()" class="btn-success" style="margin:0;">✔ Zastosuj</button>
                     <button onclick="window.zamknijModalKomorkiGrafiku()" class="btn-neutral" style="margin:0;">Anuluj</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL POTWIERDZENIA OBECNOŚCI (PRACOWNIK) -->
+        <div id="modal-obecnosc-grafik" class="modal-overlay hidden">
+            <div class="modal-content" style="max-width: 420px;">
+                <h4>✅ Potwierdzenie obecności</h4>
+                <p class="text-muted" style="font-size:0.86em; margin-top:0;">Potwierdź tylko swoją obecność. Nie można wprowadzać danych dla przyszłych dni.</p>
+
+                <div class="field-group">
+                    <label for="obecnosc-data">Dzień:</label>
+                    <input type="date" id="obecnosc-data">
+
+                    <div class="grid-2">
+                        <div>
+                            <label for="obecnosc-od">Od:</label>
+                            <input type="time" id="obecnosc-od">
+                        </div>
+                        <div>
+                            <label for="obecnosc-do">Do:</label>
+                            <input type="time" id="obecnosc-do">
+                        </div>
+                    </div>
+                    <p id="obecnosc-msg" class="text-muted" style="font-size:0.82em; margin:6px 0 0 0;"></p>
+                </div>
+
+                <div class="flex-row" style="margin-top: 14px;">
+                    <button onclick="window.zatwierdzObecnoscPracownikaGrafiku()" class="btn-success" style="margin:0;">✔ Zatwierdź</button>
+                    <button onclick="window.zamknijModalObecnosciGrafiku()" class="btn-neutral" style="margin:0;">Anuluj</button>
                 </div>
             </div>
         </div>
@@ -971,6 +1036,42 @@
                 </div>
             </div>
         </div>
+
+        <!-- MODUŁ LICZENIE (dostępny dla wszystkich) -->
+        <div id="modul-liczenie" class="hidden">
+            <div class="module-nav-bar">
+                <h3>🧮 Liczenie</h3>
+                <button class="btn-back" onclick="window.otworzModul('menu')">⬅ Menu</button>
+            </div>
+            <div class="field-group" style="text-align:center; padding:28px 16px;">
+                <h4 style="margin-bottom:8px;">Moduł w przygotowaniu</h4>
+                <p class="text-muted" style="margin:0;">Funkcja liczenia zostanie dodana w kolejnym etapie.</p>
+            </div>
+        </div>
+
+        <!-- MODUŁ RAPORTY (dostępny dla wszystkich) -->
+        <div id="modul-raporty" class="hidden">
+            <div class="module-nav-bar">
+                <h3>📑 Raporty</h3>
+                <button class="btn-back" onclick="window.otworzModul('menu')">⬅ Menu</button>
+            </div>
+            <div class="field-group" style="text-align:center; padding:28px 16px;">
+                <h4 style="margin-bottom:8px;">Moduł w przygotowaniu</h4>
+                <p class="text-muted" style="margin:0;">Raporty zostaną dodane w kolejnym etapie.</p>
+            </div>
+        </div>
+
+        <!-- MODUŁ FINANSE (tylko administrator) -->
+        <div id="modul-finanse" class="hidden">
+            <div class="module-nav-bar">
+                <h3>💹 Finanse</h3>
+                <button class="btn-back" onclick="window.otworzModul('menu')">⬅ Menu</button>
+            </div>
+            <div class="field-group" style="text-align:center; padding:28px 16px;">
+                <h4 style="margin-bottom:8px;">Moduł w przygotowaniu</h4>
+                <p class="text-muted" style="margin:0;">Dane finansowe zostaną dodane w kolejnym etapie.</p>
+            </div>
+        </div>
     </div>
 
     <!-- SKRYPTY FIREBASE -->
@@ -1000,6 +1101,7 @@
     <script defer src="js/core/router.js"></script>
     <script defer src="js/modules/grafik.js"></script>
     <script defer src="js/modules/grafik-druk.js"></script>
+    <script defer src="js/modules/grafik-obecnosc.js"></script>
     <script defer src="js/modules/tps.js"></script>
     <script defer src="js/modules/premia.js"></script>
     <script defer src="js/modules/pracownicy.js"></script>
