@@ -1,0 +1,57 @@
+        /* Tabele responsywne i optymalizacja szerokości kolumn */
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin: 10px 0;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-color);
+        }
+
+        table.month-table, table.standard-table, table.cleaning-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85em;
+            background: var(--card-bg);
+            color: var(--text-color);
+            table-layout: auto;
+        }
+
+        table th, table td {
+            border-bottom: 1px solid var(--border-color);
+            border-right: 1px solid var(--border-color);
+            padding: 6px 8px;
+            text-align: center;
+            vertical-align: middle;
+        }
+        table th:last-child, table td:last-child { border-right: none; }
+        table tr:last-child td { border-bottom: none; }
+
+        table th {
+            background: var(--primary);
+            color: #ffffff;
+            font-size: 0.82em;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+            white-space: nowrap;
+        }
+
+        .table-responsive table th:first-child,
+        .table-responsive table td:first-child {
+            position: sticky;
+            left: 0;
+            z-index: 2;
+        }
+        .table-responsive table td:first-child { background: var(--card-bg); }
+        .table-responsive table th:first-child { z-index: 3; background: var(--primary); }
+
+        .cleaning-row { cursor: pointer; transition: background-color 0.15s; }
+        .cleaning-row:hover td { background: var(--group-bg) !important; }
+        .future-row {
+            cursor: not-allowed;
+            opacity: 0.55;
+            background: var(--group-bg);
+        }
+        .future-row td { background: var(--group-bg) !important; }
+        .sum-row td { font-weight: 700; background: var(--group-bg) !important; }

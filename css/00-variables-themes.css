@@ -1,0 +1,169 @@
+        :root {
+            /* Paleta główna (spójna dla całej aplikacji) */
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --primary-soft: rgba(37, 99, 235, 0.1);
+            
+            --success: #16a34a;
+            --success-hover: #15803d;
+            --success-soft: rgba(22, 163, 74, 0.12);
+            
+            --danger: #dc2626;
+            --danger-hover: #b91c1c;
+            --danger-soft: rgba(220, 38, 38, 0.12);
+            
+            --warning: #d97706;
+            --warning-bg: #fef3c7;
+            --warning-text: #92400e;
+            
+            --info: #0891b2;
+            --info-hover: #0e7490;
+            
+            --neutral: #64748b;
+            --neutral-hover: #475569;
+
+            /* Motyw domyślny: Jasny */
+            --bg-color: #f1f5f9;
+            --card-bg: #ffffff;
+            --text-color: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #cbd5e1;
+            --input-bg: #ffffff;
+            --input-text: #1e293b;
+            --group-bg: #f8fafc;
+            --group-label: #475569;
+            --preview-bg: #f1f5f9;
+            
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.15);
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 14px;
+            --base-font-size: 14px;
+
+            /* Kolory specyficzne dla grafiku */
+            --grafik-holiday-bg: #fef08a;
+            --grafik-holiday-text: #713f12;
+            --grafik-pink-bg: #fbcfe8;
+            --grafik-pink-text: #831843;
+            --grafik-leave-bg: #dbeafe;
+            --grafik-leave-text: #1e40af;
+            --grafik-l4-bg: #ffedd5;
+            --grafik-l4-text: #9a3412;
+        }
+
+        [data-theme="warm-light"] {
+            --bg-color: #faf6f0;
+            --card-bg: #ffffff;
+            --text-color: #3f322a;
+            --text-muted: #78665a;
+            --border-color: #dfd3c3;
+            --input-bg: #fffdfa;
+            --input-text: #3f322a;
+            --group-bg: #f5efe6;
+            --group-label: #5c4b3f;
+            --preview-bg: #f7f1e8;
+            --primary: #b45309;
+            --primary-hover: #92400e;
+            --primary-soft: rgba(180, 83, 9, 0.1);
+        }
+
+        [data-theme="mint-light"] {
+            --bg-color: #eef6f2;
+            --card-bg: #ffffff;
+            --text-color: #1e352b;
+            --text-muted: #527364;
+            --border-color: #c2dcd0;
+            --input-bg: #f8fcfa;
+            --input-text: #1e352b;
+            --group-bg: #e4f0ea;
+            --group-label: #3b5c4d;
+            --preview-bg: #ebf5f0;
+            --primary: #0d9488;
+            --primary-hover: #0f766e;
+            --primary-soft: rgba(13, 148, 136, 0.1);
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #0f1115;
+            --card-bg: #181b20;
+            --text-color: #f1f5f9;
+            --text-muted: #94a3b8;
+            --border-color: #2e3440;
+            --input-bg: #22262e;
+            --input-text: #f8fafc;
+            --group-bg: #1f232a;
+            --group-label: #cbd5e1;
+            --preview-bg: #14171c;
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --primary-soft: rgba(59, 130, 246, 0.15);
+            --warning-bg: #451a03;
+            --warning-text: #fcd34d;
+            --grafik-holiday-bg: #42380c;
+            --grafik-holiday-text: #fef08a;
+            --grafik-pink-bg: #501936;
+            --grafik-pink-text: #fbcfe8;
+            --grafik-leave-bg: #1e3a8a;
+            --grafik-leave-text: #dbeafe;
+            --grafik-l4-bg: #7c2d12;
+            --grafik-l4-text: #ffedd5;
+        }
+
+        [data-theme="midnight-blue"] {
+            --bg-color: #0b1320;
+            --card-bg: #131f33;
+            --text-color: #e2e8f0;
+            --text-muted: #94a3b8;
+            --border-color: #263859;
+            --input-bg: #1a2942;
+            --input-text: #ffffff;
+            --group-bg: #101a2b;
+            --group-label: #cbd5e1;
+            --preview-bg: #0e1726;
+            --primary: #38bdf8;
+            --primary-hover: #0284c7;
+            --primary-soft: rgba(56, 189, 248, 0.15);
+            --warning-bg: #451a03;
+            --warning-text: #fcd34d;
+            --grafik-holiday-bg: #42380c;
+            --grafik-holiday-text: #fef08a;
+            --grafik-pink-bg: #501936;
+            --grafik-pink-text: #fbcfe8;
+            --grafik-leave-bg: #1e3a8a;
+            --grafik-leave-text: #dbeafe;
+            --grafik-l4-bg: #7c2d12;
+            --grafik-l4-text: #ffedd5;
+        }
+
+        [data-theme="slate-dark"] {
+            --bg-color: #16181d;
+            --card-bg: #1e2128;
+            --text-color: #e2e8f0;
+            --text-muted: #9ca3af;
+            --border-color: #323642;
+            --input-bg: #13151a;
+            --input-text: #f3f4f6;
+            --group-bg: #191c22;
+            --group-label: #d1d5db;
+            --preview-bg: #13151a;
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --primary-soft: rgba(99, 102, 241, 0.15);
+            --warning-bg: #451a03;
+            --warning-text: #fcd34d;
+            --grafik-holiday-bg: #42380c;
+            --grafik-holiday-text: #fef08a;
+            --grafik-pink-bg: #501936;
+            --grafik-pink-text: #fbcfe8;
+            --grafik-leave-bg: #1e3a8a;
+            --grafik-leave-text: #dbeafe;
+            --grafik-l4-bg: #7c2d12;
+            --grafik-l4-text: #ffedd5;
+        }
+
+        [data-fontsize="small"] { --base-font-size: 13px; }
+        [data-fontsize="normal"] { --base-font-size: 14px; }
+        [data-fontsize="large"] { --base-font-size: 16px; }
+        [data-fontsize="xlarge"] { --base-font-size: 18px; }

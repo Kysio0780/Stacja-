@@ -1,0 +1,62 @@
+        /* Kompaktowe kolumny i inputy w tabelach */
+        .compact-input {
+            width: 100%;
+            min-width: 75px;
+            padding: 4px 6px;
+            margin: 0;
+            font-size: 0.9em;
+            text-align: center;
+        }
+        .tps-comment-input {
+            width: 110px;
+            min-width: 90px;
+            padding: 4px 6px;
+            margin: 0;
+            font-size: 0.85em;
+        }
+
+        /* Odznaki statusów */
+        .badge {
+            padding: 2px 6px;
+            border-radius: 999px;
+            font-size: 0.75em;
+            font-weight: 700;
+            display: inline-block;
+            white-space: nowrap;
+        }
+        .badge-done { background: var(--success-soft); color: var(--success); border: 1px solid var(--success); }
+        .badge-pending { background: var(--warning-bg); color: var(--warning-text); border: 1px solid var(--warning); }
+        .badge-danger { background: var(--danger-soft); color: var(--danger); border: 1px solid var(--danger); }
+        .badge-info { background: var(--primary-soft); color: var(--primary); border: 1px solid var(--primary); }
+
+        /* Sekcje rozwijane */
+        .collapsible-header {
+            background: var(--primary);
+            color: #ffffff;
+            padding: 10px 14px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+            transition: background-color 0.2s;
+        }
+        .collapsible-header:hover { background: var(--primary-hover); }
+        .collapsible-header.success { background: var(--success); }
+        .collapsible-header.success:hover { background: var(--success-hover); }
+        .collapsible-header.info { background: var(--info); }
+        .collapsible-header.info:hover { background: var(--info-hover); }
+        .collapsible-header.danger { background: var(--danger); }
+        .collapsible-header.danger:hover { background: var(--danger-hover); }
+
+        .collapsible-content {
+            display: none;
+            margin-top: 8px;
+            padding: 12px;
+            background: var(--group-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+        }
+        .collapsible-content.open { display: block; }

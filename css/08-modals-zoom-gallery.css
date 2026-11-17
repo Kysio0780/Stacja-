@@ -1,0 +1,107 @@
+        /* Modale */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(2px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 16px;
+        }
+        .modal-content {
+            background: var(--card-bg);
+            color: var(--text-color);
+            padding: 22px;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+        }
+        .modal-content h4 {
+            color: var(--primary);
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 14px;
+        }
+
+        /* Zoom zdjęć */
+        .modal-image-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.92);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            overflow: hidden;
+            touch-action: none;
+        }
+        .zoomable-image-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+        }
+        .zoomable-image-container img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            cursor: grab;
+            transform-origin: center center;
+        }
+        .zoomable-image-container img:active { cursor: grabbing; }
+        .close-zoom-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            font-size: 20px;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            z-index: 2010;
+            padding: 0;
+            margin: 0;
+        }
+        .close-zoom-btn:hover { background: rgba(255, 255, 255, 0.35); }
+
+        /* Galerie i podglądy */
+        .planogram-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .planogram-thumb-box {
+            background: var(--preview-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 6px;
+            text-align: center;
+        }
+        .planogram-thumb-box img {
+            width: 100%;
+            height: 110px;
+            object-fit: cover;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .request-item {
+            background: var(--group-bg);
+            border: 1px solid var(--border-color);
+            border-left: 4px solid var(--warning);
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: var(--radius-sm);
+            word-break: break-word;
+        }

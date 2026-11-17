@@ -1,0 +1,147 @@
+        /* Nawigacja powrotu w modułach */
+        .module-nav-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 16px;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed var(--border-color);
+        }
+
+        .module-nav-bar h3 { margin: 0; }
+
+        .btn-back {
+            background: var(--group-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            width: auto;
+            padding: 6px 12px;
+            margin: 0;
+            font-size: 0.88em;
+            flex-shrink: 0;
+        }
+        .btn-back:hover {
+            background: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
+        }
+
+        .hidden { display: none !important; }
+        .error { color: var(--danger); font-size: 0.9em; font-weight: 500; margin-top: 6px; }
+        .text-muted { color: var(--text-muted); font-size: 0.88em; }
+        .val-red { color: var(--danger); font-weight: 700; }
+        .val-green { color: var(--success); font-weight: 700; }
+
+        /* Sekcje i kontenery */
+        .field-group {
+            background: var(--group-bg);
+            padding: 14px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            margin-bottom: 14px;
+        }
+
+        .report-box {
+            background: var(--group-bg);
+            padding: 14px;
+            border-left: 4px solid var(--primary);
+            border-top: 1px solid var(--border-color);
+            border-right: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+            margin: 10px 0;
+            border-radius: var(--radius-sm);
+            word-break: break-word;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .report-box:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .audit-info {
+            font-size: 0.82em;
+            color: var(--text-muted);
+            margin-top: 8px;
+            border-top: 1px dashed var(--border-color);
+            padding-top: 6px;
+        }
+
+        /* Nagłówek aplikacji */
+        .app-header-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid var(--border-color);
+            gap: 10px;
+        }
+
+        .info-btn {
+            background: var(--group-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            font-size: 16px;
+            font-weight: 700;
+            padding: 0;
+            flex-shrink: 0;
+            margin: 0;
+        }
+        .info-btn:hover { background: var(--primary); color: #ffffff; border-color: var(--primary); }
+
+        .current-date-display {
+            font-size: 0.95em;
+            font-weight: 600;
+            color: var(--text-color);
+            text-align: center;
+            flex-grow: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            text-transform: capitalize;
+        }
+
+        .user-profile-container { position: relative; flex-shrink: 0; }
+
+        .user-profile-btn {
+            background: var(--group-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 7px 14px;
+            font-size: 0.95em;
+            font-weight: 600;
+            color: var(--text-color);
+            width: auto;
+            margin: 0;
+        }
+        .user-profile-btn:hover {
+            background: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            right: 0;
+            top: 46px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-lg);
+            width: 240px;
+            padding: 14px;
+            z-index: 101;
+        }
+
+        .dropdown-menu h5 {
+            margin: 0 0 10px 0;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--primary);
+            font-size: 0.95em;
+        }
