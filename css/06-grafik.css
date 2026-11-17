@@ -89,9 +89,10 @@
             outline: 2px solid var(--primary);
             outline-offset: -2px;
         }
-        td.cell-pink {
-            background-color: var(--grafik-pink-bg) !important;
-            color: var(--grafik-pink-text) !important;
+        td.cell-niedostepny {
+            background-color: var(--preview-bg) !important;
+            color: var(--text-color) !important;
+            font-weight: 900;
         }
         td.cell-urlop {
             background-color: var(--grafik-leave-bg) !important;

@@ -52,6 +52,7 @@ window.generujWydrukGrafikuPDF = async function() {
             const cZamk = entries[`${emp.id}_${d}_zamkniecie`] || {};
 
             const formatPrintCell = (c) => {
+                if (c.type === 'niedostepny' || (c.pink && (!c.type || c.type === 'puste'))) return 'X';
                 if (c.type === 'praca' && c.hours) return c.hours;
                 if (c.type === 'urlop') return `U ${c.hours || ''}`;
                 if (c.type === 'l4') return `L4 ${c.hours || ''}`;

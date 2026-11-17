@@ -360,7 +360,7 @@ function renderujGrafikInteraktywny() {
 
     if (czyAdmin) {
         document.getElementById('btn-ukryj-grafik').classList.toggle('hidden', !aktualnyGrafikStan.published);
-        document.getElementById('grafik-click-hint').innerText = "💡 Kliknij kratkę pracownika, aby wpisać godziny/urlop/L4 lub wyróżnić na różowo. Kliknij numer dnia, aby przełączyć Święto/Roboczy.";
+        document.getElementById('grafik-click-hint').innerText = "💡 Kliknij kratkę pracownika, aby wpisać godziny/urlop/L4 lub oznaczyć niedostępność (X). Kliknij numer dnia, aby przełączyć Święto/Roboczy.";
         odswiezPanelPracownikowGrafiku();
     } else {
         document.getElementById('grafik-click-hint').innerText = "";
@@ -450,9 +450,11 @@ function renderujGrafikInteraktywny() {
                 if (czyAdmin) cellClasses.push('editable');
                 if (sIdx === 1 && !isLast) cellClasses.push('emp-group-end');
 
-                if (cell.pink) cellClasses.push('cell-pink');
-
-                if (cell.type === 'praca' && cell.hours) {
+                if (cell.type === 'niedostepny' || (cell.pink && (!cell.type || cell.type === 'puste'))) {
+                    // Nowy typ „Niedostępny (X)” oraz zgodność ze starymi różowymi wpisami.
+                    cellClasses.push('cell-niedostepny');
+                    cellText = 'X';
+                } else if (cell.type === 'praca' && cell.hours) {
                     cellText = cell.hours;
                 } else if (cell.type === 'urlop') {
                     cellClasses.push('cell-urlop');
@@ -669,20 +671,23 @@ window.otworzModalKomorkiGrafiku = function(empId, day, shift) {
     document.getElementById('modal-gk-tytul').innerText = `✏️ ${emp.imie} — Dzień ${day} (${shift === 'rano' ? 'Rano' : 'Zamknięcie'})`;
 
     const typSelect = document.getElementById('gk-typ');
-    if (!cell || (!cell.type && !cell.pink) || (cell.type === 'puste' && !cell.pink)) {
+    const czyNiedostepny = !!cell && (
+        cell.type === 'niedostepny' ||
+        (cell.pink && (!cell.type || cell.type === 'puste'))
+    );
+    const czyPusta = !cell || (!cell.type && !cell.pink) || (cell.type === 'puste' && !cell.pink);
+
+    if (czyNiedostepny) {
+        typSelect.value = 'niedostepny';
+        document.getElementById('gk-godziny-val').value = 0;
+    } else if (czyPusta) {
         // Pusta kratka -> domyślnie "Godziny pracy"
         typSelect.value = 'praca';
         document.getElementById('gk-godziny-val').value = 12;
-        document.getElementById('gk-pink-mark').checked = false;
     } else {
         // Istniejący wpis -> zachowaj zapisany typ
-        if (cell.type === 'puste' && cell.pink) {
-            typSelect.value = 'wolne_prosba';
-        } else {
-            typSelect.value = cell.type || 'praca';
-        }
+        typSelect.value = cell.type || 'praca';
         document.getElementById('gk-godziny-val').value = cell.hours || (typSelect.value === 'praca' ? 12 : 8);
-        document.getElementById('gk-pink-mark').checked = !!cell.pink;
     }
 
     window.zmienTypKomorkiGrafiku();
@@ -692,11 +697,8 @@ window.otworzModalKomorkiGrafiku = function(empId, day, shift) {
 window.zmienTypKomorkiGrafiku = function() {
     const typ = document.getElementById('gk-typ').value;
     const godzBox = document.getElementById('gk-godziny-box');
-    const pinkChk = document.getElementById('gk-pink-mark');
 
-    godzBox.classList.toggle('hidden', typ === 'wolne_prosba' || typ === 'puste');
-    if (typ === 'wolne_prosba') pinkChk.checked = true;
-    if (typ === 'puste') pinkChk.checked = false;
+    godzBox.classList.toggle('hidden', typ === 'niedostepny' || typ === 'puste');
     if ((typ === 'urlop' || typ === 'l4') && !document.getElementById('gk-godziny-val').value) {
         document.getElementById('gk-godziny-val').value = 8;
     }
@@ -708,18 +710,16 @@ window.zastosujEdycjeKomorkiGrafiku = function() {
     const shift = document.getElementById('gk-shift').value;
     const typ = document.getElementById('gk-typ').value;
     const hours = Number(document.getElementById('gk-godziny-val').value) || 0;
-    const pink = document.getElementById('gk-pink-mark').checked;
     const key = `${empId}_${day}_${shift}`;
 
-    if (typ === 'puste' && !pink) {
+    if (typ === 'puste') {
         delete aktualnyGrafikStan.entries[key];
-    } else if (typ === 'wolne_prosba') {
-        aktualnyGrafikStan.entries[key] = { type: 'puste', hours: 0, pink: true };
+    } else if (typ === 'niedostepny') {
+        aktualnyGrafikStan.entries[key] = { type: 'niedostepny', hours: 0 };
     } else {
         aktualnyGrafikStan.entries[key] = {
             type: hours > 0 ? typ : 'puste',
-            hours: hours > 0 ? hours : 0,
-            pink
+            hours: hours > 0 ? hours : 0
         };
     }
 

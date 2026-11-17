@@ -595,7 +595,7 @@
             <!-- Legenda -->
             <div id="grafik-legenda-bar" class="grafik-legend hidden">
                 <span class="legend-item"><span class="legend-swatch" style="background: var(--grafik-holiday-bg);"></span> Niedziela / Święto (1 zm. Rano)</span>
-                <span class="legend-item"><span class="legend-swatch" style="background: var(--grafik-pink-bg);"></span> Prośba o wolne</span>
+                <span class="legend-item"><span class="legend-swatch" style="background: var(--preview-bg); color: var(--text-color); font-weight:900; font-size:0.72em; line-height:14px; text-align:center;">X</span> Niedostępny (X)</span>
                 <span class="legend-item"><span class="legend-swatch" style="background: var(--grafik-leave-bg);"></span> Urlop (U)</span>
                 <span class="legend-item"><span class="legend-swatch" style="background: var(--grafik-l4-bg);"></span> Chorobowe (L4)</span>
                 <span class="text-muted" id="grafik-click-hint"></span>
@@ -629,7 +629,7 @@
                         <option value="praca">🕒 Godziny pracy</option>
                         <option value="urlop">🌴 Urlop wypoczynkowy (wlicza do bilansu)</option>
                         <option value="l4">🏥 L4 / Zwolnienie lekarskie (wlicza do bilansu)</option>
-                        <option value="wolne_prosba">🌸 Wyróżnij na różowo (chęć dnia wolnego)</option>
+                        <option value="niedostepny">🚫 Niedostępny (X) — pracownik nie może pracować</option>
                         <option value="puste">🧹 Wyczyść komórkę</option>
                     </select>
 
@@ -646,10 +646,7 @@
                 </div>
 
                 <div class="field-group" style="background: var(--preview-bg);">
-                    <label style="display:flex; align-items:center; gap:8px; cursor:pointer; margin:0;">
-                        <input type="checkbox" id="gk-pink-mark">
-                        <span>🌸 Podświetl kratkę na różowo (sugestia wolnego)</span>
-                    </label>
+                    <p class="text-muted" style="margin:0; font-size:0.86em;">💡 Wybierz „Niedostępny (X)”, aby w kratce pojawił się znak X — bez zmiany koloru.</p>
                 </div>
 
                 <div class="flex-row" style="margin-top: 14px;">
