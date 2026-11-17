@@ -105,6 +105,14 @@
             color: var(--text-color) !important;
             font-weight: 900;
         }
+        table.grafik-grid-table td.obecnosc-potwierdzona {
+            color: var(--obecnosc-ok) !important;
+            font-weight: 900;
+        }
+        table.grafik-grid-table td.obecnosc-zalegla {
+            color: var(--obecnosc-zalegla) !important;
+            font-weight: 900;
+        }
         td.cell-urlop {
             background-color: var(--grafik-leave-bg) !important;
             color: var(--grafik-leave-text) !important;
