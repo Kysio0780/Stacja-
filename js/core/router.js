@@ -23,7 +23,13 @@ window.addEventListener("hashchange", () => {
         window.zaladujModulTps();
     } else if (hash === "#sprzedaz") {
         document.getElementById('modul-sprzedaz').classList.remove('hidden');
-        window.pokazWidokMiesieczny();
+        if (typeof window.pokazWidokMiesieczny === 'function') {
+            window.pokazWidokMiesieczny();
+        } else {
+            const kontener = document.getElementById('monthly-table-container');
+            if (kontener) kontener.innerHTML = "Moduł sprzedaży nie został załadowany. Odśwież stronę (Ctrl+F5).";
+            console.error("Brak window.pokazWidokMiesieczny — nie wykonał się js/modules/sprzedaz.js.");
+        }
     } else if (hash === "#premia") {
         document.getElementById('modul-premia').classList.remove('hidden');
         if (!document.getElementById('premia-miesiac').value) {

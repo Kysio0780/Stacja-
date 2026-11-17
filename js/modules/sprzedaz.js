@@ -5,14 +5,41 @@
 let aktualnyRaportUpdatedAt = null;
 let aktualniSprzedawcyDnia = [];
 
+/* Bezpieczne odpowiedniki helperów z utils.js — moduł ma działać nawet przy nieaktualnym utils.js. */
+function pobierzBiezacyMiesiacSprzedazy() {
+    if (typeof pobierzBiezacyOkresSystemowy === 'function') {
+        return pobierzBiezacyOkresSystemowy().miesiacStr;
+    }
+    const teraz = new Date();
+    return `${teraz.getFullYear()}-${String(teraz.getMonth() + 1).padStart(2, '0')}`;
+}
+
+function pobierzDzisiejszaDateSprzedazy() {
+    if (typeof pobierzDzisiejszaDateStr === 'function') return pobierzDzisiejszaDateStr();
+    const teraz = new Date();
+    return `${teraz.getFullYear()}-${String(teraz.getMonth() + 1).padStart(2, '0')}-${String(teraz.getDate()).padStart(2, '0')}`;
+}
+
 window.pokazWidokMiesieczny = function() {
-    document.getElementById('view-daily').classList.add('hidden');
-    document.getElementById('view-monthly').classList.remove('hidden');
-    if(!document.getElementById('wybrany-miesiac').value) document.getElementById('wybrany-miesiac').value = pobierzBiezacyOkresSystemowy().miesiacStr;
-    // Selektor daty nie pozwala wybierać przyszłych dni (zabezpieczenie przed ręcznym wpisem).
-    const raportData = document.getElementById('raport-data');
-    if (raportData) raportData.max = pobierzDzisiejszaDateStr();
+    const widokDnia = document.getElementById('view-daily');
+    const widokMiesiaca = document.getElementById('view-monthly');
+    if (widokDnia) widokDnia.classList.add('hidden');
+    if (widokMiesiaca) widokMiesiaca.classList.remove('hidden');
+
+    // Domyślny miesiąc ustawiamy natychmiast, zanim cokolwiek innego może rzucić błąd.
+    const poleMiesiaca = document.getElementById('wybrany-miesiac');
+    if (poleMiesiaca && !poleMiesiaca.value) poleMiesiaca.value = pobierzBiezacyMiesiacSprzedazy();
+
+    // Tabelę uruchamiamy przed ustawieniem limitu daty — błąd jednego elementu nie blokuje drugiego.
     window.zaladujMiesiacTabela();
+
+    try {
+        const raportData = document.getElementById('raport-data');
+        if (raportData) raportData.max = pobierzDzisiejszaDateSprzedazy();
+    } catch (e) {
+        console.warn("Nie udało się ustawić limitu daty raportu:", e);
+    }
+
     if (currentUserData?.rola === 'admin') pobierzRaportyDlaAdmina();
 };
 
@@ -20,7 +47,7 @@ window.otworzDzien = async function(dataStr) {
     window.location.hash = "#dzien";
     const poleDaty = document.getElementById('raport-data');
     poleDaty.value = dataStr;
-    poleDaty.max = pobierzDzisiejszaDateStr();
+    poleDaty.max = pobierzDzisiejszaDateSprzedazy();
     const czyAdmin = currentUserData && currentUserData.rola === 'admin';
     poleDaty.disabled = !czyAdmin;
     await zaladujDaneRaportuDnia(dataStr);
@@ -28,7 +55,7 @@ window.otworzDzien = async function(dataStr) {
 
 /* Raportów nie wypełniamy z wyprzedzeniem — przyszłe dni są zablokowane. */
 function czyDataJestWPrzyszlosci(dataStr) {
-    return !!dataStr && String(dataStr) > pobierzDzisiejszaDateStr();
+    return !!dataStr && String(dataStr) > pobierzDzisiejszaDateSprzedazy();
 }
 
 function polaWartosciRaportu() {
@@ -188,7 +215,7 @@ function pobierzObsadeGrafikuMiesiaca(grafikData) {
 
         // Bardzo stare grafiki kluczowały komórki pełnym imieniem i nazwiskiem zamiast UID.
         const klucz = String(id).trim();
-        const poNazwie = [...Object.values(nazwy), ...listaGrafiku.map(u => u.imie)]
+        const poNazwie = [...Object.values(nazwy), ...listaGrafiku.filter(Boolean).map(u => u.imie)]
             .filter(Boolean)
             .find(imie => imie === klucz || pobierzImieKrotkie(imie) === klucz);
         if (poNazwie) return poNazwie;
@@ -284,10 +311,13 @@ function komorkaDniaZObsada(dzien, obsada, zapasowiSprzedawcy = []) {
 }
 
 window.zaladujMiesiacTabela = async function() {
-    const wybranyMiesiac = document.getElementById('wybrany-miesiac').value;
+    const poleMiesiaca = document.getElementById('wybrany-miesiac');
+    if (poleMiesiaca && !poleMiesiaca.value) poleMiesiaca.value = pobierzBiezacyMiesiacSprzedazy();
+    const wybranyMiesiac = poleMiesiaca ? poleMiesiaca.value : "";
     if (!wybranyMiesiac) return;
     const tableContainer = document.getElementById('monthly-table-container');
     const plansContainer = document.getElementById('plans-container');
+    if (!tableContainer) return;
     tableContainer.innerHTML = "Pobieranie danych...";
     const [rok, miesiac] = wybranyMiesiac.split('-').map(Number);
     const dniWMiesiacu = new Date(rok, miesiac, 0).getDate();
@@ -340,7 +370,7 @@ window.zaladujMiesiacTabela = async function() {
             return `<tr><td><strong>${nazwa}</strong></td><td>${wyk.toFixed(2)}</td><td>${planCell}</td><td class="${p100>=100?'val-green':'val-red'}">${p100.toFixed(1)}%</td><td class="${d100>=0?'val-green':'val-red'}">${d100.toFixed(2)}</td><td>${pProp.toFixed(2)}</td><td class="${pP>=100?'val-green':'val-red'}">${pP.toFixed(1)}%</td><td class="${dProp>=0?'val-green':'val-red'}">${dProp.toFixed(2)}</td></tr>`;
         };
 
-        plansContainer.innerHTML = `<p class="text-muted">Proporcja wg ostatniego raportu: Dzień ${ostatniDzienRaportu} z ${dniWMiesiacu} (${(pt*100).toFixed(1)}%)</p>
+        if (plansContainer) plansContainer.innerHTML = `<p class="text-muted">Proporcja wg ostatniego raportu: Dzień ${ostatniDzienRaportu} z ${dniWMiesiacu} (${(pt*100).toFixed(1)}%)</p>
         <div class="table-responsive"><table class="month-table"><tr><th>Kat.</th><th>Wykon.</th><th>Plan</th><th>% Planu</th><th>Różnica</th><th>Plan prop.</th><th>% Prop.</th><th>Różnica</th></tr>
         ${rowPlan('☕ Kawa', 'kawa', sKawaW, plany.kawa || 0)}
         ${rowPlan('🌭 HD', 'hd', sHdW, plany.hd || 0)}
@@ -360,7 +390,10 @@ window.zaladujMiesiacTabela = async function() {
         }
         tableHtml += `<tr class="sum-row"><td>SUMA</td><td>${sKawaI} / ${sKawaW.toFixed(2)}</td><td>${sHdI} / ${sHdW.toFixed(2)}</td><td>${sSklepW.toFixed(2)}</td><td>${sTotalW.toFixed(2)}</td></tr></table></div>`;
         tableContainer.innerHTML = tableHtml;
-    } catch (e) { tableContainer.innerHTML = "Błąd ładowania."; }
+    } catch (e) {
+        console.error("Błąd ładowania tabeli sprzedaży:", e);
+        tableContainer.innerHTML = `Błąd ładowania: ${ucieczkaHtml(e && e.message ? e.message : "nieznany błąd")}. Odśwież stronę (Ctrl+F5).`;
+    }
 };
 
 window.zapiszPlanMiesieczny = async function() {
