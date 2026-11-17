@@ -65,6 +65,91 @@ async function zaladujCheckboxySprzedawcow(dataStr) {
 
 window.zmienDateWFormularzu = () => zaladujCheckboxySprzedawcow(document.getElementById('raport-data').value);
 
+/* Obsada dni z grafiku: kto pracował danego dnia (zmiana ranna / zamknięcie). */
+function pobierzObsadeGrafikuMiesiaca(grafikData) {
+    const obsada = {};
+    if (!grafikData) return obsada;
+
+    const pracownicy = Array.isArray(grafikData.employees) ? grafikData.employees : [];
+    const nazwy = {};
+    pracownicy.forEach(e => {
+        if (e && e.id !== undefined && e.id !== null) {
+            nazwy[String(e.id)] = e.imie || e.login || String(e.id);
+        }
+    });
+
+    // Awaryjnie korzystamy z listy pracowników wczytanej przez moduł grafiku (starsze zapisy bez employees).
+    const znajdzNazwe = (id) => {
+        if (nazwy[id]) return nazwy[id];
+        if (typeof bazaPracownikowGrafik !== 'undefined' && Array.isArray(bazaPracownikowGrafik)) {
+            const pracownik = bazaPracownikowGrafik.find(u => String(u.id) === id);
+            if (pracownik && pracownik.imie) return pracownik.imie;
+        }
+        return "Pracownik";
+    };
+
+    const entries = grafikData.entries || {};
+    Object.keys(entries).forEach(klucz => {
+        const komorka = entries[klucz];
+        if (!komorka || komorka.type !== 'praca' || !(Number(komorka.hours) > 0)) return;
+
+        // Klucz ma postać: {empId}_{dzien}_{rano|zamkniecie}. Identyfikator może zawierać znak '_'.
+        const czesci = String(klucz).split('_');
+        if (czesci.length < 3) return;
+        const zmiana = czesci.pop();
+        const dzien = czesci.pop();
+        if (!/^\d{1,2}$/.test(dzien) || (zmiana !== 'rano' && zmiana !== 'zamkniecie')) return;
+
+        const id = czesci.join('_');
+        const imie = znajdzNazwe(id);
+        if (!obsada[dzien]) obsada[dzien] = { rano: [], zamkniecie: [] };
+        if (!obsada[dzien][zmiana].some(osoba => osoba.imie === imie)) {
+            obsada[dzien][zmiana].push({ imie, krotkie: pobierzImieKrotkie(imie) });
+        }
+    });
+
+    return obsada;
+}
+
+function opisObsadyDnia(obsada, zmiana) {
+    if (!obsada || !Array.isArray(obsada[zmiana]) || obsada[zmiana].length === 0) return "";
+    return obsada[zmiana].map(osoba => osoba.krotkie || osoba.imie).join(', ');
+}
+
+function tytulObsadyDnia(obsada) {
+    if (!obsada) return "";
+    const czesci = [];
+    if (obsada.rano && obsada.rano.length > 0) {
+        czesci.push(`Rano: ${obsada.rano.map(osoba => osoba.imie).join(', ')}`);
+    }
+    if (obsada.zamkniecie && obsada.zamkniecie.length > 0) {
+        czesci.push(`Zamknięcie: ${obsada.zamkniecie.map(osoba => osoba.imie).join(', ')}`);
+    }
+    return czesci.join(' | ');
+}
+
+function komorkaDniaZObsada(dzien, obsada, zapasowiSprzedawcy = []) {
+    const daneDnia = obsada[String(dzien)];
+    const rano = opisObsadyDnia(daneDnia, 'rano');
+    const zamkniecie = opisObsadyDnia(daneDnia, 'zamkniecie');
+    const tytul = tytulObsadyDnia(daneDnia);
+    const linie = [];
+    if (rano) linie.push(`<div class="text-muted" style="font-size:0.72em; line-height:1.25;">R: ${ucieczkaHtml(rano)}</div>`);
+    if (zamkniecie) linie.push(`<div class="text-muted" style="font-size:0.72em; line-height:1.25;">Z: ${ucieczkaHtml(zamkniecie)}</div>`);
+
+    let atrybutTytulu = tytul ? ` title="${ucieczkaHtml(tytul)}"` : '';
+    // Gdy nie ma grafiku dla tego dnia, pokazujemy sprzedawców z raportu — to jedyna dostępna informacja o obsadzie.
+    if (linie.length === 0 && Array.isArray(zapasowiSprzedawcy) && zapasowiSprzedawcy.length > 0) {
+        const krotkie = zapasowiSprzedawcy.map(imie => pobierzImieKrotkie(imie)).filter(Boolean).join(', ');
+        if (krotkie) {
+            linie.push(`<div class="text-muted" style="font-size:0.72em; line-height:1.25;">👤 ${ucieczkaHtml(krotkie)}</div>`);
+            atrybutTytulu = ` title="Obsada z raportu sprzedaży: ${ucieczkaHtml(zapasowiSprzedawcy.join(', '))}"`;
+        }
+    }
+
+    return `<td style="text-align:left; white-space:normal;"${atrybutTytulu}><strong>${dzien}</strong>${linie.join('')}</td>`;
+}
+
 window.zaladujMiesiacTabela = async function() {
     const wybranyMiesiac = document.getElementById('wybrany-miesiac').value;
     if (!wybranyMiesiac) return;
@@ -75,10 +160,17 @@ window.zaladujMiesiacTabela = async function() {
     const dniWMiesiacu = new Date(rok, miesiac, 0).getDate();
 
     try {
-        const [snap, planDoc] = await Promise.all([
+        const [snap, planDoc, grafikDoc] = await Promise.all([
             getDocs(collection(db, "sprzedaz")),
-            getDoc(doc(db, "plany_miesieczne", wybranyMiesiac))
+            getDoc(doc(db, "plany_miesieczne", wybranyMiesiac)),
+            // Grafik jest tylko informacją dodatkową — jego brak lub błąd odczytu nie blokuje tabeli.
+            getDoc(doc(db, "grafiki", wybranyMiesiac)).catch(e => {
+                console.warn("Nie udało się odczytać grafiku dla obsady dni:", e);
+                return null;
+            })
         ]);
+
+        const obsadaDni = pobierzObsadeGrafikuMiesiaca(grafikDoc && grafikDoc.exists() ? grafikDoc.data() : null);
 
         const raporty = {};
         let sKawaI = 0, sKawaW = 0, sHdI = 0, sHdW = 0, sSklepW = 0, sTotalW = 0;
@@ -121,15 +213,16 @@ window.zaladujMiesiacTabela = async function() {
         ${rowPlan('🌭 HD', 'hd', sHdW, plany.hd || 0)}
         ${rowPlan('🛒 Sklep', 'sklep', sSklepW, plany.sklep || 0)}</table></div>`;
 
-        let tableHtml = `<div class="table-responsive"><table class="month-table"><tr><th style="width: 45px;">Dzień</th><th>Kawa (szt / zł)</th><th>HD (szt / zł)</th><th>Sklep (zł)</th><th>Suma (zł)</th></tr>`;
+        let tableHtml = `<div class="table-responsive"><table class="month-table"><tr><th style="width: 110px;">Dzień / obsada</th><th>Kawa (szt / zł)</th><th>HD (szt / zł)</th><th>Sklep (zł)</th><th>Suma (zł)</th></tr>`;
         for (let d = 1; d <= dniWMiesiacu; d++) {
             const dStr = `${wybranyMiesiac}-${String(d).padStart(2, '0')}`;
             const r = raporty[dStr];
+            const komorkaDnia = komorkaDniaZObsada(d, obsadaDni, Array.isArray(r?.sprzedawcy) ? r.sprzedawcy : []);
             if (r) {
                 const sumD = (Number(r.kawa?.wartosc)||0) + (Number(r.hd?.wartosc)||0) + (Number(r.sklep?.wartosc)||0);
-                tableHtml += `<tr class="cleaning-row" onclick="window.otworzDzien('${dStr}')"><td><strong>${d}</strong></td><td>${r.kawa?.ilosc||0} / ${(Number(r.kawa?.wartosc)||0).toFixed(2)}</td><td>${r.hd?.ilosc||0} / ${(Number(r.hd?.wartosc)||0).toFixed(2)}</td><td>${(Number(r.sklep?.wartosc)||0).toFixed(2)}</td><td><strong>${sumD.toFixed(2)}</strong></td></tr>`;
+                tableHtml += `<tr class="cleaning-row" onclick="window.otworzDzien('${dStr}')">${komorkaDnia}<td>${r.kawa?.ilosc||0} / ${(Number(r.kawa?.wartosc)||0).toFixed(2)}</td><td>${r.hd?.ilosc||0} / ${(Number(r.hd?.wartosc)||0).toFixed(2)}</td><td>${(Number(r.sklep?.wartosc)||0).toFixed(2)}</td><td><strong>${sumD.toFixed(2)}</strong></td></tr>`;
             } else {
-                tableHtml += `<tr class="cleaning-row" style="opacity:0.75;" onclick="window.otworzDzien('${dStr}')"><td>${d}</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>`;
+                tableHtml += `<tr class="cleaning-row" style="opacity:0.75;" onclick="window.otworzDzien('${dStr}')">${komorkaDnia}<td>-</td><td>-</td><td>-</td><td>-</td></tr>`;
             }
         }
         tableHtml += `<tr class="sum-row"><td>SUMA</td><td>${sKawaI} / ${sKawaW.toFixed(2)}</td><td>${sHdI} / ${sHdW.toFixed(2)}</td><td>${sSklepW.toFixed(2)}</td><td>${sTotalW.toFixed(2)}</td></tr></table></div>`;
