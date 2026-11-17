@@ -11,9 +11,9 @@ window.addEventListener("hashchange", () => {
     if (hash === "#menu" || hash === "") {
         document.getElementById('menu-tiles').classList.remove('hidden');
         if (currentUserData) {
-            const imieKrotkie = currentUserData.imie.split(' ')[0];
-            sprawdzPowiadomieniaMisje(imieKrotkie, currentUserData.rola === 'admin');
-            sprawdzPowiadomieniaWiadomosci(currentUserData.imie);
+            const imieKrotkie = pobierzImieKrotkie(currentUserData.imie);
+            sprawdzPowiadomieniaMisje(currentUserData.uid, imieKrotkie, currentUserData.rola === 'admin');
+            sprawdzPowiadomieniaWiadomosci(currentUserData.uid, currentUserData.imie);
             sprawdzPowiadomieniaPracownicyGlobal();
             sprawdzPowiadomieniaTpsGlobal();
         }

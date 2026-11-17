@@ -2,14 +2,14 @@
 // Moduł Misje (zadania dla pracowników).
 
 /* ==================== MISJE ==================== */
-async function sprawdzPowiadomieniaMisje(imieKrotkie, czyAdmin) {
+async function sprawdzPowiadomieniaMisje(pracownikId, imieKrotkie, czyAdmin) {
     try {
         const snap = await getDocs(collection(db, "misje"));
         let noweCnt = 0;
         snap.forEach(d => {
             const data = d.data();
-            if (czyAdmin && data.status === "nowe") noweCnt++;
-            else if (!czyAdmin && data.pracownik === imieKrotkie && data.status === "nowe") noweCnt++;
+            if (czyAdmin && data.status === STATUSY_MISJI.NOWE) noweCnt++;
+            else if (!czyAdmin && data.status === STATUSY_MISJI.NOWE && czyPracownikPasuje(data, pracownikId, imieKrotkie)) noweCnt++;
         });
         const badge = document.getElementById('misje-badge');
         if (noweCnt > 0) { badge.innerText = noweCnt; badge.classList.remove('hidden'); }
@@ -17,23 +17,55 @@ async function sprawdzPowiadomieniaMisje(imieKrotkie, czyAdmin) {
     } catch (e) { console.error(e); }
 }
 
-async function wypelnijSelectPracownikow(selectId) {
+async function wypelnijSelectPracownikow(selectId, wybranaWartosc = null) {
     const sel = document.getElementById(selectId);
     try {
-        const snap = await getDocs(collection(db, "uzytkownicy"));
+        const pracownicy = await pobierzListePracownikow();
         let html = `<option value="">Wybierz pracownika</option>`;
-        snap.forEach(d => { html += `<option value="${d.data().imie.split(' ')[0]}">${d.data().imie}</option>`; });
+        pracownicy.forEach(u => {
+            html += `<option value="${ucieczkaHtml(u.id)}" data-imie="${ucieczkaHtml(u.imie || '')}">${ucieczkaHtml(u.imie || u.login || '')}</option>`;
+        });
         sel.innerHTML = html;
+        if (wybranaWartosc) ustawWartoscSelectPracownika(selectId, wybranaWartosc.id, wybranaWartosc.imie);
     } catch (e) { sel.innerHTML = `<option value="">Błąd ładowania</option>`; }
 }
 
+function ustawWartoscSelectPracownika(selectId, pracownikId, imie) {
+    const sel = document.getElementById(selectId);
+    if (!sel) return;
+    if (pracownikId && Array.from(sel.options).some(o => o.value === String(pracownikId))) {
+        sel.value = String(pracownikId);
+        return;
+    }
+    const opcja = Array.from(sel.options).find(o => o.dataset.imie === imie);
+    if (opcja) sel.value = opcja.value;
+}
+
+function pobierzDaneWybranegoPracownika(selectId) {
+    const sel = document.getElementById(selectId);
+    const opcja = sel?.options?.[sel.selectedIndex];
+    return {
+        id: sel?.value || "",
+        imie: opcja?.dataset?.imie || opcja?.textContent?.trim() || ""
+    };
+}
+
 window.dodajMisje = async function() {
-    const pracownik = document.getElementById('misja-pracownik-select').value;
+    const wybrany = pobierzDaneWybranegoPracownika('misja-pracownik-select');
     const zadanie = document.getElementById('misja-tresc').value.trim();
     const doKiedy = document.getElementById('misja-termin').value;
-    if (!pracownik || !zadanie || !doKiedy) return alert("Wypełnij wszystkie pola misji!");
+    if (!wybrany.id || !zadanie || !doKiedy) return alert("Wypełnij wszystkie pola misji!");
     try {
-        await addDoc(collection(db, "misje"), { pracownik, zadanie, doKiedy, status: "nowe", uwagi: "", dataUtworzenia: new Date().toLocaleString() });
+        await addDoc(collection(db, "misje"), {
+            pracownikId: wybrany.id,
+            pracownik: wybrany.imie,
+            zadanie,
+            doKiedy,
+            status: STATUSY_MISJI.NOWE,
+            uwagi: "",
+            dataUtworzenia: new Date().toISOString(),
+            timestamp: Date.now()
+        });
         alert("Misja przypisana!");
         document.getElementById('misja-tresc').value = "";
         document.getElementById('misja-termin').value = "";
@@ -51,33 +83,41 @@ window.zaladujMisje = async function() {
         const snap = await getDocs(collection(db, "misje"));
         let html = `<div class="table-responsive"><table class="standard-table"><tr><th>Pracownik</th><th>Zadanie</th><th style="width: 95px;">Do kiedy</th><th>Status</th><th>Uwagi</th></tr>`;
         let count = 0, noweDlaMnie = 0;
-        const mojeImie = currentUserData ? currentUserData.imie.split(' ')[0] : "";
+        const mojId = currentUserData ? (currentUserData.uid || currentUserData.id) : "";
+        const mojeImie = currentUserData ? currentUserData.imie : "";
         const dzisiajStr = pobierzDzisiejszaDateStr();
 
         const badgeMap = {
-            'zrobione': 'badge-done', 'zaliczone': 'badge-done',
-            'po czasie': 'badge-danger', 'do wyjaśnienia': 'badge-danger',
-            'odebrane': 'badge-info', 'nowe': 'badge-pending'
+            [STATUSY_MISJI.ZROBIONE]: 'badge-done',
+            [STATUSY_MISJI.ZALICZONE]: 'badge-done',
+            [STATUSY_MISJI.PO_CZASIE]: 'badge-danger',
+            [STATUSY_MISJI.DO_WYJASNIENIA]: 'badge-danger',
+            [STATUSY_MISJI.ODEBRANE]: 'badge-info',
+            [STATUSY_MISJI.NOWE]: 'badge-pending'
         };
 
         for (const docSnap of snap.docs) {
             const id = docSnap.id, d = docSnap.data();
-            if (!czyAdmin && d.pracownik !== mojeImie) continue;
-            
+            if (!czyAdmin && !czyPracownikPasuje(d, mojId, mojeImie)) continue;
+
             let aktualnyStatus = d.status;
-            if (d.doKiedy && d.doKiedy < dzisiajStr && !['zrobione', 'zaliczone', 'po czasie'].includes(aktualnyStatus)) {
-                aktualnyStatus = 'po czasie';
-                await setDoc(doc(db, "misje", id), { status: 'po czasie' }, { merge: true });
+            if (d.doKiedy && d.doKiedy < dzisiajStr && ![
+                STATUSY_MISJI.ZROBIONE, STATUSY_MISJI.ZALICZONE, STATUSY_MISJI.PO_CZASIE
+            ].includes(aktualnyStatus)) {
+                aktualnyStatus = STATUSY_MISJI.PO_CZASIE;
+                await setDoc(doc(db, "misje", id), { status: STATUSY_MISJI.PO_CZASIE }, { merge: true });
             }
 
             count++;
-            if (aktualnyStatus === "nowe") noweDlaMnie++;
+            if (aktualnyStatus === STATUSY_MISJI.NOWE) noweDlaMnie++;
 
-            const statusBadge = `<span class="badge ${badgeMap[aktualnyStatus] || 'badge-pending'}">${aktualnyStatus}</span>`;
-            html += `<tr class="cleaning-row" onclick="window.otworzModalUniwersalnaMisja('${id}', '${d.pracownik}', '${encodeURIComponent(d.zadanie)}', '${d.doKiedy}', '${aktualnyStatus}', '${encodeURIComponent(d.uwagi || '')}')">
-                <td><strong>${d.pracownik}</strong></td>
+            const statusBadge = `<span class="badge ${badgeMap[aktualnyStatus] || 'badge-pending'}">${ucieczkaHtml(aktualnyStatus || 'brak')}</span>`;
+            const pracownikId = d.pracownikId || "";
+            const pracownik = d.pracownik || pracownikId || "-";
+            html += `<tr class="cleaning-row" onclick="window.otworzModalUniwersalnaMisja('${ucieczkaJs(id)}', '${ucieczkaJs(pracownikId)}', '${ucieczkaJs(pracownik)}', '${ucieczkaJs(encodeURIComponent(d.zadanie || ''))}', '${ucieczkaJs(d.doKiedy || '')}', '${ucieczkaJs(aktualnyStatus || '')}', '${ucieczkaJs(encodeURIComponent(d.uwagi || ''))}')">
+                <td><strong>${ucieczkaHtml(pracownik)}</strong></td>
                 <td style="text-align:left; white-space:normal; min-width:160px;">${ucieczkaHtml(d.zadanie)}</td>
-                <td>${d.doKiedy}</td>
+                <td>${ucieczkaHtml(d.doKiedy)}</td>
                 <td>${statusBadge}</td>
                 <td style="text-align:left; white-space:normal; min-width:120px;">${ucieczkaHtml(d.uwagi) || '-'}</td>
             </tr>`;
@@ -88,18 +128,18 @@ window.zaladujMisje = async function() {
             : '';
 
         container.innerHTML = alertHtml + (count === 0 ? "<p class='text-muted'>Brak misji.</p>" : html + `</table></div>`);
-        sprawdzPowiadomieniaMisje(mojeImie, czyAdmin);
+        sprawdzPowiadomieniaMisje(mojId, pobierzImieKrotkie(mojeImie), czyAdmin);
     } catch (e) { container.innerHTML = "Błąd pobierania."; }
 };
 
-window.otworzModalUniwersalnaMisja = async function(id, pracownik, zadanie, doKiedy, status, uwagi) {
+window.otworzModalUniwersalnaMisja = async function(id, pracownikId, pracownik, zadanie, doKiedy, status, uwagi) {
     document.getElementById('m-edit-misja-id').value = id;
     const czyAdmin = currentUserData && currentUserData.rola === 'admin';
     const statusSel = document.getElementById('m-edit-misja-status');
 
-    if (status === "nowe" && !czyAdmin) {
-        status = "odebrane";
-        try { await setDoc(doc(db, "misje", id), { status: "odebrane" }, { merge: true }); } catch(e) {}
+    if (status === STATUSY_MISJI.NOWE && !czyAdmin) {
+        status = STATUSY_MISJI.ODEBRANE;
+        try { await setDoc(doc(db, "misje", id), { status: STATUSY_MISJI.ODEBRANE }, { merge: true }); } catch (e) { console.warn(e); }
     }
 
     document.getElementById('admin-edit-misja-sekcja').classList.toggle('hidden', !czyAdmin);
@@ -107,22 +147,22 @@ window.otworzModalUniwersalnaMisja = async function(id, pracownik, zadanie, doKi
     document.getElementById('btn-usun-misja-admin').style.display = czyAdmin ? 'inline-flex' : 'none';
 
     if (czyAdmin) {
-        await wypelnijSelectPracownikow('m-edit-misja-pracownik');
-        document.getElementById('m-edit-misja-pracownik').value = pracownik;
+        await wypelnijSelectPracownikow('m-edit-misja-pracownik', { id: pracownikId, imie: pracownik });
         document.getElementById('m-edit-misja-tresc-admin').value = decodeURIComponent(zadanie);
         document.getElementById('m-edit-misja-termin-admin').value = doKiedy;
         statusSel.innerHTML = `
-            <option value="nowe">nowe</option>
-            <option value="odebrane">odebrane</option>
-            <option value="zrobione">zrobione</option>
-            <option value="zaliczone">zaliczone</option>
-            <option value="do wyjaśnienia">do wyjaśnienia</option>`;
+            <option value="${STATUSY_MISJI.NOWE}">nowe</option>
+            <option value="${STATUSY_MISJI.ODEBRANE}">odebrane</option>
+            <option value="${STATUSY_MISJI.ZROBIONE}">zrobione</option>
+            <option value="${STATUSY_MISJI.ZALICZONE}">zaliczone</option>
+            <option value="${STATUSY_MISJI.DO_WYJASNIENIA}">do wyjaśnienia</option>
+            <option value="${STATUSY_MISJI.PO_CZASIE}">po czasie</option>`;
     } else {
         document.getElementById('m-edit-misja-tresc-pracownik').innerText = decodeURIComponent(zadanie);
         document.getElementById('m-edit-misja-termin-pracownik').innerText = doKiedy;
         statusSel.innerHTML = `
-            <option value="${status}">${status}</option>
-            <option value="zrobione">zrobione</option>`;
+            <option value="${ucieczkaHtml(status)}">${ucieczkaHtml(status)}</option>
+            <option value="${STATUSY_MISJI.ZROBIONE}">zrobione</option>`;
     }
 
     statusSel.value = status;
@@ -141,9 +181,13 @@ window.zapiszUniwersalnaMisja = async function() {
     const uwagi = document.getElementById('m-edit-misja-uwagi').value.trim();
     const czyAdmin = currentUserData && currentUserData.rola === 'admin';
 
-    const daneZapisu = { status, uwagi };
+    if (!status) return alert("Wybierz status zadania!");
+
+    const daneZapisu = { status, uwagi, updatedAt: new Date().toISOString() };
     if (czyAdmin) {
-        daneZapisu.pracownik = document.getElementById('m-edit-misja-pracownik').value;
+        const wybrany = pobierzDaneWybranegoPracownika('m-edit-misja-pracownik');
+        daneZapisu.pracownikId = wybrany.id;
+        daneZapisu.pracownik = wybrany.imie;
         daneZapisu.zadanie = document.getElementById('m-edit-misja-tresc-admin').value.trim();
         daneZapisu.doKiedy = document.getElementById('m-edit-misja-termin-admin').value;
     }

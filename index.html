@@ -745,6 +745,7 @@
             <div class="modal-content">
                 <h4 id="modal-polka-tytuł">Szczegóły Półki</h4>
                 <input type="hidden" id="modal-polka-index">
+                <input type="hidden" id="modal-polka-nazwa">
 
                 <div class="field-group">
                     <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; margin-bottom: 10px;">
@@ -987,13 +988,14 @@
 
     <!-- Jedyny moduł ES: importy Firebase z CDN (inline, więc działa też z file:// i w WebView). -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, deleteDoc, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { initializeApp, deleteApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updatePassword, EmailAuthProvider, reauthenticateWithCredential, deleteUser } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, deleteField, collection, getDocs, addDoc, query, where, limit, runTransaction } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         window.FB = {
-            initializeApp, getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut,
-            onAuthStateChanged, updatePassword, EmailAuthProvider, reauthenticateWithCredential,
-            getFirestore, doc, getDoc, setDoc, deleteDoc, collection, getDocs, addDoc
+            initializeApp, deleteApp, getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut,
+            onAuthStateChanged, updatePassword, EmailAuthProvider, reauthenticateWithCredential, deleteUser,
+            getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, deleteField, collection, getDocs, addDoc,
+            query, where, limit, runTransaction
         };
     </script>
 

@@ -3,6 +3,7 @@
 
 /* ==================== MODUŁ GRAFIK INTERAKTYWNY ==================== */
 let aktualnyGrafikStan = null;
+let aktualnyGrafikUpdatedAt = null;
 let bazaPracownikowGrafik = [];
 let kwartalnePoprzednieMiesiace = {}; // { empId: { sumaPlan: 0, planWymiar: 0 } }
 
@@ -125,6 +126,24 @@ function utworzDomyslneDniWolneMap(miesiacStr) {
     return map;
 }
 
+// Aktualizuje metadane pracowników zapisane w grafiku na podstawie bieżącej listy użytkowników.
+// Imię odświeżamy zawsze (to tylko etykieta), a umowę/etat tylko dla bieżącego i przyszłych miesięcy,
+// żeby nie zmieniać historycznie wyliczonego wymiaru czasu pracy.
+function zsynchronizujPracownikowGrafiku(stan, miesiacStr) {
+    if (!stan || !Array.isArray(stan.employees)) return;
+    const biezacyMiesiac = pobierzBiezacyOkresSystemowy().miesiacStr;
+    const czyMoznaZmienicWarunki = miesiacStr >= biezacyMiesiac;
+    stan.employees.forEach(emp => {
+        const aktualny = bazaPracownikowGrafik.find(u => String(u.id) === String(emp.id));
+        if (!aktualny) return;
+        if (aktualny.imie) emp.imie = aktualny.imie;
+        if (czyMoznaZmienicWarunki) {
+            emp.umowa = aktualny.umowa || emp.umowa || 'UoP';
+            emp.etat = aktualny.etat || emp.etat || '1/1';
+        }
+    });
+}
+
 window.zaladujGrafikInteraktywny = async function() {
     const miesiacStr = document.getElementById('grafik-miesiac').value;
     if (!miesiacStr) return;
@@ -157,12 +176,14 @@ window.zaladujGrafikInteraktywny = async function() {
 
         if (docSnap.exists()) {
             aktualnyGrafikStan = docSnap.data();
+            aktualnyGrafikUpdatedAt = aktualnyGrafikStan.updatedAt || null;
             if (!aktualnyGrafikStan.employees) aktualnyGrafikStan.employees = [];
             if (!aktualnyGrafikStan.entries) aktualnyGrafikStan.entries = {};
             if (!aktualnyGrafikStan.holidays) aktualnyGrafikStan.holidays = utworzDomyslneDniWolneMap(miesiacStr);
             if (typeof aktualnyGrafikStan.wymiarNominalny !== 'number') {
                 aktualnyGrafikStan.wymiarNominalny = nominalWymiar;
             }
+            zsynchronizujPracownikowGrafiku(aktualnyGrafikStan, miesiacStr);
         } else {
             // Nowy miesiąc: zainicjuj pracownikami z bazy (lub skopiuj listę z poprzedniego miesiąca)
             const prevM = pobierzPoprzedniMiesiacStr(miesiacStr);
@@ -211,6 +232,7 @@ window.zaladujGrafikInteraktywny = async function() {
                 employees: startEmps,
                 entries: {}
             };
+            aktualnyGrafikUpdatedAt = null;
         }
 
         // Pobierz dane z poprzednich miesięcy bieżącego kwartału dla sum kwartalnych
@@ -710,14 +732,39 @@ window.zamknijModalKomorkiGrafiku = () => document.getElementById('modal-grafik-
 /* Zapisywanie, publikacja i przenoszenie urlopów */
 window.zapiszGrafikInteraktywny = async function(opublikuj) {
     if (!(currentUserData && currentUserData.rola === 'admin')) return alert("Brak uprawnień!");
+    if (!aktualnyGrafikStan || !aktualnyGrafikStan.miesiac) return alert("Brak załadowanego grafiku.");
     const miesiacStr = aktualnyGrafikStan.miesiac;
+    const poprzedniPublished = !!aktualnyGrafikStan.published;
     if (opublikuj) aktualnyGrafikStan.published = true;
 
+    const ref = doc(db, "grafiki", miesiacStr);
+    const updatedAt = new Date().toISOString();
+
     try {
-        await setDoc(doc(db, "grafiki", miesiacStr), aktualnyGrafikStan);
+        const daneDoZapisu = JSON.parse(JSON.stringify(aktualnyGrafikStan));
+        delete daneDoZapisu.updatedAt;
+
+        await runTransaction(db, async (transakcja) => {
+            const snap = await transakcja.get(ref);
+            const zdalnyUpdatedAt = snap.exists() ? (snap.data().updatedAt || null) : null;
+            if (snap.exists() && zdalnyUpdatedAt && aktualnyGrafikUpdatedAt && zdalnyUpdatedAt !== aktualnyGrafikUpdatedAt) {
+                throw new Error("Grafik został w międzyczasie zmieniony przez inną osobę. Odśwież widok i spróbuj ponownie.");
+            }
+            transakcja.set(ref, {
+                ...daneDoZapisu,
+                updatedAt,
+                updatedBy: pobierzIdPracownika(currentUserData),
+                updatedByName: currentUserData.imie || ""
+            });
+        });
+
+        aktualnyGrafikUpdatedAt = updatedAt;
+        aktualnyGrafikStan.updatedAt = updatedAt;
         renderujGrafikInteraktywny();
         alert(opublikuj ? "📢 Grafik został zapisany i opublikowany dla pracowników!" : "💾 Zapisano wersję roboczą grafiku.");
     } catch (e) {
+        if (opublikuj) aktualnyGrafikStan.published = poprzedniPublished;
+        renderujGrafikInteraktywny();
         alert("Błąd zapisu grafiku: " + e.message);
     }
 };
@@ -730,52 +777,102 @@ window.cofnijPublikacjeGrafiku = async function() {
 
 window.przeniesUrlopyNaKolejnyMiesiac = async function() {
     if (!(currentUserData && currentUserData.rola === 'admin')) return;
+    if (!aktualnyGrafikStan) return;
     const biezacyM = aktualnyGrafikStan.miesiac;
     const nastepnyM = pobierzNastepnyMiesiacStr(biezacyM);
 
     if (!confirm(`Czy przenieść pozostały do wykorzystania urlop z miesiąca ${biezacyM} do pozycji „Urlop do wykorzystania” w miesiącu ${nastepnyM}?`)) return;
 
-    try {
-        // Najpierw zapisz obecny miesiąc
-        await setDoc(doc(db, "grafiki", biezacyM), aktualnyGrafikStan);
+    const teraz = new Date().toISOString();
+    const autorId = pobierzIdPracownika(currentUserData);
+    const autorImie = currentUserData.imie || "";
 
+    const przeniesienia = [];
+    (aktualnyGrafikStan.employees || []).forEach(emp => {
+        if (emp.umowa === 'Zlecenie') return;
+        const st = emp.stats || {};
+        const doWyk = Number(st.urlopDoWykorzystania) || 0;
+        const wyk = obliczWykorzystanyUrlopPracownika(aktualnyGrafikStan, emp.id, st);
+        przeniesienia.push({
+            id: emp.id,
+            imie: emp.imie,
+            umowa: emp.umowa,
+            etat: emp.etat,
+            urlopZalegly: Number(st.urlopZalegly) || 0,
+            pozostalo: Math.max(0, doWyk - wyk)
+        });
+    });
+
+    try {
+        // 1. Najpierw zapisz bieżący miesiąc — z kontrolą konfliktu, żeby nie nadpisać cudzych zmian.
+        const biezacyRef = doc(db, "grafiki", biezacyM);
+        const daneBiezace = JSON.parse(JSON.stringify(aktualnyGrafikStan));
+        delete daneBiezace.updatedAt;
+
+        await runTransaction(db, async (transakcja) => {
+            const snap = await transakcja.get(biezacyRef);
+            const zdalnyUpdatedAt = snap.exists() ? (snap.data().updatedAt || null) : null;
+            if (snap.exists() && zdalnyUpdatedAt && aktualnyGrafikUpdatedAt && zdalnyUpdatedAt !== aktualnyGrafikUpdatedAt) {
+                throw new Error("Grafik bieżącego miesiąca został zmieniony przez inną osobę. Odśwież widok i spróbuj ponownie.");
+            }
+            transakcja.set(biezacyRef, {
+                ...daneBiezace,
+                updatedAt: teraz,
+                updatedBy: autorId,
+                updatedByName: autorImie
+            });
+        });
+        aktualnyGrafikUpdatedAt = teraz;
+        aktualnyGrafikStan.updatedAt = teraz;
+
+        // 2. Następnie zapisz kolejny miesiąc w transakcji.
         const nextRef = doc(db, "grafiki", nastepnyM);
-        const nextSnap = await getDoc(nextRef);
         const [nRok, nM] = nastepnyM.split('-').map(Number);
 
-        let nextData = nextSnap.exists() ? nextSnap.data() : {
-            miesiac: nastepnyM,
-            published: false,
-            wymiarNominalny: obliczNominalnyWymiarMiesiaca(nRok, nM),
-            holidays: utworzDomyslneDniWolneMap(nastepnyM),
-            employees: [],
-            entries: {}
-        };
+        await runTransaction(db, async (transakcja) => {
+            const nextSnap = await transakcja.get(nextRef);
+            const nextData = nextSnap.exists() ? { ...nextSnap.data() } : {
+                miesiac: nastepnyM,
+                published: false,
+                wymiarNominalny: obliczNominalnyWymiarMiesiaca(nRok, nM),
+                holidays: utworzDomyslneDniWolneMap(nastepnyM),
+                employees: [],
+                entries: {}
+            };
+            nextData.miesiac = nextData.miesiac || nastepnyM;
+            if (!Array.isArray(nextData.employees)) nextData.employees = [];
+            if (!nextData.entries) nextData.entries = {};
 
-        aktualnyGrafikStan.employees.forEach(emp => {
-            if (emp.umowa === 'Zlecenie') return;
-            const st = emp.stats || {};
-            const doWyk = Number(st.urlopDoWykorzystania) || 0;
-            const wyk = obliczWykorzystanyUrlopPracownika(aktualnyGrafikStan, emp.id, st);
-            const pozostalo = Math.max(0, doWyk - wyk);
+            przeniesienia.forEach(p => {
+                let targetEmp = nextData.employees.find(e => String(e.id) === String(p.id));
+                if (!targetEmp) {
+                    targetEmp = {
+                        id: p.id,
+                        imie: p.imie,
+                        umowa: p.umowa,
+                        etat: p.etat,
+                        stats: {
+                            wymiarCustom: null,
+                            urlopZalegly: p.urlopZalegly,
+                            urlopDoWykorzystania: p.pozostalo,
+                            urlopWykorzystanyCustom: null
+                        }
+                    };
+                    nextData.employees.push(targetEmp);
+                } else {
+                    if (!targetEmp.stats) targetEmp.stats = {};
+                    targetEmp.stats.urlopDoWykorzystania = p.pozostalo;
+                }
+            });
 
-            let targetEmp = (nextData.employees || []).find(e => e.id === emp.id);
-            if (!targetEmp) {
-                targetEmp = {
-                    id: emp.id,
-                    imie: emp.imie,
-                    umowa: emp.umowa,
-                    etat: emp.etat,
-                    stats: { wymiarCustom: null, urlopZalegly: Number(st.urlopZalegly) || 0, urlopDoWykorzystania: pozostalo, urlopWykorzystanyCustom: null }
-                };
-                nextData.employees.push(targetEmp);
-            } else {
-                if (!targetEmp.stats) targetEmp.stats = {};
-                targetEmp.stats.urlopDoWykorzystania = pozostalo;
-            }
+            transakcja.set(nextRef, {
+                ...nextData,
+                updatedAt: teraz,
+                updatedBy: autorId,
+                updatedByName: autorImie
+            });
         });
 
-        await setDoc(nextRef, nextData);
         alert(`✅ Przeniesiono pozostałe godziny urlopu do grafiku na miesiąc ${nastepnyM}!`);
     } catch (e) {
         alert("Błąd podczas przenoszenia urlopów: " + e.message);

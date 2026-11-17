@@ -5,10 +5,10 @@
 async function pobierzListePolokDlaPlanogramu() {
     try {
         const docSnap = await getDoc(doc(db, "system_ustawienia", "planogramy_kategorie"));
-        if (docSnap.exists() && docSnap.data().lista) return docSnap.data().lista;
-        await setDoc(doc(db, "system_ustawienia", "planogramy_kategorie"), { lista: DOMYSLNE_POLKI });
-        return DOMYSLNE_POLKI;
-    } catch (e) { return DOMYSLNE_POLKI; }
+        if (docSnap.exists() && docSnap.data().lista) return [...docSnap.data().lista];
+        await setDoc(doc(db, "system_ustawienia", "planogramy_kategorie"), { lista: [...DOMYSLNE_POLKI] });
+        return [...DOMYSLNE_POLKI];
+    } catch (e) { return [...DOMYSLNE_POLKI]; }
 }
 
 window.zaladujPlanogramyMenu = async function() {
@@ -37,10 +37,10 @@ window.zaladujPlanogramyMenu = async function() {
                 }
             }
             html += `<tr class="cleaning-row">
-                <td style="text-align:left;" onclick="window.otworzModalPlanogramu('${polka}')"><strong>${polka}</strong></td>
-                <td onclick="window.otworzModalPlanogramu('${polka}')">${dataUmieszczenia}</td>
-                <td onclick="window.otworzModalPlanogramu('${polka}')">${statusBadge}</td>
-                ${czyAdmin ? `<td><button onclick="window.usunPolkeZListyPlanogramu('${polka}')" class="btn-danger btn-sm">🗑️</button></td>` : ''}
+                <td style="text-align:left;" onclick="window.otworzModalPlanogramu('${ucieczkaJs(polka)}')"><strong>${ucieczkaHtml(polka)}</strong></td>
+                <td onclick="window.otworzModalPlanogramu('${ucieczkaJs(polka)}')">${ucieczkaHtml(formatujDateDoWyswietlenia(dataUmieszczenia))}</td>
+                <td onclick="window.otworzModalPlanogramu('${ucieczkaJs(polka)}')">${statusBadge}</td>
+                ${czyAdmin ? `<td><button onclick="window.usunPolkeZListyPlanogramu('${ucieczkaJs(polka)}')" class="btn-danger btn-sm">🗑️</button></td>` : ''}
             </tr>`;
         });
         container.innerHTML = html + `</table></div>`;
@@ -50,6 +50,7 @@ window.zaladujPlanogramyMenu = async function() {
 window.dodajNowaPolkeDoListy = async function() {
     const nazwa = document.getElementById('nowa-polka-nazwa').value.trim();
     if (!nazwa) return alert("Wpisz nazwę strefy!");
+    if (nazwa.includes('/')) return alert("Nazwa strefy nie może zawierać znaku '/'.");
     try {
         const lista = await pobierzListePolokDlaPlanogramu();
         if (lista.includes(nazwa)) return alert("Taka strefa już istnieje!");
@@ -68,6 +69,9 @@ window.usunPolkeZListyPlanogramu = async function(nazwa) {
         lista = lista.filter(item => item !== nazwa);
         await setDoc(doc(db, "system_ustawienia", "planogramy_kategorie"), { lista });
         await deleteDoc(doc(db, "planogramy", nazwa));
+        if (typeof window.usunPolkeZDanychSprzatania === 'function') {
+            await window.usunPolkeZDanychSprzatania(nazwa);
+        }
         window.zaladujPlanogramyMenu();
     } catch (e) { alert("Błąd usuwania."); }
 };
@@ -88,10 +92,10 @@ window.otworzModalPlanogramu = async function(nazwaPolki) {
         let zdjeciaList = data?.zdjęcia ? data.zdjęcia : (data?.plik ? [data.plik] : []);
 
         if (zdjeciaList.length > 0) {
-            let galeriaHtml = `<p class="text-muted">Zaktualizowano: <strong>${data.dataUmieszczenia || 'bd'}</strong> (${data.autor || 'Admin'})</p><div class="planogram-gallery">`;
+            let galeriaHtml = `<p class="text-muted">Zaktualizowano: <strong>${ucieczkaHtml(formatujDateCzasDoWyswietlenia(data.dataUmieszczenia) || 'bd')}</strong> (${ucieczkaHtml(data.autor || 'Admin')})</p><div class="planogram-gallery">`;
             zdjeciaList.forEach((src, idx) => {
                 const delBtn = czyAdmin ? `<button onclick="window.usunPojedynczeZdjeciePlanogramu(${idx})" class="btn-danger btn-sm" style="margin-top:6px; width:100%;">🗑️ Usuń</button>` : '';
-                galeriaHtml += `<div class="planogram-thumb-box"><img src="${src}" onclick="window.otworzZoomZdjecia('${src}')">${delBtn}</div>`;
+                galeriaHtml += `<div class="planogram-thumb-box"><img src="${ucieczkaHtml(src)}" onclick="window.otworzZoomZdjecia('${ucieczkaJs(src)}')">${delBtn}</div>`;
             });
             document.getElementById('modal-planogram-tresc').innerHTML = galeriaHtml + `</div>`;
         } else {
@@ -106,45 +110,75 @@ window.zamknijModalPlanogramu = () => {
 };
 
 window.dodajZdjeciaDoPlanogramu = async function() {
+    if (!aktualnieOtwartyPlanogram) return alert("Najpierw otwórz planogram wybranej półki.");
+    if (!(currentUserData && currentUserData.rola === 'admin')) return alert("Brak uprawnień!");
+
     const fileInput = document.getElementById('admin-planogram-file');
     if (!fileInput.files || fileInput.files.length === 0) return alert("Wybierz przynajmniej jedno zdjęcie!");
 
     const compressedResults = await Promise.all(
         Array.from(fileInput.files).map(f => new Promise(res => kompresujObraz(f, res)))
     );
+    const noweZdjecia = compressedResults.filter(Boolean);
+    if (noweZdjecia.length === 0) return alert("Nie udało się przetworzyć zdjęć. Spróbuj ponownie.");
 
+    const nazwa = aktualnieOtwartyPlanogram;
     try {
-        const docRef = doc(db, "planogramy", aktualnieOtwartyPlanogram);
-        const docSnap = await getDoc(docRef);
-        let obecneZdjecia = [];
-        if (docSnap.exists()) {
-            const data = docSnap.data();
-            obecneZdjecia = data.zdjęcia ? data.zdjęcia : (data.plik ? [data.plik] : []);
-        }
-        const zaktualizowaneZdjecia = [...obecneZdjecia, ...compressedResults];
-        await setDoc(docRef, {
-            nazwa: aktualnieOtwartyPlanogram, zdjęcia: zaktualizowaneZdjecia,
-            dataUmieszczenia: new Date().toLocaleDateString(), autor: currentUserData.imie
+        const docRef = doc(db, "planogramy", nazwa);
+        const teraz = new Date().toISOString();
+        const autor = currentUserData.imie;
+        const autorId = pobierzIdPracownika(currentUserData);
+
+        // Transakcja chroni przed nadpisaniem zdjęć dodanych równolegle przez inną osobę.
+        await runTransaction(db, async (transakcja) => {
+            const snap = await transakcja.get(docRef);
+            const dane = snap.exists() ? snap.data() : {};
+            const obecne = Array.isArray(dane.zdjęcia) && dane.zdjęcia.length > 0
+                ? dane.zdjęcia
+                : (dane.plik ? [dane.plik] : []);
+            transakcja.set(docRef, {
+                nazwa,
+                zdjęcia: [...obecne, ...noweZdjecia],
+                dataUmieszczenia: teraz,
+                autor,
+                autorId,
+                updatedAt: teraz
+            }, { merge: true });
         });
-        alert(`Dodano ${compressedResults.length} zdjęć!`);
-        window.otworzModalPlanogramu(aktualnieOtwartyPlanogram);
+
+        alert(`Dodano ${noweZdjecia.length} zdjęć!`);
+        fileInput.value = "";
+        window.otworzModalPlanogramu(nazwa);
         window.zaladujPlanogramyMenu();
     } catch (e) { alert("Błąd zapisu: " + e.message); }
 };
 
 window.usunPojedynczeZdjeciePlanogramu = async function(index) {
+    if (!(currentUserData && currentUserData.rola === 'admin')) return alert("Brak uprawnień!");
     if (!confirm("Usunąć to zdjęcie?")) return;
+    const nazwa = aktualnieOtwartyPlanogram;
+    if (!nazwa) return;
     try {
-        const docRef = doc(db, "planogramy", aktualnieOtwartyPlanogram);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
+        const docRef = doc(db, "planogramy", nazwa);
+        const teraz = new Date().toISOString();
+        await runTransaction(db, async (transakcja) => {
+            const docSnap = await transakcja.get(docRef);
+            if (!docSnap.exists()) return;
             const data = docSnap.data();
-            let zdj = data.zdjęcia ? data.zdjęcia : (data.plik ? [data.plik] : []);
-            zdj.splice(index, 1);
-            if (zdj.length === 0) await deleteDoc(docRef);
-            else await setDoc(docRef, { zdjęcia: zdj }, { merge: true });
-            window.otworzModalPlanogramu(aktualnieOtwartyPlanogram);
-            window.zaladujPlanogramyMenu();
-        }
-    } catch (e) { alert("Błąd usuwania."); }
+            const zdjecia = Array.isArray(data.zdjęcia) && data.zdjęcia.length > 0
+                ? [...data.zdjęcia]
+                : (data.plik ? [data.plik] : []);
+            if (index < 0 || index >= zdjecia.length) return;
+            zdjecia.splice(index, 1);
+            if (zdjecia.length === 0) transakcja.delete(docRef);
+            else transakcja.set(docRef, {
+                zdjęcia: zdjecia,
+                updatedAt: teraz,
+                autorId: pobierzIdPracownika(currentUserData),
+                autor: currentUserData.imie
+            }, { merge: true });
+        });
+        window.otworzModalPlanogramu(nazwa);
+        window.zaladujPlanogramyMenu();
+    } catch (e) { alert("Błąd usuwania: " + e.message); }
 };

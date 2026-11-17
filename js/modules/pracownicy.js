@@ -2,14 +2,32 @@
 // Moduł Pracownicy: terminy badań/BHP, powiadomienia, formularz, lista, dodawanie/edycja/usuwanie.
 
 /* ==================== TERMINY BADAŃ / BHP ==================== */
+function parsujDateBezStrefy(dataStr) {
+    const d = pobierzDateDoObiektu(dataStr);
+    if (!d) return null;
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+}
+
 function getStanTerminu(dataStr) {
     if (!dataStr) return 'ok';
     const dzisiaj = new Date(); dzisiaj.setHours(0, 0, 0, 0);
-    const dataWaznosci = new Date(dataStr); dataWaznosci.setHours(0, 0, 0, 0);
+    const dataWaznosci = parsujDateBezStrefy(dataStr);
+    if (!dataWaznosci) return 'ok';
     if (dataWaznosci < dzisiaj) return 'expired';
 
     const zaMiesiac = new Date(); zaMiesiac.setHours(0, 0, 0, 0); zaMiesiac.setDate(zaMiesiac.getDate() + 30);
     return dataWaznosci <= zaMiesiac ? 'warning' : 'ok';
+}
+
+async function czyLoginZajety(login, idPomin = null) {
+    try {
+        const q = query(collection(db, "uzytkownicy"), where("login", "==", login), limit(5));
+        const snap = await getDocs(q);
+        return snap.docs.some(d => d.id !== idPomin);
+    } catch (e) {
+        console.warn("Nie udało się sprawdzić unikalności loginu:", e);
+        return false;
+    }
 }
 
 function formatujDateZIkona(dataStr) {
@@ -54,9 +72,9 @@ window.zaladujlistePracownikow = async function() {
         snap.forEach(docSnap => {
             const p = docSnap.data(), id = docSnap.id;
             const umowaTxt = p.umowa === 'Zlecenie' ? 'Zlecenie' : `UoP (${p.etat || '1/1'})`;
-            html += `<tr class="cleaning-row" onclick="window.otworzEdycjePracownika('${id}', '${p.uid||''}', '${p.imie}', '${p.login}', '${p.rola}', '${p.umowa||'UoP'}', '${p.etat||'1/1'}', '${p.badania||''}', '${p.sanepid||''}', '${p.bhp||''}')">
-                <td style="text-align:left;"><strong>${p.imie}</strong><br><span class="text-muted" style="font-size:0.8em;">${p.login} (${p.rola === 'admin' ? 'Admin' : 'Pracownik'})</span></td>
-                <td>${umowaTxt}</td>
+            html += `<tr class="cleaning-row" onclick="window.otworzEdycjePracownikaPoId('${ucieczkaJs(id)}')">
+                <td style="text-align:left;"><strong>${ucieczkaHtml(p.imie || 'Brak imienia')}</strong><br><span class="text-muted" style="font-size:0.8em;">${ucieczkaHtml(p.login || 'brak loginu')} (${p.rola === 'admin' ? 'Admin' : 'Pracownik'})</span></td>
+                <td>${ucieczkaHtml(umowaTxt)}</td>
                 <td>${formatujDateZIkona(p.badania)}</td>
                 <td>${formatujDateZIkona(p.sanepid)}</td>
                 <td>${formatujDateZIkona(p.bhp)}</td>
@@ -65,6 +83,18 @@ window.zaladujlistePracownikow = async function() {
         container.innerHTML = html + `</table></div>`;
         sprawdzPowiadomieniaPracownicyGlobal();
     } catch (e) { container.innerHTML = "Błąd ładowania."; }
+};
+
+window.otworzEdycjePracownikaPoId = async function(id) {
+    try {
+        const snap = await getDoc(doc(db, "uzytkownicy", id));
+        if (!snap.exists()) return alert("Nie znaleziono pracownika.");
+        const p = snap.data();
+        window.otworzEdycjePracownika(
+            id, p.uid || id, p.imie || '', p.login || '', p.rola || 'pracownik',
+            p.umowa || 'UoP', p.etat || '1/1', p.badania || '', p.sanepid || '', p.bhp || ''
+        );
+    } catch (e) { alert("Błąd pobierania danych pracownika: " + e.message); }
 };
 
 window.otworzEdycjePracownika = function(id, uid, imie, login, rola, umowa, etat, badania, sanepid, bhp) {
@@ -97,11 +127,19 @@ window.zamknijEdycjePracownika = () => document.getElementById('modal-szczegoly-
 
 window.zapiszEdycjePracownika = async function() {
     const id = document.getElementById('edit-p-id').value;
+    const uid = document.getElementById('edit-p-uid').value || id;
+    const imie = document.getElementById('edit-p-imie').value.trim();
+    const login = document.getElementById('edit-p-login').value.trim().toLowerCase();
     const umowa = document.getElementById('edit-p-umowa').value;
     const noweHasloAdmin = document.getElementById('edit-p-nowe-haslo').value.trim();
 
+    if (!imie || !login) return alert("Imię i login są wymagane!");
+    if (!/^[a-z0-9._-]+$/.test(login)) return alert("Login może zawierać tylko małe litery, cyfry, kropkę, myślnik i podkreślenie.");
     if (noweHasloAdmin && noweHasloAdmin.length < 6) {
         return alert("Nowe hasło musi mieć minimum 6 znaków!");
+    }
+    if (await czyLoginZajety(login, id)) {
+        return alert("Ten login jest już zajęty przez innego pracownika!");
     }
 
     let etat = '-';
@@ -111,19 +149,27 @@ window.zapiszEdycjePracownika = async function() {
     }
 
     try {
-        await setDoc(doc(db, "uzytkownicy", id), {
-            imie: document.getElementById('edit-p-imie').value.trim(),
-            login: document.getElementById('edit-p-login').value.trim().toLowerCase(),
+        const istniejacy = await getDoc(doc(db, "uzytkownicy", id));
+        const poprzednie = istniejacy.exists() ? istniejacy.data() : {};
+        const authEmail = poprzednie.authEmail || `${poprzednie.login || login}@sp580.pl`;
+
+        const dane = {
+            uid,
+            authEmail,
+            imie,
+            login,
             rola: document.getElementById('edit-p-rola').value,
             umowa, etat,
             badania: document.getElementById('edit-p-badania').value,
             sanepid: document.getElementById('edit-p-sanepid').value,
             bhp: document.getElementById('edit-p-bhp').value
-        }, { merge: true });
+        };
 
+        await setDoc(doc(db, "uzytkownicy", id), dane, { merge: true });
+
+        const user = auth.currentUser;
         if (noweHasloAdmin) {
-            const user = auth.currentUser;
-            if (user && document.getElementById('edit-p-uid').value === user.uid) {
+            if (user && uid === user.uid) {
                 await updatePassword(user, noweHasloAdmin);
                 alert("Zaktualizowano profil oraz Twoje własne hasło!");
             } else {
@@ -133,6 +179,11 @@ window.zapiszEdycjePracownika = async function() {
             alert("Zaktualizowano dane pracownika!");
         }
 
+        if (user && uid === user.uid) {
+            currentUserData = { ...(currentUserData || {}), ...dane };
+            document.getElementById('profile-btn-label').innerText = pobierzImieKrotkie(imie);
+        }
+
         window.zamknijEdycjePracownika();
         window.zaladujlistePracownikow();
     } catch (e) { alert("Błąd zapisu: " + e.message); }
@@ -140,13 +191,19 @@ window.zapiszEdycjePracownika = async function() {
 
 window.usunPracownikaZModala = async function() {
     const id = document.getElementById('edit-p-id').value;
+    const uid = document.getElementById('edit-p-uid').value || id;
     const imie = document.getElementById('edit-p-imie').value;
-    if (confirm(`Czy na pewno chcesz trwale usunąć pracownika ${imie} z bazy danych?`)) {
+    if (confirm(`Czy na pewno chcesz trwale usunąć profil pracownika ${imie}? Historyczne raporty i wiadomości pozostaną w bazie.`)) {
         try {
             await deleteDoc(doc(db, "uzytkownicy", id));
+            const user = auth.currentUser;
+            if (user && uid === user.uid) {
+                try { await deleteUser(user); } catch (e) { console.warn("Nie udało się usunąć konta Auth:", e); }
+                await signOut(auth);
+            }
             window.zamknijEdycjePracownika();
             window.zaladujlistePracownikow();
-        } catch (e) { alert("Błąd usuwania."); }
+        } catch (e) { alert("Błąd usuwania: " + e.message); }
     }
 };
 
@@ -167,17 +224,34 @@ window.dodajPracownika = async function() {
     }
 
     if (!imie || !login || !haslo) return alert("Wypełnij Imię, Login oraz Hasło!");
+    if (!/^[a-z0-9._-]+$/.test(login)) return alert("Login może zawierać tylko małe litery, cyfry, kropkę, myślnik i podkreślenie.");
+    if (haslo.length < 6) return alert("Hasło musi mieć minimum 6 znaków!");
+    if (await czyLoginZajety(login)) return alert("Ten login jest już zajęty!");
 
-    const secondaryApp = initializeApp(firebaseConfig, "Secondary");
+    // Unikalna nazwa aplikacji pomocniczej — dzięki temu kolejne dodawanie pracowników nie kończy się błędem.
+    const nazwaAplikacji = `Secondary_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+    const secondaryApp = initializeApp(firebaseConfig, nazwaAplikacji);
     const secondaryAuth = getAuth(secondaryApp);
+    let utworzonyUzytkownik = null;
     try {
         const userCredential = await createUserWithEmailAndPassword(secondaryAuth, `${login}@sp580.pl`, haslo);
-        await setDoc(doc(db, "uzytkownicy", userCredential.user.uid), {
-            uid: userCredential.user.uid, imie, login, rola, umowa, etat, badania, sanepid, bhp
+        utworzonyUzytkownik = userCredential.user;
+        await setDoc(doc(db, "uzytkownicy", utworzonyUzytkownik.uid), {
+            uid: utworzonyUzytkownik.uid,
+            authEmail: `${login}@sp580.pl`,
+            imie, login, rola, umowa, etat, badania, sanepid, bhp
         });
-        await signOut(secondaryAuth);
         alert(`Dodano pracownika: ${imie}`);
         ['new-p-imie', 'new-p-login', 'new-p-haslo', 'new-p-badania', 'new-p-sanepid', 'new-p-bhp', 'new-p-etat-custom'].forEach(id => document.getElementById(id).value = "");
         window.zaladujlistePracownikow();
-    } catch (error) { alert("Błąd dodawania pracownika: " + error.message); }
+    } catch (error) {
+        // Cofamy utworzone konto Auth, jeśli zapis profilu w Firestore się nie udał.
+        if (utworzonyUzytkownik) {
+            try { await deleteUser(utworzonyUzytkownik); } catch (e) { console.warn("Nie udało się wycofać konta Auth:", e); }
+        }
+        alert("Błąd dodawania pracownika: " + error.message);
+    } finally {
+        try { await signOut(secondaryAuth); } catch (e) { /* ignore */ }
+        try { await deleteApp(secondaryApp); } catch (e) { console.warn("Nie udało się zwolnić aplikacji pomocniczej:", e); }
+    }
 };

@@ -8,8 +8,13 @@ window.wyslijProsbe = async function() {
     if (!wybranyMiesiac || !tekst) return alert("Uzupełnij miesiąc i treść prośby!");
     try {
         await addDoc(collection(db, "prosby_o_zmiany"), {
-            miesiac: wybranyMiesiac, autor: currentUserData?.imie.split(' ')[0] || "Pracownik",
-            tekst, status: "oczekujace", data: new Date().toLocaleString()
+            miesiac: wybranyMiesiac,
+            autorId: currentUserData ? (currentUserData.uid || currentUserData.id) : "",
+            autor: currentUserData ? currentUserData.imie : "Pracownik",
+            tekst,
+            status: STATUSY_PROSB.OCZEKUJACE,
+            data: new Date().toISOString(),
+            timestamp: Date.now()
         });
         document.getElementById('nowa-prosba-tekst').value = "";
         zaladujProsby(wybranyMiesiac);
@@ -17,7 +22,11 @@ window.wyslijProsbe = async function() {
 };
 
 window.zmienStatusProsby = async function(id, status) {
-    await setDoc(doc(db, "prosby_o_zmiany", id), { status }, { merge: true });
+    if (!(currentUserData && currentUserData.rola === 'admin')) return alert("Brak uprawnień!");
+    await setDoc(doc(db, "prosby_o_zmiany", id), {
+        status,
+        updatedAt: new Date().toISOString()
+    }, { merge: true });
     zaladujProsby(document.getElementById('grafik-miesiac').value);
 };
 
@@ -37,23 +46,25 @@ async function zaladujProsby(miesiac) {
         snap.forEach(d => { if (d.data().miesiac === miesiac) prosby.push({ id: d.id, ...d.data() }); });
         if (prosby.length === 0) { listaContainer.innerHTML = "<p class='text-muted'>Brak próśb w tym miesiącu.</p>"; return; }
 
+        const mojId = currentUserData ? (currentUserData.uid || currentUserData.id) : "";
+        const mojeImie = currentUserData ? currentUserData.imie : "";
         let html = "";
         prosby.reverse().forEach(p => {
-            const badge = p.status === "zatwierdzone"
+            const badge = p.status === STATUSY_PROSB.ZATWIERDZONE
                 ? `<span class="badge badge-done">👍 Zatwierdzone</span>`
-                : (p.status === "odrzucone" ? `<span class="badge badge-danger">👎 Odrzucone</span>` : `<span class="badge badge-pending">⏳ Oczekuje</span>`);
-            
+                : (p.status === STATUSY_PROSB.ODRZUCONE ? `<span class="badge badge-danger">👎 Odrzucone</span>` : `<span class="badge badge-pending">⏳ Oczekuje</span>`);
+
             const actions = (currentUserData?.rola === 'admin')
-                ? `<button onclick="window.zmienStatusProsby('${p.id}', 'zatwierdzone')" class="btn-success btn-sm">👍 Zatwierdź</button>
-                   <button onclick="window.zmienStatusProsby('${p.id}', 'odrzucone')" class="btn-danger btn-sm">👎 Odrzuć</button>`
+                ? `<button onclick="window.zmienStatusProsby('${ucieczkaJs(p.id)}', '${STATUSY_PROSB.ZATWIERDZONE}')" class="btn-success btn-sm">👍 Zatwierdź</button>
+                   <button onclick="window.zmienStatusProsby('${ucieczkaJs(p.id)}', '${STATUSY_PROSB.ODRZUCONE}')" class="btn-danger btn-sm">👎 Odrzuć</button>`
                 : "";
-            const delBtn = (currentUserData?.rola === 'admin' || currentUserData?.imie.split(' ')[0] === p.autor)
-                ? `<button onclick="window.usunProsbe('${p.id}')" class="btn-neutral btn-sm">🗑️ Usuń</button>`
+            const delBtn = (currentUserData?.rola === 'admin' || czyPracownikPasuje(p, mojId, mojeImie))
+                ? `<button onclick="window.usunProsbe('${ucieczkaJs(p.id)}')" class="btn-neutral btn-sm">🗑️ Usuń</button>`
                 : "";
 
             html += `<div class="request-item">
-                <div style="display:flex; justify-content:space-between; align-items:center;"><strong>👤 ${p.autor}</strong>${badge}</div>
-                <div class="text-muted" style="font-size:0.8em; margin-bottom:6px;">${p.data}</div>
+                <div style="display:flex; justify-content:space-between; align-items:center;"><strong>👤 ${ucieczkaHtml(p.autor || '')}</strong>${badge}</div>
+                <div class="text-muted" style="font-size:0.8em; margin-bottom:6px;">${ucieczkaHtml(formatujDateCzasDoWyswietlenia(p.data))}</div>
                 <div style="margin-bottom:8px;">${ucieczkaHtml(p.tekst)}</div>
                 <div class="flex-row" style="gap:6px; flex-wrap:wrap;">${actions}${delBtn}</div>
             </div>`;

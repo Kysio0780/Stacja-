@@ -2,6 +2,8 @@
 // Moduł Sprzedaż (widok miesięczny/dzienny, raporty, plan).
 
 /* ==================== SPRZEDAŻ ==================== */
+let aktualnyRaportUpdatedAt = null;
+
 window.pokazWidokMiesieczny = function() {
     document.getElementById('view-daily').classList.add('hidden');
     document.getElementById('view-monthly').classList.remove('hidden');
@@ -26,26 +28,36 @@ async function zaladujCheckboxySprzedawcow(dataStr) {
             getDocs(collection(db, "uzytkownicy")),
             getDoc(doc(db, "sprzedaz", dataStr))
         ]);
-        const zapisani = rDoc.exists() ? (rDoc.data().sprzedawcy || []) : [];
+        const daneRaportu = rDoc.exists() ? rDoc.data() : null;
+        const zapisaniIds = Array.isArray(daneRaportu?.sprzedawcyIds) ? daneRaportu.sprzedawcyIds : [];
+        const zapisaniImiona = Array.isArray(daneRaportu?.sprzedawcy) ? daneRaportu.sprzedawcy : [];
+        aktualnyRaportUpdatedAt = daneRaportu?.updatedAt || null;
 
-        if (rDoc.exists()) {
-            const d = rDoc.data();
-            document.getElementById('kawa-ilosc').value = d.kawa?.ilosc || "";
-            document.getElementById('kawa-wartosc').value = d.kawa?.wartosc || "";
-            document.getElementById('hd-ilosc').value = d.hd?.ilosc || "";
-            document.getElementById('hd-wartosc').value = d.hd?.wartosc || "";
-            document.getElementById('sklep-wartosc').value = d.sklep?.wartosc || "";
+        if (daneRaportu) {
+            document.getElementById('kawa-ilosc').value = daneRaportu.kawa?.ilosc ?? "";
+            document.getElementById('kawa-wartosc').value = daneRaportu.kawa?.wartosc ?? "";
+            document.getElementById('hd-ilosc').value = daneRaportu.hd?.ilosc ?? "";
+            document.getElementById('hd-wartosc').value = daneRaportu.hd?.wartosc ?? "";
+            document.getElementById('sklep-wartosc').value = daneRaportu.sklep?.wartosc ?? "";
         } else {
             ['kawa-ilosc', 'kawa-wartosc', 'hd-ilosc', 'hd-wartosc', 'sklep-wartosc'].forEach(id => document.getElementById(id).value = "");
         }
 
+        const mojId = currentUserData ? (currentUserData.uid || currentUserData.id) : "";
         let html = "";
-        uSnap.forEach(docSnap => {
-            const imieKrotkie = docSnap.data().imie.split(' ')[0];
-            const isChecked = zapisani.length > 0
-                ? zapisani.includes(imieKrotkie)
-                : (currentUserData && imieKrotkie === currentUserData.imie.split(' ')[0]);
-            html += `<label style="display:flex; align-items:center; gap:8px; margin:5px 0; cursor:pointer; font-weight:normal;"><input type="checkbox" name="raport-sprzedawca" value="${imieKrotkie}" ${isChecked ? 'checked' : ''}> ${docSnap.data().imie}</label>`;
+        const pracownicy = uSnap.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }))
+            .sort((a, b) => String(a.imie || "").localeCompare(String(b.imie || ""), 'pl'));
+        pracownicy.forEach(u => {
+            const imieKrotkie = pobierzImieKrotkie(u.imie);
+            const isChecked = zapisaniIds.length > 0
+                ? zapisaniIds.includes(u.id)
+                : (zapisaniImiona.length > 0
+                    ? (zapisaniImiona.includes(u.imie) || zapisaniImiona.includes(imieKrotkie))
+                    : u.id === mojId);
+            html += `<label style="display:flex; align-items:center; gap:8px; margin:5px 0; cursor:pointer; font-weight:normal;">
+                <input type="checkbox" name="raport-sprzedawca" value="${ucieczkaHtml(u.id)}" data-imie="${ucieczkaHtml(u.imie || '')}" ${isChecked ? 'checked' : ''}>
+                ${ucieczkaHtml(u.imie || u.login || '')}
+            </label>`;
         });
         container.innerHTML = html;
     } catch (e) { container.innerHTML = "Błąd ładowania."; }
@@ -83,7 +95,12 @@ window.zaladujMiesiacTabela = async function() {
         });
 
         const czyAdmin = currentUserData && currentUserData.rola === 'admin';
-        const plany = planDoc.exists() ? planDoc.data() : { kawa: 0, hd: 0, sklep: 0 };
+        const planyRaw = planDoc.exists() ? planDoc.data() : {};
+        const plany = {
+            kawa: Number(planyRaw.kawa) || 0,
+            hd: Number(planyRaw.hd) || 0,
+            sklep: Number(planyRaw.sklep) || 0
+        };
         let ostatniDzienRaportu = 0;
         for (let d = 1; d <= dniWMiesiacu; d++) {
             if (raporty[`${wybranyMiesiac}-${String(d).padStart(2, '0')}`]) ostatniDzienRaportu = d;
@@ -91,9 +108,10 @@ window.zaladujMiesiacTabela = async function() {
         const pt = ostatniDzienRaportu / dniWMiesiacu;
 
         const rowPlan = (nazwa, katKey, wyk, plan) => {
-            const pProp = plan * pt, d100 = wyk - plan, dProp = wyk - pProp;
-            const p100 = plan > 0 ? (wyk / plan) * 100 : 0, pP = pProp > 0 ? (wyk / pProp) * 100 : 0;
-            const planCell = czyAdmin ? `<input type="number" step="0.01" id="plan-input-${katKey}" value="${plan}" onchange="window.zapiszPlanMiesieczny()" class="compact-input">` : `${plan.toFixed(2)}`;
+            const planLiczba = Number(plan) || 0;
+            const pProp = planLiczba * pt, d100 = wyk - planLiczba, dProp = wyk - pProp;
+            const p100 = planLiczba > 0 ? (wyk / planLiczba) * 100 : 0, pP = pProp > 0 ? (wyk / pProp) * 100 : 0;
+            const planCell = czyAdmin ? `<input type="number" step="0.01" id="plan-input-${katKey}" value="${planLiczba}" onchange="window.zapiszPlanMiesieczny()" class="compact-input">` : `${planLiczba.toFixed(2)}`;
             return `<tr><td><strong>${nazwa}</strong></td><td>${wyk.toFixed(2)}</td><td>${planCell}</td><td class="${p100>=100?'val-green':'val-red'}">${p100.toFixed(1)}%</td><td class="${d100>=0?'val-green':'val-red'}">${d100.toFixed(2)}</td><td>${pProp.toFixed(2)}</td><td class="${pP>=100?'val-green':'val-red'}">${pP.toFixed(1)}%</td><td class="${dProp>=0?'val-green':'val-red'}">${dProp.toFixed(2)}</td></tr>`;
         };
 
@@ -123,34 +141,56 @@ window.zapiszPlanMiesieczny = async function() {
     const wybranyMiesiac = document.getElementById('wybrany-miesiac').value;
     try {
         await setDoc(doc(db, "plany_miesieczne", wybranyMiesiac), {
-            kawa: Number(document.getElementById('plan-input-kawa').value) || 0,
-            hd: Number(document.getElementById('plan-input-hd').value) || 0,
-            sklep: Number(document.getElementById('plan-input-sklep').value) || 0
-        });
+            kawa: Math.max(0, Number(document.getElementById('plan-input-kawa').value) || 0),
+            hd: Math.max(0, Number(document.getElementById('plan-input-hd').value) || 0),
+            sklep: Math.max(0, Number(document.getElementById('plan-input-sklep').value) || 0),
+            updatedAt: new Date().toISOString()
+        }, { merge: true });
         window.zaladujMiesiacTabela();
     } catch (e) { alert("Błąd zapisu planu."); }
 };
 
 window.zapiszSprzedaz = async function() {
     const data = document.getElementById('raport-data').value;
-    const zaznaczeni = Array.from(document.querySelectorAll('input[name="raport-sprzedawca"]:checked')).map(cb => cb.value);
+    const zaznaczeni = Array.from(document.querySelectorAll('input[name="raport-sprzedawca"]:checked')).map(cb => ({
+        id: cb.value,
+        imie: cb.dataset.imie || cb.parentElement?.textContent?.trim() || cb.value
+    }));
     if (!data || zaznaczeni.length === 0) return alert("Wybierz datę oraz zaznacz minimum jednego sprzedawcę!");
 
+    const naLiczbe = (id) => Math.max(0, Number(document.getElementById(id).value) || 0);
     const btn = document.getElementById('btn-zapisz-raport');
     btn.disabled = true; btn.innerText = "Zapisywanie...";
 
     try {
-        await setDoc(doc(db, "sprzedaz", data), {
-            data, sprzedawcy: zaznaczeni,
-            kawa: { ilosc: Number(document.getElementById('kawa-ilosc').value)||0, wartosc: Number(document.getElementById('kawa-wartosc').value)||0 },
-            hd: { ilosc: Number(document.getElementById('hd-ilosc').value)||0, wartosc: Number(document.getElementById('hd-wartosc').value)||0 },
-            sklep: { wartosc: Number(document.getElementById('sklep-wartosc').value)||0 },
-            ostatniaModyfikacjaPrzez: currentUserData ? currentUserData.imie.split(' ')[0] : "Pracownik",
-            czasModyfikacji: new Date().toLocaleString()
+        const ref = doc(db, "sprzedaz", data);
+        const updatedAt = new Date().toISOString();
+        await runTransaction(db, async (transakcja) => {
+            const snap = await transakcja.get(ref);
+            const zdalny = snap.exists() ? snap.data() : null;
+            if (zdalny?.updatedAt && aktualnyRaportUpdatedAt && zdalny.updatedAt !== aktualnyRaportUpdatedAt) {
+                throw new Error("Ten raport został w międzyczasie zmieniony przez inną osobę. Odśwież dzień i spróbuj ponownie.");
+            }
+            transakcja.set(ref, {
+                data,
+                sprzedawcyIds: zaznaczeni.map(x => x.id),
+                sprzedawcy: zaznaczeni.map(x => x.imie),
+                kawa: { ilosc: naLiczbe('kawa-ilosc'), wartosc: naLiczbe('kawa-wartosc') },
+                hd: { ilosc: naLiczbe('hd-ilosc'), wartosc: naLiczbe('hd-wartosc') },
+                sklep: { wartosc: naLiczbe('sklep-wartosc') },
+                ostatniaModyfikacjaPrzez: currentUserData ? currentUserData.imie : "Pracownik",
+                czasModyfikacji: updatedAt,
+                updatedAt,
+                timestamp: Date.now()
+            }, { merge: true });
         });
+        aktualnyRaportUpdatedAt = updatedAt;
         alert("Raport został zapisany!");
         window.location.hash = "#sprzedaz";
-    } catch (e) { alert("Błąd zapisu: " + e.message); }
+    } catch (e) {
+        alert("Błąd zapisu: " + e.message);
+        await zaladujCheckboxySprzedawcow(data);
+    }
     finally { btn.disabled = false; btn.innerText = "💾 Zapisz / Aktualizuj Raport"; }
 };
 
@@ -162,15 +202,16 @@ async function pobierzRaportyDlaAdmina() {
         let html = "";
         snap.forEach(d => {
             const r = d.data();
-            if (r.data && r.data.startsWith(mStr)) {
+            const dataRaportu = r.data || d.id;
+            if (dataRaportu && dataRaportu.startsWith(mStr)) {
                 const osoby = r.sprzedawcy ? r.sprzedawcy.join(', ') : (r.pracownik || 'Brak');
-                html += `<div class="report-box" onclick="window.otworzDzien('${r.data}')">
+                html += `<div class="report-box" onclick="window.otworzDzien('${ucieczkaJs(dataRaportu)}')">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-                        <strong>📅 ${r.data}</strong>
-                        <span class="badge badge-info">${osoby}</span>
+                        <strong>📅 ${ucieczkaHtml(formatujDateDoWyswietlenia(dataRaportu))}</strong>
+                        <span class="badge badge-info">${ucieczkaHtml(osoby)}</span>
                     </div>
                     <div style="font-size:0.9em;">☕ ${r.kawa?.ilosc||0} (${(Number(r.kawa?.wartosc)||0).toFixed(2)} zł) | 🌭 ${r.hd?.ilosc||0} (${(Number(r.hd?.wartosc)||0).toFixed(2)} zł) | 🛒 ${(Number(r.sklep?.wartosc)||0).toFixed(2)} zł</div>
-                    <div class="audit-info">Edycja: ${r.ostatniaModyfikacjaPrzez} (${r.czasModyfikacji})</div>
+                    <div class="audit-info">Edycja: ${ucieczkaHtml(r.ostatniaModyfikacjaPrzez||'')} (${ucieczkaHtml(formatujDateCzasDoWyswietlenia(r.czasModyfikacji))})</div>
                 </div>`;
             }
         });

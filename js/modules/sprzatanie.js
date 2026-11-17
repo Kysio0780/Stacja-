@@ -2,6 +2,33 @@
 // Moduł Sprzątanie (półki, potwierdzenia, reset).
 
 /* ==================== SPRZĄTANIE ==================== */
+function pobierzDanePolki(nazwa, index) {
+    return aktualneDaneSprzatania[nazwa]
+        || aktualneDaneSprzatania[String(index)]
+        || aktualneDaneSprzatania[index]
+        || {};
+}
+
+async function zapiszZmianePolki(nazwa, index, wpis) {
+    const docId = `${document.getElementById('sprzatanie-miesiac').value}_${document.getElementById('sprzatanie-okres').value}`;
+    const ref = doc(db, "sprzatanie", docId);
+    const updatedAt = new Date().toISOString();
+
+    await runTransaction(db, async (transakcja) => {
+        const snap = await transakcja.get(ref);
+        const zdalne = snap.exists() ? (snap.data().półki || {}) : {};
+        const nowe = { ...zdalne, [nazwa]: wpis };
+        // Usuwamy stary wpis zapisany pod indeksem tablicy (format sprzed migracji).
+        if (index !== "" && index !== undefined && index !== null && String(index) !== nazwa) {
+            delete nowe[String(index)];
+        }
+        transakcja.set(ref, { półki: nowe, updatedAt }, { merge: true });
+    });
+
+    aktualneDaneSprzatania = { ...aktualneDaneSprzatania, [nazwa]: wpis };
+    if (index !== "" && index !== undefined && index !== null) delete aktualneDaneSprzatania[String(index)];
+}
+
 window.zaladujSprzatanie = async function() {
     const wybranyMiesiac = document.getElementById('sprzatanie-miesiac').value;
     const wybranyOkres = document.getElementById('sprzatanie-okres').value;
@@ -26,19 +53,19 @@ window.zaladujSprzatanie = async function() {
         ]);
         aktualneDaneSprzatania = docSnap.exists() ? (docSnap.data().półki || {}) : {};
         let html = `<div class="table-responsive"><table class="cleaning-table"><tr><th style="text-align:left;">Półka / Strefa</th><th style="width: 100px;">Status</th><th style="width: 100px;">Data</th><th style="width: 110px;">Osoba</th></tr>`;
-        
+
         listaPolok.forEach((polka, index) => {
-            const p = aktualneDaneSprzatania[index] || {};
+            const p = pobierzDanePolki(polka, index);
             const isDone = (p.czystosc && p.daty && p.planogram);
             const statusHtml = isDone ? `<span class="badge badge-done">✔ Gotowe</span>` : `<span class="badge badge-pending">⏳ Brak</span>`;
             const rowClass = (jestPrzyszlosc && !czyAdmin) ? "future-row" : "cleaning-row";
-            const clickAttr = (jestPrzyszlosc && !czyAdmin) ? "" : `onclick="window.otworzModalPolki(${index}, '${polka}', ${jestBiezacy})"`;
+            const clickAttr = (jestPrzyszlosc && !czyAdmin) ? "" : `onclick="window.otworzModalPolki(${index}, '${ucieczkaJs(polka)}', ${jestBiezacy})"`;
 
             html += `<tr class="${rowClass}" ${clickAttr}>
-                <td style="text-align:left;"><strong>${polka}</strong></td>
+                <td style="text-align:left;"><strong>${ucieczkaHtml(polka)}</strong></td>
                 <td>${statusHtml}</td>
-                <td>${p.dataSprawdzenia || '-'}</td>
-                <td>${p.podpis || '-'}</td>
+                <td>${ucieczkaHtml(formatujDateDoWyswietlenia(p.dataSprawdzenia) || '-')}</td>
+                <td>${ucieczkaHtml(p.podpis || '-')}</td>
             </tr>`;
         });
         container.innerHTML = html + `</table></div>`;
@@ -47,8 +74,9 @@ window.zaladujSprzatanie = async function() {
 
 window.otworzModalPolki = function(index, nazwaPolki, jestBiezacy) {
     document.getElementById('modal-polka-index').value = index;
+    document.getElementById('modal-polka-nazwa').value = nazwaPolki;
     document.getElementById('modal-polka-tytuł').innerText = `🧹 ${nazwaPolki}`;
-    const p = aktualneDaneSprzatania[index] || {};
+    const p = pobierzDanePolki(nazwaPolki, index);
     const czyAdmin = currentUserData && currentUserData.rola === 'admin';
     const moznaEdytowac = jestBiezacy || czyAdmin;
 
@@ -59,7 +87,7 @@ window.otworzModalPolki = function(index, nazwaPolki, jestBiezacy) {
     document.getElementById('m-zdjecie').value = "";
 
     document.getElementById('m-zdjecie-preview').innerHTML = p.zdjecie
-        ? `<p class="text-muted">Zapisane zdjęcie:</p><img src="${p.zdjecie}" onclick="window.otworzZoomZdjecia('${p.zdjecie}')" style="max-width: 100%; max-height: 150px; border-radius: var(--radius-sm); cursor: pointer;">`
+        ? `<p class="text-muted">Zapisane zdjęcie:</p><img src="${ucieczkaHtml(p.zdjecie)}" onclick="window.otworzZoomZdjecia('${ucieczkaJs(p.zdjecie)}')" style="max-width: 100%; max-height: 150px; border-radius: var(--radius-sm); cursor: pointer;">`
         : "";
 
     ['m-czystosc', 'm-daty', 'm-planogram', 'm-komentarz', 'm-zdjecie'].forEach(id => document.getElementById(id).disabled = !moznaEdytowac);
@@ -72,21 +100,26 @@ window.zamknijModalPolki = () => document.getElementById('modal-polka').classLis
 
 window.zapiszSzczegolyPolki = function() {
     const index = document.getElementById('modal-polka-index').value;
+    const nazwa = document.getElementById('modal-polka-nazwa').value;
     const fileInput = document.getElementById('m-zdjecie');
+    if (!nazwa) return alert("Brak nazwy półki. Odśwież widok i spróbuj ponownie.");
+
     const executeSave = async (zdjecieBase64) => {
-        const obecneDane = aktualneDaneSprzatania[index] || {};
-        aktualneDaneSprzatania[index] = {
+        const obecneDane = pobierzDanePolki(nazwa, index);
+        const wpis = {
+            nazwaPolki: nazwa,
+            pracownikId: currentUserData ? (currentUserData.uid || currentUserData.id) : "",
             czystosc: document.getElementById('m-czystosc').checked,
             daty: document.getElementById('m-daty').checked,
             planogram: document.getElementById('m-planogram').checked,
             komentarz: document.getElementById('m-komentarz').value,
             zdjecie: zdjecieBase64 || obecneDane.zdjecie || null,
-            dataSprawdzenia: new Date().toLocaleDateString(),
-            podpis: currentUserData.imie.split(' ')[0]
+            dataSprawdzenia: pobierzDzisiejszaDateStr(),
+            podpis: currentUserData ? currentUserData.imie : "",
+            reset: false
         };
-        const docId = `${document.getElementById('sprzatanie-miesiac').value}_${document.getElementById('sprzatanie-okres').value}`;
         try {
-            await setDoc(doc(db, "sprzatanie", docId), { półki: aktualneDaneSprzatania }, { merge: true });
+            await zapiszZmianePolki(nazwa, index, wpis);
             window.zamknijModalPolki();
             window.zaladujSprzatanie();
         } catch (e) { alert("Błąd zapisu: " + e.message); }
@@ -98,14 +131,44 @@ window.zapiszSzczegolyPolki = function() {
 window.usunPotwierdzeniePolki = async function() {
     if (!confirm("Zresetować potwierdzenie kontroli dla tej półki?")) return;
     const index = document.getElementById('modal-polka-index').value;
-    aktualneDaneSprzatania[index] = {
-        czystosc: false, daty: false, planogram: false, komentarz: "", zdjecie: null,
-        dataSprawdzenia: new Date().toLocaleDateString() + " (Reset)", podpis: "-"
+    const nazwa = document.getElementById('modal-polka-nazwa').value;
+    if (!nazwa) return;
+    const wpis = {
+        nazwaPolki: nazwa,
+        pracownikId: currentUserData ? (currentUserData.uid || currentUserData.id) : "",
+        czystosc: false, daty: false, planogram: false,
+        komentarz: "", zdjecie: null,
+        dataSprawdzenia: pobierzDzisiejszaDateStr(),
+        podpis: "-",
+        reset: true
     };
-    const docId = `${document.getElementById('sprzatanie-miesiac').value}_${document.getElementById('sprzatanie-okres').value}`;
     try {
-        await setDoc(doc(db, "sprzatanie", docId), { półki: aktualneDaneSprzatania }, { merge: true });
+        await zapiszZmianePolki(nazwa, index, wpis);
         window.zamknijModalPolki();
         window.zaladujSprzatanie();
     } catch (e) { alert("Błąd resetowania."); }
+};
+
+window.usunPolkeZDanychSprzatania = async function(nazwa) {
+    if (!nazwa) return;
+    try {
+        const snap = await getDocs(collection(db, "sprzatanie"));
+        for (const d of snap.docs) {
+            const dane = d.data();
+            const polki = { ...(dane.półki || {}) };
+            let zmiana = false;
+            Object.keys(polki).forEach(klucz => {
+                if (klucz === nazwa || polki[klucz]?.nazwaPolki === nazwa) {
+                    delete polki[klucz];
+                    zmiana = true;
+                }
+            });
+            if (zmiana) {
+                await setDoc(doc(db, "sprzatanie", d.id), {
+                    półki: polki,
+                    updatedAt: new Date().toISOString()
+                }, { merge: true });
+            }
+        }
+    } catch (e) { console.warn("Nie udało się usunąć danych sprzątania dla półki:", e); }
 };
