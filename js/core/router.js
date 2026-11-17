@@ -4,7 +4,7 @@
 /* ROUTING */
 window.addEventListener("hashchange", () => {
     const hash = window.location.hash;
-    ['modul-sprzedaz', 'modul-premia', 'modul-grafik', 'modul-pracownicy', 'modul-sprzatanie', 'modul-planogram', 'modul-misje', 'modul-statystyki', 'modul-wiadomosci', 'modul-tpsy', 'menu-tiles'].forEach(id => {
+    ['modul-sprzedaz', 'modul-premia', 'modul-grafik', 'modul-pracownicy', 'modul-sprzatanie', 'modul-planogram', 'modul-misje', 'modul-statystyki', 'modul-wiadomosci', 'modul-tpsy', 'modul-liczenie', 'modul-raporty', 'modul-finanse', 'menu-tiles'].forEach(id => {
         document.getElementById(id).classList.add('hidden');
     });
 
@@ -16,6 +16,7 @@ window.addEventListener("hashchange", () => {
             sprawdzPowiadomieniaWiadomosci(currentUserData.uid, currentUserData.imie);
             sprawdzPowiadomieniaPracownicyGlobal();
             sprawdzPowiadomieniaTpsGlobal();
+            if (typeof window.sprawdzObecnoscGrafikuGlobal === 'function') window.sprawdzObecnoscGrafikuGlobal();
         }
     } else if (hash === "#tpsy") {
         document.getElementById('modul-tpsy').classList.remove('hidden');
@@ -71,6 +72,13 @@ window.addEventListener("hashchange", () => {
     } else if (hash === "#statystyki") {
         if (!(currentUserData && currentUserData.rola === 'admin')) { window.location.hash = "#menu"; return; }
         document.getElementById('modul-statystyki').classList.remove('hidden');
+    } else if (hash === "#liczenie") {
+        document.getElementById('modul-liczenie').classList.remove('hidden');
+    } else if (hash === "#raporty") {
+        document.getElementById('modul-raporty').classList.remove('hidden');
+    } else if (hash === "#finanse") {
+        if (!(currentUserData && currentUserData.rola === 'admin')) { window.location.hash = "#menu"; return; }
+        document.getElementById('modul-finanse').classList.remove('hidden');
     } else if (hash === "#dzien") {
         document.getElementById('modul-sprzedaz').classList.remove('hidden');
         document.getElementById('view-monthly').classList.add('hidden');
