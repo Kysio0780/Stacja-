@@ -6,6 +6,16 @@ let aktualnyGrafikStan = null;
 let aktualnyGrafikUpdatedAt = null;
 let bazaPracownikowGrafik = [];
 let kwartalnePoprzednieMiesiace = {}; // { empId: { sumaPlan: 0, planWymiar: 0 } }
+let grafikLegendaOtwarta = false; // legenda jest domyślnie zwinięta
+
+/* Legenda grafiku — pokazywana tylko po naciśnięciu przycisku. */
+window.toggleGrafikLegenda = function() {
+    grafikLegendaOtwarta = !grafikLegendaOtwarta;
+    const legenda = document.getElementById('grafik-legenda-bar');
+    const btn = document.getElementById('btn-grafik-legenda');
+    if (legenda) legenda.classList.toggle('hidden', !grafikLegendaOtwarta);
+    if (btn) btn.innerText = grafikLegendaOtwarta ? '🙈 Ukryj legendę' : '🔎 Legenda';
+};
 
 const DNI_TYG_KROTKIE = ['Nd', 'Pn', 'Wt', 'Śr', 'Cz', 'Pt', 'Sb'];
 const NAZWY_MIESIECY_PL = [
@@ -365,6 +375,9 @@ function renderujGrafikInteraktywny() {
     const wrapper = document.getElementById('grafik-tabela-wrapper');
     const walidacjaBox = document.getElementById('grafik-walidacja-box');
     const legendaBar = document.getElementById('grafik-legenda-bar');
+    const btnLegenda = document.getElementById('btn-grafik-legenda');
+
+    if (btnLegenda) btnLegenda.innerText = grafikLegendaOtwarta ? '🙈 Ukryj legendę' : '🔎 Legenda';
 
     if (czyAdmin) {
         const btnPublikacja = document.getElementById('btn-publikacja-grafiku');
@@ -387,6 +400,7 @@ function renderujGrafikInteraktywny() {
     if (!czyAdmin && !aktualnyGrafikStan.published) {
         walidacjaBox.classList.add('hidden');
         legendaBar.classList.add('hidden');
+        if (btnLegenda) btnLegenda.classList.add('hidden');
         wrapper.innerHTML = `
             <div class="field-group" style="text-align:center; padding: 28px 16px; border-left: 4px solid var(--warning);">
                 <h4 style="color: var(--warning); margin-bottom: 8px;">⏳ Grafik w trakcie przygotowania</h4>
@@ -395,7 +409,9 @@ function renderujGrafikInteraktywny() {
         return;
     }
 
-    legendaBar.classList.remove('hidden');
+    // Legenda nie wyświetla się automatycznie — jej widoczność steruje przycisk.
+    if (btnLegenda) btnLegenda.classList.remove('hidden');
+    legendaBar.classList.toggle('hidden', !grafikLegendaOtwarta);
 
     const [rok, m] = aktualnyGrafikStan.miesiac.split('-').map(Number);
     const dniWMiesiacu = new Date(rok, m, 0).getDate();
