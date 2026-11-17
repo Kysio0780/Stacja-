@@ -56,6 +56,8 @@ onAuthStateChanged(auth, async (user) => {
             document.getElementById('admin-daily-section').classList.toggle('hidden', !czyAdmin);
             document.getElementById('tile-pracownicy').style.display = czyAdmin ? 'flex' : 'none';
             document.getElementById('tile-statystyki').style.display = czyAdmin ? 'flex' : 'none';
+            document.getElementById('tile-finanse').style.display = czyAdmin ? 'flex' : 'none';
+            if (typeof window.sprawdzObecnoscGrafikuGlobal === 'function') window.sprawdzObecnoscGrafikuGlobal();
             
             sprawdzPowiadomieniaMisje(user.uid, imieKrotkie, czyAdmin);
             sprawdzPowiadomieniaWiadomosci(user.uid, currentUserData.imie);
@@ -73,5 +75,7 @@ onAuthStateChanged(auth, async (user) => {
         currentUserData = null;
         document.getElementById('login-screen').classList.remove('hidden');
         document.getElementById('app-screen').classList.add('hidden');
+        const badgeGrafiku = document.getElementById('grafik-badge');
+        if (badgeGrafiku) badgeGrafiku.classList.add('hidden');
     }
 });
