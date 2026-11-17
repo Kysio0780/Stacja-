@@ -1,39 +1,39 @@
         :root {
-            /* Paleta główna (spójna dla całej aplikacji) */
+            /* Paleta bazowa (spójna dla całej aplikacji) */
             --primary: #2563eb;
             --primary-hover: #1d4ed8;
             --primary-soft: rgba(37, 99, 235, 0.1);
-            
+
             --success: #16a34a;
             --success-hover: #15803d;
             --success-soft: rgba(22, 163, 74, 0.12);
-            
+
             --danger: #dc2626;
             --danger-hover: #b91c1c;
             --danger-soft: rgba(220, 38, 38, 0.12);
-            
+
             --warning: #d97706;
             --warning-bg: #fef3c7;
             --warning-text: #92400e;
-            
+
             --info: #0891b2;
             --info-hover: #0e7490;
-            
+
             --neutral: #64748b;
             --neutral-hover: #475569;
 
-            /* Motyw domyślny: Jasny */
-            --bg-color: #f1f5f9;
+            /* Baza — używana tylko jako fallback, zanim zastosowany zostanie motyw. */
+            --bg-color: #eef6f2;
             --card-bg: #ffffff;
-            --text-color: #1e293b;
-            --text-muted: #64748b;
-            --border-color: #cbd5e1;
-            --input-bg: #ffffff;
-            --input-text: #1e293b;
-            --group-bg: #f8fafc;
-            --group-label: #475569;
-            --preview-bg: #f1f5f9;
-            
+            --text-color: #1e352b;
+            --text-muted: #527364;
+            --border-color: #c2dcd0;
+            --input-bg: #f8fcfa;
+            --input-text: #1e352b;
+            --group-bg: #e4f0ea;
+            --group-label: #3b5c4d;
+            --preview-bg: #ebf5f0;
+
             --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
             --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
             --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.15);
@@ -53,22 +53,9 @@
             --grafik-l4-text: #9a3412;
         }
 
-        [data-theme="warm-light"] {
-            --bg-color: #faf6f0;
-            --card-bg: #ffffff;
-            --text-color: #3f322a;
-            --text-muted: #78665a;
-            --border-color: #dfd3c3;
-            --input-bg: #fffdfa;
-            --input-text: #3f322a;
-            --group-bg: #f5efe6;
-            --group-label: #5c4b3f;
-            --preview-bg: #f7f1e8;
-            --primary: #b45309;
-            --primary-hover: #92400e;
-            --primary-soft: rgba(180, 83, 9, 0.1);
-        }
+        /* ==================== JASNE MOTYWY (4) ==================== */
 
+        /* Miętowy — zachowany */
         [data-theme="mint-light"] {
             --bg-color: #eef6f2;
             --card-bg: #ffffff;
@@ -85,32 +72,60 @@
             --primary-soft: rgba(13, 148, 136, 0.1);
         }
 
-        [data-theme="dark"] {
-            --bg-color: #0f1115;
-            --card-bg: #181b20;
-            --text-color: #f1f5f9;
-            --text-muted: #94a3b8;
-            --border-color: #2e3440;
-            --input-bg: #22262e;
-            --input-text: #f8fafc;
-            --group-bg: #1f232a;
-            --group-label: #cbd5e1;
-            --preview-bg: #14171c;
-            --primary: #3b82f6;
-            --primary-hover: #2563eb;
-            --primary-soft: rgba(59, 130, 246, 0.15);
-            --warning-bg: #451a03;
-            --warning-text: #fcd34d;
-            --grafik-holiday-bg: #42380c;
-            --grafik-holiday-text: #fef08a;
-            --grafik-pink-bg: #501936;
-            --grafik-pink-text: #fbcfe8;
-            --grafik-leave-bg: #1e3a8a;
-            --grafik-leave-text: #dbeafe;
-            --grafik-l4-bg: #7c2d12;
-            --grafik-l4-text: #ffedd5;
+        /* Błękitny — chłodny, wysoki kontrast, dobry w pełnym słońcu */
+        [data-theme="sky-light"] {
+            --bg-color: #eaf2fb;
+            --card-bg: #ffffff;
+            --text-color: #152941;
+            --text-muted: #56708a;
+            --border-color: #c6d8ea;
+            --input-bg: #f7fbff;
+            --input-text: #152941;
+            --group-bg: #dfeefb;
+            --group-label: #35506b;
+            --preview-bg: #eff6fd;
+            --primary: #0284c7;
+            --primary-hover: #0369a1;
+            --primary-soft: rgba(2, 132, 199, 0.12);
         }
 
+        /* Piaskowy — ciepły, mniej niebieskiego światła, przyjemny wieczorem */
+        [data-theme="sand-light"] {
+            --bg-color: #f8f3e9;
+            --card-bg: #fffdf7;
+            --text-color: #3b2f22;
+            --text-muted: #7a6852;
+            --border-color: #e3d6bf;
+            --input-bg: #fffaf0;
+            --input-text: #3b2f22;
+            --group-bg: #f3ead9;
+            --group-label: #6b563f;
+            --preview-bg: #faf4e8;
+            --primary: #b45309;
+            --primary-hover: #92400e;
+            --primary-soft: rgba(180, 83, 9, 0.12);
+        }
+
+        /* Lawendowy — spokojny fiolet, wyraźne rozróżnienie elementów */
+        [data-theme="lavender-light"] {
+            --bg-color: #f2eefb;
+            --card-bg: #ffffff;
+            --text-color: #2b2440;
+            --text-muted: #6b6083;
+            --border-color: #d9cfec;
+            --input-bg: #faf7ff;
+            --input-text: #2b2440;
+            --group-bg: #eae2f7;
+            --group-label: #574a72;
+            --preview-bg: #f5f0fd;
+            --primary: #7c3aed;
+            --primary-hover: #6d28d9;
+            --primary-soft: rgba(124, 58, 237, 0.12);
+        }
+
+        /* ==================== CIEMNE MOTYWY (4) ==================== */
+
+        /* Midnight — zachowany */
         [data-theme="midnight-blue"] {
             --bg-color: #0b1320;
             --card-bg: #131f33;
@@ -125,32 +140,64 @@
             --primary: #38bdf8;
             --primary-hover: #0284c7;
             --primary-soft: rgba(56, 189, 248, 0.15);
-            --warning-bg: #451a03;
-            --warning-text: #fcd34d;
-            --grafik-holiday-bg: #42380c;
-            --grafik-holiday-text: #fef08a;
-            --grafik-pink-bg: #501936;
-            --grafik-pink-text: #fbcfe8;
-            --grafik-leave-bg: #1e3a8a;
-            --grafik-leave-text: #dbeafe;
-            --grafik-l4-bg: #7c2d12;
-            --grafik-l4-text: #ffedd5;
         }
 
-        [data-theme="slate-dark"] {
-            --bg-color: #16181d;
-            --card-bg: #1e2128;
-            --text-color: #e2e8f0;
-            --text-muted: #9ca3af;
-            --border-color: #323642;
-            --input-bg: #13151a;
-            --input-text: #f3f4f6;
-            --group-bg: #191c22;
-            --group-label: #d1d5db;
-            --preview-bg: #13151a;
-            --primary: #6366f1;
-            --primary-hover: #4f46e5;
-            --primary-soft: rgba(99, 102, 241, 0.15);
+        /* Leśny — głęboka zieleń, bardzo mało światła, oczy nie męczą się w nocy */
+        [data-theme="forest-dark"] {
+            --bg-color: #0b1512;
+            --card-bg: #11211c;
+            --text-color: #e7f3ec;
+            --text-muted: #93b0a1;
+            --border-color: #244137;
+            --input-bg: #162a23;
+            --input-text: #ecf7f0;
+            --group-bg: #0f1d18;
+            --group-label: #b8d4c5;
+            --preview-bg: #0d1b16;
+            --primary: #34d399;
+            --primary-hover: #10b981;
+            --primary-soft: rgba(52, 211, 153, 0.15);
+        }
+
+        /* Grafitowy — neutralny, pomarańczowy akcent dobrze widoczny na małym ekranie */
+        [data-theme="graphite-dark"] {
+            --bg-color: #121519;
+            --card-bg: #1b1f25;
+            --text-color: #eef2f6;
+            --text-muted: #a1aab5;
+            --border-color: #313841;
+            --input-bg: #232830;
+            --input-text: #f4f7fa;
+            --group-bg: #171a20;
+            --group-label: #cbd3dc;
+            --preview-bg: #14171c;
+            --primary: #fb923c;
+            --primary-hover: #f97316;
+            --primary-soft: rgba(251, 146, 60, 0.15);
+        }
+
+        /* Śliwkowy — ciemny fiolet, wyraźny kontrast dla tekstu i przycisków */
+        [data-theme="plum-dark"] {
+            --bg-color: #160f1e;
+            --card-bg: #231731;
+            --text-color: #f2eaf9;
+            --text-muted: #b09dc4;
+            --border-color: #3c2b4f;
+            --input-bg: #2d1e3f;
+            --input-text: #f7f0fd;
+            --group-bg: #1c1228;
+            --group-label: #d6c5e6;
+            --preview-bg: #130d1a;
+            --primary: #c084fc;
+            --primary-hover: #a855f7;
+            --primary-soft: rgba(192, 132, 252, 0.15);
+        }
+
+        /* Wspólne ustawienia dla motywów ciemnych (ostrzeżenia i grafik). */
+        [data-theme="midnight-blue"],
+        [data-theme="forest-dark"],
+        [data-theme="graphite-dark"],
+        [data-theme="plum-dark"] {
             --warning-bg: #451a03;
             --warning-text: #fcd34d;
             --grafik-holiday-bg: #42380c;
