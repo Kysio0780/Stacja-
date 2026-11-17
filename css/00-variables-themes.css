@@ -51,6 +51,10 @@
             --grafik-leave-text: #1e40af;
             --grafik-l4-bg: #ffedd5;
             --grafik-l4-text: #9a3412;
+
+            /* Potwierdzenia obecności w grafiku */
+            --obecnosc-ok: #166534;
+            --obecnosc-zalegla: #991b1b;
         }
 
         /* ==================== JASNE MOTYWY (4) ==================== */
@@ -208,6 +212,8 @@
             --grafik-leave-text: #dbeafe;
             --grafik-l4-bg: #7c2d12;
             --grafik-l4-text: #ffedd5;
+            --obecnosc-ok: #86efac;
+            --obecnosc-zalegla: #fca5a5;
         }
 
         [data-fontsize="small"] { --base-font-size: 13px; }
