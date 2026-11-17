@@ -591,7 +591,10 @@
             <!-- Alerty walidacji obsady -->
             <div id="grafik-walidacja-box" class="hidden" style="margin-bottom: 10px;"></div>
 
-            <!-- Legenda -->
+            <!-- Legenda (domyślnie zwinięta — pokazuje ją przycisk) -->
+            <div style="margin: 8px 0 0 0;">
+                <button id="btn-grafik-legenda" onclick="window.toggleGrafikLegenda()" class="btn-neutral btn-sm hidden">🔎 Legenda</button>
+            </div>
             <div id="grafik-legenda-bar" class="grafik-legend hidden">
                 <span class="legend-item"><span class="legend-swatch" style="background: var(--grafik-holiday-bg);"></span> Niedziela / Święto (1 zm. Rano)</span>
                 <span class="legend-item"><span class="legend-swatch" style="background: var(--preview-bg); color: var(--text-color); font-weight:900; font-size:0.72em; line-height:14px; text-align:center;">X</span> Niedostępny (X)</span>
