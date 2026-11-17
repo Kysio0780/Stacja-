@@ -2,12 +2,30 @@
 // Motywy, rozmiar czcionki, zmiana własnego hasła.
 
 /* MOTYWY I CZCIONKA */
-window.zmienMotyw = (tryb) => { localStorage.setItem("sklep_motyw", tryb); zastosujMotyw(tryb); };
+const MOTYW_DOMYSLNY = "mint-light";
+/* Motywy usunięte z listy — stary wybór zapisany w localStorage przekierowujemy
+   na najbliższy zachowany motyw, żeby nikt nie został z nieistniejącym motywem. */
+const MOTYWY_PRZEKIEROWANE = {
+    "light": MOTYW_DOMYSLNY,
+    "warm-light": MOTYW_DOMYSLNY,
+    "dark": "midnight-blue",
+    "slate-dark": "midnight-blue"
+};
+function prawidlowyMotyw(tryb) {
+    return MOTYWY_PRZEKIEROWANE[tryb] || tryb || MOTYW_DOMYSLNY;
+}
+
+window.zmienMotyw = (tryb) => {
+    const poprawny = prawidlowyMotyw(tryb);
+    localStorage.setItem("sklep_motyw", poprawny);
+    zastosujMotyw(poprawny);
+};
 function zastosujMotyw(tryb) {
-    if (tryb && tryb !== "light") document.documentElement.setAttribute("data-theme", tryb);
-    else document.documentElement.removeAttribute("data-theme");
+    const poprawny = prawidlowyMotyw(tryb);
+    if (localStorage.getItem("sklep_motyw") !== poprawny) localStorage.setItem("sklep_motyw", poprawny);
+    document.documentElement.setAttribute("data-theme", poprawny);
     const selectDD = document.getElementById('wybor-motywu-dd');
-    if (selectDD) selectDD.value = tryb || "light";
+    if (selectDD) selectDD.value = poprawny;
 }
 
 window.zmienCzcionke = (rozmiar) => { localStorage.setItem("sklep_czcionka", rozmiar); zastosujCzcionke(rozmiar); };
@@ -18,7 +36,7 @@ function zastosujCzcionke(rozmiar) {
     if (selectDD) selectDD.value = rozmiar || "normal";
 }
 
-zastosujMotyw(localStorage.getItem("sklep_motyw") || "light");
+zastosujMotyw(localStorage.getItem("sklep_motyw") || MOTYW_DOMYSLNY);
 zastosujCzcionke(localStorage.getItem("sklep_czcionka") || "normal");
 
 /* ZMIANA HASŁA */
