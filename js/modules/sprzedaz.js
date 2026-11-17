@@ -3,6 +3,7 @@
 
 /* ==================== SPRZEDAŻ ==================== */
 let aktualnyRaportUpdatedAt = null;
+let aktualniSprzedawcyDnia = [];
 
 window.pokazWidokMiesieczny = function() {
     document.getElementById('view-daily').classList.add('hidden');
@@ -17,20 +18,58 @@ window.otworzDzien = async function(dataStr) {
     document.getElementById('raport-data').value = dataStr;
     const czyAdmin = currentUserData && currentUserData.rola === 'admin';
     document.getElementById('raport-data').disabled = !czyAdmin;
-    await zaladujCheckboxySprzedawcow(dataStr);
+    await zaladujDaneRaportuDnia(dataStr);
 };
 
-async function zaladujCheckboxySprzedawcow(dataStr) {
-    const container = document.getElementById('sprzedawcy-checkboxes-container');
-    container.innerHTML = "Pobieranie listy...";
+/* Sprzedawcy raportu wynikają z grafiku — nie wybiera się ich ręcznie. */
+function renderujSprzedawcowRaportu(osoby, zrodlo) {
+    const container = document.getElementById('sprzedawcy-info-container');
+    if (!container) return;
+
+    if (!osoby || osoby.length === 0) {
+        container.innerHTML = `<span class="val-red">Brak obsady do przypisania wyniku. Uzupełnij grafik i odśwież dzień.</span>`;
+        return;
+    }
+
+    const lista = osoby.map(osoba => {
+        const zmiany = Array.isArray(osoba.zmiany) && osoba.zmiany.length > 0
+            ? ` <span class="text-muted" style="font-size:0.85em;">(${osoba.zmiany.join(', ')})</span>`
+            : '';
+        return `<div style="margin:4px 0;">👤 <strong>${ucieczkaHtml(osoba.imie || osoba.id)}</strong>${zmiany}</div>`;
+    }).join('');
+
+    const opisZrodla = zrodlo === 'grafik'
+        ? 'Automatycznie z grafiku — osoby pracujące tego dnia (R = rano, Z = zamknięcie).'
+        : (zrodlo === 'raport'
+            ? 'Brak wpisów w grafiku na ten dzień — zachowano sprzedawców z wcześniejszego zapisu raportu.'
+            : 'Brak grafiku i wcześniejszego raportu — wynik zostanie przypisany do Ciebie.');
+
+    container.innerHTML = `<div>${lista}</div><p class="text-muted" style="margin:8px 0 0 0; font-size:0.82em;">${opisZrodla}</p>`;
+}
+
+async function zaladujDaneRaportuDnia(dataStr) {
+    const container = document.getElementById('sprzedawcy-info-container');
+    if (container) container.innerHTML = "Pobieranie obsady z grafiku...";
+    aktualniSprzedawcyDnia = [];
+
     try {
-        const [uSnap, rDoc] = await Promise.all([
-            getDocs(collection(db, "uzytkownicy")),
-            getDoc(doc(db, "sprzedaz", dataStr))
+        const miesiacStr = String(dataStr || "").slice(0, 7);
+        const parsed = pobierzDateDoObiektu(dataStr);
+        const dzien = parsed ? parsed.getDate() : Number(String(dataStr || "").slice(8, 10));
+
+        const [rDoc, grafikDoc, pracownicy] = await Promise.all([
+            getDoc(doc(db, "sprzedaz", dataStr)),
+            getDoc(doc(db, "grafiki", miesiacStr)).catch(e => {
+                console.warn("Nie udało się odczytać grafiku dla raportu dnia:", e);
+                return null;
+            }),
+            pobierzListePracownikow().catch(e => {
+                console.warn("Nie udało się odczytać listy pracowników:", e);
+                return [];
+            })
         ]);
+
         const daneRaportu = rDoc.exists() ? rDoc.data() : null;
-        const zapisaniIds = Array.isArray(daneRaportu?.sprzedawcyIds) ? daneRaportu.sprzedawcyIds : [];
-        const zapisaniImiona = Array.isArray(daneRaportu?.sprzedawcy) ? daneRaportu.sprzedawcy : [];
         aktualnyRaportUpdatedAt = daneRaportu?.updatedAt || null;
 
         if (daneRaportu) {
@@ -43,27 +82,51 @@ async function zaladujCheckboxySprzedawcow(dataStr) {
             ['kawa-ilosc', 'kawa-wartosc', 'hd-ilosc', 'hd-wartosc', 'sklep-wartosc'].forEach(id => document.getElementById(id).value = "");
         }
 
-        const mojId = currentUserData ? (currentUserData.uid || currentUserData.id) : "";
-        let html = "";
-        const pracownicy = uSnap.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }))
-            .sort((a, b) => String(a.imie || "").localeCompare(String(b.imie || ""), 'pl'));
-        pracownicy.forEach(u => {
-            const imieKrotkie = pobierzImieKrotkie(u.imie);
-            const isChecked = zapisaniIds.length > 0
-                ? zapisaniIds.includes(u.id)
-                : (zapisaniImiona.length > 0
-                    ? (zapisaniImiona.includes(u.imie) || zapisaniImiona.includes(imieKrotkie))
-                    : u.id === mojId);
-            html += `<label style="display:flex; align-items:center; gap:8px; margin:5px 0; cursor:pointer; font-weight:normal;">
-                <input type="checkbox" name="raport-sprzedawca" value="${ucieczkaHtml(u.id)}" data-imie="${ucieczkaHtml(u.imie || '')}" ${isChecked ? 'checked' : ''}>
-                ${ucieczkaHtml(u.imie || u.login || '')}
-            </label>`;
-        });
-        container.innerHTML = html;
-    } catch (e) { container.innerHTML = "Błąd ładowania."; }
+        // 1) Priorytet: osoby zaplanowane w grafiku na ten dzień.
+        let osoby = pobierzSprzedawcowDniaGrafiku(
+            grafikDoc && grafikDoc.exists() ? grafikDoc.data() : null,
+            dzien
+        );
+        let zrodlo = 'grafik';
+
+        // 2) Starszy raport zapisany bez grafiku — zachowujemy jego sprzedawców.
+        if (osoby.length === 0 && daneRaportu) {
+            const zapisaniIds = Array.isArray(daneRaportu.sprzedawcyIds) ? daneRaportu.sprzedawcyIds : [];
+            const zapisaneImiona = Array.isArray(daneRaportu.sprzedawcy) ? daneRaportu.sprzedawcy : [];
+            if (zapisaniIds.length > 0) {
+                osoby = zapisaniIds.map((id, idx) => {
+                    const pracownik = znajdzPracownika(pracownicy, id);
+                    return { id: String(id), imie: zapisaneImiona[idx] || pracownik?.imie || String(id), zmiany: [] };
+                });
+            } else if (zapisaneImiona.length > 0) {
+                osoby = zapisaneImiona.map(imie => {
+                    const pracownik = znajdzPracownika(pracownicy, null, imie);
+                    // Nieznane nazwisko ze starego raportu zachowujemy jako identyfikator tekstowy,
+                    // żeby nie przypisać jego wyniku bieżącemu użytkownikowi.
+                    return { id: pracownik ? String(pracownik.id) : imie, imie, zmiany: [] };
+                });
+            }
+            if (osoby.length > 0) zrodlo = 'raport';
+        }
+
+        // 3) Ostateczny fallback: zalogowany użytkownik (np. pierwszy raport przed grafikiem).
+        if (osoby.length === 0 && currentUserData) {
+            osoby = [{
+                id: pobierzIdPracownika(currentUserData),
+                imie: currentUserData.imie || currentUserData.login || "",
+                zmiany: []
+            }];
+            zrodlo = 'uzytkownik';
+        }
+
+        aktualniSprzedawcyDnia = osoby.filter(osoba => osoba.id);
+        renderujSprzedawcowRaportu(aktualniSprzedawcyDnia, zrodlo);
+    } catch (e) {
+        if (container) container.innerHTML = "Błąd ładowania obsady.";
+    }
 }
 
-window.zmienDateWFormularzu = () => zaladujCheckboxySprzedawcow(document.getElementById('raport-data').value);
+window.zmienDateWFormularzu = () => zaladujDaneRaportuDnia(document.getElementById('raport-data').value);
 
 /* Obsada dni z grafiku: kto pracował danego dnia (zmiana ranna / zamknięcie). */
 function pobierzObsadeGrafikuMiesiaca(grafikData) {
@@ -81,11 +144,21 @@ function pobierzObsadeGrafikuMiesiaca(grafikData) {
     // Awaryjnie korzystamy z listy pracowników wczytanej przez moduł grafiku (starsze zapisy bez employees).
     const znajdzNazwe = (id) => {
         if (nazwy[id]) return nazwy[id];
-        if (typeof bazaPracownikowGrafik !== 'undefined' && Array.isArray(bazaPracownikowGrafik)) {
-            const pracownik = bazaPracownikowGrafik.find(u => String(u.id) === id);
-            if (pracownik && pracownik.imie) return pracownik.imie;
-        }
-        return "Pracownik";
+        const listaGrafiku = (typeof bazaPracownikowGrafik !== 'undefined' && Array.isArray(bazaPracownikowGrafik))
+            ? bazaPracownikowGrafik
+            : [];
+        const poId = listaGrafiku.find(u => String(u.id) === id);
+        if (poId && poId.imie) return poId.imie;
+
+        // Bardzo stare grafiki kluczowały komórki pełnym imieniem i nazwiskiem zamiast UID.
+        const klucz = String(id).trim();
+        const poNazwie = [...Object.values(nazwy), ...listaGrafiku.map(u => u.imie)]
+            .filter(Boolean)
+            .find(imie => imie === klucz || pobierzImieKrotkie(imie) === klucz);
+        if (poNazwie) return poNazwie;
+
+        // Jeśli klucz wygląda na imię i nazwisko, pokazujemy go zamiast „Pracownik”.
+        return /\s/.test(klucz) ? klucz : "Pracownik";
     };
 
     const entries = grafikData.entries || {};
@@ -103,12 +176,36 @@ function pobierzObsadeGrafikuMiesiaca(grafikData) {
         const id = czesci.join('_');
         const imie = znajdzNazwe(id);
         if (!obsada[dzien]) obsada[dzien] = { rano: [], zamkniecie: [] };
-        if (!obsada[dzien][zmiana].some(osoba => osoba.imie === imie)) {
-            obsada[dzien][zmiana].push({ imie, krotkie: pobierzImieKrotkie(imie) });
+        if (!obsada[dzien][zmiana].some(osoba => String(osoba.id) === String(id))) {
+            obsada[dzien][zmiana].push({ id, imie, krotkie: pobierzImieKrotkie(imie) });
         }
     });
 
     return obsada;
+}
+
+/* Osoby pracujące w danym dniu wg grafiku, z informacją o zmianach (R = rano, Z = zamknięcie). */
+function pobierzSprzedawcowDniaGrafiku(grafikData, dzien) {
+    if (!grafikData || !dzien) return [];
+    const obsada = pobierzObsadeGrafikuMiesiaca(grafikData);
+    const daneDnia = obsada[String(Number(dzien))];
+    if (!daneDnia) return [];
+
+    const mapa = new Map();
+    const dodaj = (osoby, oznaczenie) => {
+        (osoby || []).forEach(osoba => {
+            const klucz = String(osoba.id);
+            if (!mapa.has(klucz)) {
+                mapa.set(klucz, { id: osoba.id, imie: osoba.imie, zmiany: [] });
+            }
+            const wpis = mapa.get(klucz);
+            if (!wpis.zmiany.includes(oznaczenie)) wpis.zmiany.push(oznaczenie);
+        });
+    };
+
+    dodaj(daneDnia.rano, 'R');
+    dodaj(daneDnia.zamkniecie, 'Z');
+    return Array.from(mapa.values());
 }
 
 function opisObsadyDnia(obsada, zmiana) {
@@ -245,11 +342,13 @@ window.zapiszPlanMiesieczny = async function() {
 
 window.zapiszSprzedaz = async function() {
     const data = document.getElementById('raport-data').value;
-    const zaznaczeni = Array.from(document.querySelectorAll('input[name="raport-sprzedawca"]:checked')).map(cb => ({
-        id: cb.value,
-        imie: cb.dataset.imie || cb.parentElement?.textContent?.trim() || cb.value
-    }));
-    if (!data || zaznaczeni.length === 0) return alert("Wybierz datę oraz zaznacz minimum jednego sprzedawcę!");
+    if (!data) return alert("Wybierz datę raportu!");
+
+    // Sprzedawcy są wyliczani automatycznie z grafiku przy wczytaniu dnia.
+    const zaznaczeni = aktualniSprzedawcyDnia.filter(osoba => osoba && osoba.id);
+    if (zaznaczeni.length === 0) {
+        return alert("Brak obsady do przypisania wyniku. Uzupełnij grafik na ten dzień i odśwież widok.");
+    }
 
     const naLiczbe = (id) => Math.max(0, Number(document.getElementById(id).value) || 0);
     const btn = document.getElementById('btn-zapisz-raport');
@@ -266,8 +365,8 @@ window.zapiszSprzedaz = async function() {
             }
             transakcja.set(ref, {
                 data,
-                sprzedawcyIds: zaznaczeni.map(x => x.id),
-                sprzedawcy: zaznaczeni.map(x => x.imie),
+                sprzedawcyIds: zaznaczeni.map(x => String(x.id)),
+                sprzedawcy: zaznaczeni.map(x => x.imie || String(x.id)),
                 kawa: { ilosc: naLiczbe('kawa-ilosc'), wartosc: naLiczbe('kawa-wartosc') },
                 hd: { ilosc: naLiczbe('hd-ilosc'), wartosc: naLiczbe('hd-wartosc') },
                 sklep: { wartosc: naLiczbe('sklep-wartosc') },
@@ -282,7 +381,7 @@ window.zapiszSprzedaz = async function() {
         window.location.hash = "#sprzedaz";
     } catch (e) {
         alert("Błąd zapisu: " + e.message);
-        await zaladujCheckboxySprzedawcow(data);
+        await zaladujDaneRaportuDnia(data);
     }
     finally { btn.disabled = false; btn.innerText = "💾 Zapisz / Aktualizuj Raport"; }
 };

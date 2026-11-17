@@ -201,7 +201,7 @@ window.zaladujModulPremia = async function() {
     const czyAdmin = currentUserData && currentUserData.rola === 'admin';
 
     try {
-        const [{ lista: pracownicyList, adminSet, poImieniu }, puleDoc, sprzedazSnap, dpSnap] = await Promise.all([
+        const [{ lista: pracownicyList, adminSet, poId, poImieniu }, puleDoc, sprzedazSnap, dpSnap] = await Promise.all([
             pobierzUzytkownikowMap(),
             getDoc(doc(db, "premie_pule", m)),
             getDocs(collection(db, "sprzedaz")),
@@ -254,7 +254,8 @@ window.zaladujModulPremia = async function() {
                 sumaSklepSklep += sVal;
 
                 const osobyIds = Array.isArray(r.sprzedawcyIds) && r.sprzedawcyIds.length > 0
-                    ? r.sprzedawcyIds
+                    // Starsze raporty mogły zapisać w identyfikatorach imię i nazwisko zamiast UID.
+                    ? r.sprzedawcyIds.map(id => poId[String(id)] ? String(id) : pracownikIdZNazwy(String(id)))
                     : (Array.isArray(r.sprzedawcy) ? r.sprzedawcy : (r.pracownik ? [r.pracownik] : []))
                         .map(pracownikIdZNazwy);
                 const unikalneOsoby = [...new Set(osobyIds.filter(Boolean))];

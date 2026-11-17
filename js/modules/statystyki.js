@@ -32,7 +32,8 @@ function nazwaPracownikaStat(id, mapa) {
 
 function pobierzOsobyRaportuStat(r, mapa) {
     if (Array.isArray(r.sprzedawcyIds) && r.sprzedawcyIds.length > 0) {
-        return [...new Set(r.sprzedawcyIds.filter(Boolean).map(String))];
+        // Identyfikatory mogą być UID albo — w starszych zapisach — imieniem i nazwiskiem.
+        return [...new Set(r.sprzedawcyIds.filter(Boolean).map(id => rozwiazIdPracownikaStat(id, mapa)))];
     }
     if (Array.isArray(r.sprzedawcy) && r.sprzedawcy.length > 0) {
         return [...new Set(r.sprzedawcy.filter(Boolean).map(n => rozwiazIdPracownikaStat(n, mapa)))];
