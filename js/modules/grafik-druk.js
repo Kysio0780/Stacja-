@@ -25,7 +25,8 @@ window.generujWydrukGrafikuPDF = async function() {
     if (wybraneIds.length === 0) return alert("Zaznacz przynajmniej jednego pracownika do wygenerowania PDF!");
 
     const wybraneEmps = aktualnyGrafikStan.employees.filter(e => wybraneIds.includes(e.id));
-    const [rok, m] = aktualnyGrafikStan.miesiac.split('-').map(Number);
+    const miesiacStr = aktualnyGrafikStan.miesiac;
+    const [rok, m] = miesiacStr.split('-').map(Number);
     const dniWMiesiacu = new Date(rok, m, 0).getDate();
     const nazwaMiesiaca = `${NAZWY_MIESIECY_PL[m - 1].toUpperCase()} ${rok}`;
     const nazwaPlikuPdf = `Grafik na ${NAZWY_MIESIECY_PL[m - 1]} ${rok}.pdf`;
@@ -45,6 +46,7 @@ window.generujWydrukGrafikuPDF = async function() {
     for (let d = 1; d <= dniWMiesiacu; d++) {
         const isHol = !!holidays[String(d)];
         const bg = isHol ? 'background:#fef08a;' : '';
+        const dataDnia = `${miesiacStr}-${String(d).padStart(2, '0')}`;
         tbody += `<tr style="${bg}"><td style="font-weight:bold;">${d}</td>`;
 
         wybraneEmps.forEach(emp => {
@@ -61,12 +63,17 @@ window.generujWydrukGrafikuPDF = async function() {
 
             const rVal = formatPrintCell(cRano);
             const zVal = formatPrintCell(cZamk);
+            const potw = (typeof window.pobierzPotwierdzenieObecnosci === 'function')
+                ? window.pobierzPotwierdzenieObecnosci(emp.id, dataDnia)
+                : null;
+            const odVal = potw ? ucieczkaHtml(String(potw.od || '')) : '';
+            const doVal = potw ? ucieczkaHtml(String(potw.do || '')) : '';
 
             tbody += `
                 <td style="border-left:2px solid #000; width:24px;">${rVal}</td>
                 <td style="width:24px;">${zVal}</td>
-                <td style="width:32px;"></td>
-                <td style="width:32px;"></td>
+                <td style="width:32px;">${odVal}</td>
+                <td style="width:32px;">${doVal}</td>
                 <td style="width:58px;"></td>`;
         });
         tbody += `</tr>`;
