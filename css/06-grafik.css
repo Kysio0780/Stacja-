@@ -29,8 +29,8 @@
             position: sticky;
             top: 0;
             z-index: 5;
-            background: var(--primary);
-            color: #ffffff;
+            background: #dbeafe; /* jaśniejsze tło nagłówka — czarny napis jest czytelny */
+            color: #000000;
             font-weight: 700;
             font-size: 0.78em;
             line-height: 1.1;
@@ -43,8 +43,8 @@
             position: sticky;
             top: 30px;
             z-index: 5;
-            background: var(--group-bg);
-            color: var(--text-color);
+            background: #f1f5f9; /* jaśniejsze tło nagłówka zmian — czarny napis jest czytelny */
+            color: #000000;
             font-size: 0.76em;
             width: 28px;
             min-width: 28px;
