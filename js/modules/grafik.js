@@ -283,6 +283,12 @@ window.zaladujGrafikInteraktywny = async function() {
             }
         }
 
+        // Potwierdzenia obecności (admin widzi wszystkie, pracownik tylko swoje).
+        if (typeof window.zaladujPotwierdzeniaGrafiku === 'function' && currentUserData) {
+            const uidObecnosci = czyAdmin ? null : String(pobierzIdPracownika(currentUserData));
+            await window.zaladujPotwierdzeniaGrafiku(miesiacStr, uidObecnosci);
+        }
+
         renderujGrafikInteraktywny();
     } catch (e) {
         wrapper.innerHTML = `<span class="error">Błąd ładowania grafiku: ${e.message}</span>`;
@@ -413,7 +419,8 @@ function renderujGrafikInteraktywny() {
     if (btnLegenda) btnLegenda.classList.remove('hidden');
     legendaBar.classList.toggle('hidden', !grafikLegendaOtwarta);
 
-    const [rok, m] = aktualnyGrafikStan.miesiac.split('-').map(Number);
+    const miesiacStr = aktualnyGrafikStan.miesiac;
+    const [rok, m] = miesiacStr.split('-').map(Number);
     const dniWMiesiacu = new Date(rok, m, 0).getDate();
     const emps = aktualnyGrafikStan.employees || [];
     const entries = aktualnyGrafikStan.entries || {};
@@ -464,6 +471,7 @@ function renderujGrafikInteraktywny() {
     for (let d = 1; d <= dniWMiesiacu; d++) {
         const dt = new Date(rok, m - 1, d);
         const dowName = DNI_TYG_KROTKIE[dt.getDay()];
+        const dataDnia = `${miesiacStr}-${String(d).padStart(2, '0')}`;
         const isHoliday = !!holidays[String(d)];
         const rowClass = isHoliday ? 'grafik-holiday-row' : '';
         const dayErrs = bledyDni[d];
@@ -498,7 +506,16 @@ function renderujGrafikInteraktywny() {
                 }
 
                 const clickCell = czyAdmin ? `onclick="window.otworzModalKomorkiGrafiku('${emp.id}', ${d}, '${shift}')"` : '';
-                html += `<td class="${cellClasses.join(' ')}" ${clickCell}>${cellText}</td>`;
+                let tytulKomorki = '';
+                if (typeof window.klasaKoloruObecnosci === 'function') {
+                    const kolorObecnosci = window.klasaKoloruObecnosci(emp.id, dataDnia, aktualnyGrafikStan);
+                    if (kolorObecnosci) {
+                        cellClasses.push(kolorObecnosci);
+                        tytulKomorki = window.tytulKoloruObecnosci(emp.id, dataDnia) || '';
+                    }
+                }
+                const tytulAttr = tytulKomorki ? `title="${ucieczkaHtml(tytulKomorki)}"` : '';
+                html += `<td class="${cellClasses.join(' ')}" ${clickCell} ${tytulAttr}>${cellText}</td>`;
             });
         });
 
@@ -702,6 +719,9 @@ window.otworzModalKomorkiGrafiku = function(empId, day, shift) {
     document.getElementById('gk-day').value = day;
     document.getElementById('gk-shift').value = shift;
     document.getElementById('modal-gk-tytul').innerText = `✏️ ${emp.imie} — Dzień ${day} (${shift === 'rano' ? 'Rano' : 'Zamknięcie'})`;
+    if (typeof window.uzupelnijObecnoscWModaluKomorki === 'function') {
+        window.uzupelnijObecnoscWModaluKomorki(empId, day);
+    }
 
     const typSelect = document.getElementById('gk-typ');
     const czyNiedostepny = !!cell && (
