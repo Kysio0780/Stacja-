@@ -42,7 +42,10 @@ window.addEventListener("hashchange", () => {
         window.zaladujModulPremia();
     } else if (hash === "#grafik") {
         document.getElementById('modul-grafik').classList.remove('hidden');
-        if(!document.getElementById('grafik-miesiac').value) document.getElementById('grafik-miesiac').value = pobierzBiezacyOkresSystemowy().miesiacStr;
+        const biezacyMiesiacGrafiku = (typeof pobierzBiezacyOkresSystemowy === 'function')
+            ? pobierzBiezacyOkresSystemowy().miesiacStr
+            : '';
+        if (biezacyMiesiacGrafiku) document.getElementById('grafik-miesiac').value = biezacyMiesiacGrafiku;
         window.zaladujGrafikInteraktywny();
     } else if (hash === "#misje") {
         document.getElementById('modul-misje').classList.remove('hidden');

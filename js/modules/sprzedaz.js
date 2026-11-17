@@ -392,7 +392,8 @@ window.zaladujMiesiacTabela = async function() {
         tableContainer.innerHTML = tableHtml;
     } catch (e) {
         console.error("Błąd ładowania tabeli sprzedaży:", e);
-        tableContainer.innerHTML = `Błąd ładowania: ${ucieczkaHtml(e && e.message ? e.message : "nieznany błąd")}. Odśwież stronę (Ctrl+F5).`;
+        const komunikatBledu = (e && e.message ? e.message : "nieznany błąd").replace(/\.+$/, '');
+        tableContainer.innerHTML = `Błąd ładowania: ${ucieczkaHtml(komunikatBledu)}. Odśwież stronę (Ctrl+F5).`;
     }
 };
 

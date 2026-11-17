@@ -546,14 +546,9 @@
                 <button class="btn-back" onclick="window.otworzModul('menu')">⬅ Menu</button>
             </div>
             
-            <div class="grid-2" style="align-items: end; margin-bottom: 10px;">
-                <div>
-                    <label for="grafik-miesiac">Wybierz miesiąc:</label>
-                    <input type="month" id="grafik-miesiac" onchange="window.zaladujGrafikInteraktywny()" style="margin-bottom:0;">
-                </div>
-                <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end;">
-                    <span id="grafik-status-badge"></span>
-                </div>
+            <div style="margin-bottom: 10px;">
+                <label for="grafik-miesiac">Wybierz miesiąc:</label>
+                <input type="month" id="grafik-miesiac" onchange="window.zaladujGrafikInteraktywny()" style="margin-bottom:0;">
             </div>
 
             <!-- PANEL KIEROWNIKA (ADMINA) -->
@@ -562,23 +557,27 @@
                     <h4 style="margin:0; color: var(--primary);">⚙️ Panel Kierownika: Edycja Grafiku</h4>
                     <div class="flex-row" style="gap:6px; flex-wrap:wrap;">
                         <button onclick="window.zapiszGrafikInteraktywny(false)" class="btn-info btn-sm">💾 Zapisz roboczy</button>
-                        <button id="btn-publikuj-grafik" onclick="window.zapiszGrafikInteraktywny(true)" class="btn-success btn-sm">📢 Opublikuj dla pracowników</button>
-                        <button id="btn-ukryj-grafik" onclick="window.cofnijPublikacjeGrafiku()" class="btn-warning btn-sm hidden">🔒 Cofnij publikację</button>
+                        <button id="btn-publikacja-grafiku" onclick="window.przelaczPublikacjeGrafiku()" class="btn-success btn-sm">📢 Opublikuj dla pracowników</button>
                         <button onclick="window.otworzModalDrukuGrafiku()" class="btn-neutral btn-sm">🖨️ Drukuj / PDF</button>
                     </div>
                 </div>
 
                 <!-- Dodawanie / Usuwanie pracowników w grafiku -->
                 <div style="background: var(--card-bg); padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
-                    <label style="margin-bottom:6px;">👥 Pracownicy w grafiku (kolejność kolumn):</label>
-                    <div id="grafik-pracownicy-chips" style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px;"></div>
-                    
-                    <div class="flex-row flex-row-mobile-col" style="gap:8px;">
-                        <select id="grafik-dodaj-pracownika-select" style="margin:0; flex:1;">
-                            <option value="">-- Wybierz pracownika z bazy --</option>
-                        </select>
-                        <button onclick="window.dodajPracownikaDoGrafikuZSelecta()" class="btn-success btn-auto btn-sm" style="padding:8px 12px;">➕ Dodaj do grafiku</button>
-                        <button onclick="window.przeniesUrlopyNaKolejnyMiesiac()" class="btn-info btn-auto btn-sm" style="padding:8px 12px;" title="Przenosi pozostały urlop z tego miesiąca na następny">⏭️ Przenieś urlopy na nast. m-c</button>
+                    <div class="collapsible-header" onclick="window.toggleCollapsible('grafik-pracownicy-content', 'grafik-pracownicy-arrow')" style="padding: 8px 10px; font-size: 0.9em;">
+                        <span>👥 Pracownicy w grafiku (kolejność kolumn)</span>
+                        <span id="grafik-pracownicy-arrow">▼ Rozwiń</span>
+                    </div>
+                    <div id="grafik-pracownicy-content" class="collapsible-content" style="padding-top:10px;">
+                        <div id="grafik-pracownicy-chips" style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px;"></div>
+
+                        <div class="flex-row flex-row-mobile-col" style="gap:8px;">
+                            <select id="grafik-dodaj-pracownika-select" style="margin:0; flex:1;">
+                                <option value="">-- Wybierz pracownika z bazy --</option>
+                            </select>
+                            <button onclick="window.dodajPracownikaDoGrafikuZSelecta()" class="btn-success btn-auto btn-sm" style="padding:8px 12px;">➕ Dodaj do grafiku</button>
+                            <button onclick="window.przeniesUrlopyNaKolejnyMiesiac()" class="btn-info btn-auto btn-sm" style="padding:8px 12px;" title="Przenosi pozostały urlop z tego miesiąca na następny">⏭️ Przenieś urlopy na nast. m-c</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -603,16 +602,6 @@
 
             <!-- Główna tabela grafiku -->
             <div id="grafik-tabela-wrapper">Ładowanie grafiku...</div>
-
-            <hr style="margin: 24px 0; border: 0; border-top: 1px solid var(--border-color);">
-
-            <h4>💬 Prośby i Uwagi dot. Zmian w Grafiku</h4>
-            <div class="field-group">
-                <textarea id="nowa-prosba-tekst" rows="3" placeholder="Wpisz swoją prośbę o wolne lub propozycję zmiany w grafiku (np. Proszę o wolne 15 dnia miesiąca, zamienię się zmianą z...)"></textarea>
-                <button onclick="window.wyslijProsbe()" class="btn-info" style="margin:0;">📤 Wyślij prośbę / propozycję zmiany</button>
-            </div>
-
-            <div id="prośby-lista-container">Ładowanie próśb...</div>
         </div>
 
         <!-- MODAL EDYCJI KOMÓRKI GRAFIKU (ADMIN) -->
@@ -1006,7 +995,6 @@
     <script defer src="js/core/router.js"></script>
     <script defer src="js/modules/grafik.js"></script>
     <script defer src="js/modules/grafik-druk.js"></script>
-    <script defer src="js/modules/grafik-prosby.js"></script>
     <script defer src="js/modules/tps.js"></script>
     <script defer src="js/modules/premia.js"></script>
     <script defer src="js/modules/pracownicy.js"></script>

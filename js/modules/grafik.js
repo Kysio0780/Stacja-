@@ -13,6 +13,21 @@ const NAZWY_MIESIECY_PL = [
     'Lipiec', 'Sierpień', 'Wrzesień', 'Październik', 'Listopad', 'Grudzień'
 ];
 
+function pobierzBiezacyMiesiacGrafiku() {
+    if (typeof pobierzBiezacyOkresSystemowy === 'function') return pobierzBiezacyOkresSystemowy().miesiacStr;
+    const teraz = new Date();
+    return `${teraz.getFullYear()}-${String(teraz.getMonth() + 1).padStart(2, '0')}`;
+}
+
+/* Imię w pierwszej linii, nazwisko w drugiej — nagłówek jest węższy. */
+function formatujImieNaglowkaGrafiku(imie) {
+    const czesci = String(imie || '').trim().split(/\s+/).filter(Boolean);
+    if (czesci.length === 0) return '';
+    if (czesci.length === 1) return ucieczkaHtml(czesci[0]);
+    const pierwsze = czesci.shift();
+    return `${ucieczkaHtml(pierwsze)}<br><span style="font-weight:500;">${ucieczkaHtml(czesci.join(' '))}</span>`;
+}
+
 // Obliczanie Wielkanocy algorytmem Meeusa/Jonesa/Butchera dla polskich świąt ruchomych
 function obliczWielkanoc(rok) {
     const a = rok % 19;
@@ -145,7 +160,9 @@ function zsynchronizujPracownikowGrafiku(stan, miesiacStr) {
 }
 
 window.zaladujGrafikInteraktywny = async function() {
-    const miesiacStr = document.getElementById('grafik-miesiac').value;
+    const poleMiesiaca = document.getElementById('grafik-miesiac');
+    if (poleMiesiaca && !poleMiesiaca.value) poleMiesiaca.value = pobierzBiezacyMiesiacGrafiku();
+    const miesiacStr = poleMiesiaca ? poleMiesiaca.value : '';
     if (!miesiacStr) return;
 
     const czyAdmin = currentUserData && currentUserData.rola === 'admin';
@@ -257,7 +274,6 @@ window.zaladujGrafikInteraktywny = async function() {
         }
 
         renderujGrafikInteraktywny();
-        zaladujProsby(miesiacStr);
     } catch (e) {
         wrapper.innerHTML = `<span class="error">Błąd ładowania grafiku: ${e.message}</span>`;
     }
@@ -347,19 +363,20 @@ function walidujObsadeGrafiku(grafikData, dniWMiesiacu) {
 function renderujGrafikInteraktywny() {
     const czyAdmin = currentUserData && currentUserData.rola === 'admin';
     const wrapper = document.getElementById('grafik-tabela-wrapper');
-    const statusBadge = document.getElementById('grafik-status-badge');
     const walidacjaBox = document.getElementById('grafik-walidacja-box');
     const legendaBar = document.getElementById('grafik-legenda-bar');
 
-    // Status publikacji
-    if (aktualnyGrafikStan.published) {
-        statusBadge.innerHTML = `<span class="badge badge-done">📢 Opublikowany</span>`;
-    } else {
-        statusBadge.innerHTML = `<span class="badge badge-pending">📝 Wersja robocza (ukryta przed pracownikami)</span>`;
-    }
-
     if (czyAdmin) {
-        document.getElementById('btn-ukryj-grafik').classList.toggle('hidden', !aktualnyGrafikStan.published);
+        const btnPublikacja = document.getElementById('btn-publikacja-grafiku');
+        if (btnPublikacja) {
+            if (aktualnyGrafikStan.published) {
+                btnPublikacja.className = 'btn-warning btn-sm';
+                btnPublikacja.innerText = '🔒 Cofnij publikację';
+            } else {
+                btnPublikacja.className = 'btn-success btn-sm';
+                btnPublikacja.innerText = '📢 Opublikuj dla pracowników';
+            }
+        }
         document.getElementById('grafik-click-hint').innerText = "💡 Kliknij kratkę pracownika, aby wpisać godziny/urlop/L4 lub oznaczyć niedostępność (X). Kliknij numer dnia, aby przełączyć Święto/Roboczy.";
         odswiezPanelPracownikowGrafiku();
     } else {
@@ -373,7 +390,7 @@ function renderujGrafikInteraktywny() {
         wrapper.innerHTML = `
             <div class="field-group" style="text-align:center; padding: 28px 16px; border-left: 4px solid var(--warning);">
                 <h4 style="color: var(--warning); margin-bottom: 8px;">⏳ Grafik w trakcie przygotowania</h4>
-                <p class="text-muted" style="margin:0;">Kierownik nie opublikował jeszcze grafiku na wybrany miesiąc. Możesz poniżej zgłosić swoje prośby o dni wolne.</p>
+                <p class="text-muted" style="margin:0;">Kierownik nie opublikował jeszcze grafiku na wybrany miesiąc. W razie pytań lub próśb o zmiany skontaktuj się z kierownikiem przez moduł Wiadomości.</p>
             </div>`;
         return;
     }
@@ -416,14 +433,14 @@ function renderujGrafikInteraktywny() {
     emps.forEach((emp, idx) => {
         const isLast = idx === emps.length - 1;
         const uzTag = emp.umowa === 'Zlecenie' ? ' <span style="font-weight:400; font-size:0.8em;">(UZ)</span>' : '';
-        html += `<th colspan="2" class="${isLast ? '' : 'emp-group-end'}">${ucieczkaHtml(emp.imie)}${uzTag}</th>`;
+        html += `<th colspan="2" class="${isLast ? '' : 'emp-group-end'}">${formatujImieNaglowkaGrafiku(emp.imie)}${uzTag}</th>`;
     });
     html += `</tr><tr>`;
 
     emps.forEach((emp, idx) => {
         const isLast = idx === emps.length - 1;
-        html += `<th class="sub-th" title="Zmiana ranna (od otwarcia)">Rano</th>
-                 <th class="sub-th ${isLast ? '' : 'emp-group-end'}" title="Zmiana popołudniowa (do zamknięcia)">Zamk.</th>`;
+        html += `<th class="sub-th" title="Zmiana ranna (od otwarcia)">R</th>
+                 <th class="sub-th ${isLast ? '' : 'emp-group-end'}" title="Zmiana popołudniowa (do zamknięcia)">Z</th>`;
     });
     html += `</tr></thead><tbody>`;
 
@@ -724,7 +741,24 @@ window.zastosujEdycjeKomorkiGrafiku = function() {
     }
 
     window.zamknijModalKomorkiGrafiku();
+    const oknoY = window.scrollY;
+    const kontenerPrzed = document.querySelector('.grafik-scroll-container');
+    const scrollTopPrzed = kontenerPrzed ? kontenerPrzed.scrollTop : 0;
+    const scrollLeftPrzed = kontenerPrzed ? kontenerPrzed.scrollLeft : 0;
+
     renderujGrafikInteraktywny();
+
+    // Zachowaj pozycję strony i przewinięcie tabeli po odświeżeniu widoku.
+    const przywrocWidok = () => {
+        window.scrollTo(0, oknoY);
+        const kontenerPo = document.querySelector('.grafik-scroll-container');
+        if (kontenerPo) {
+            kontenerPo.scrollTop = scrollTopPrzed;
+            kontenerPo.scrollLeft = scrollLeftPrzed;
+        }
+    };
+    przywrocWidok();
+    requestAnimationFrame(przywrocWidok);
 };
 
 window.zamknijModalKomorkiGrafiku = () => document.getElementById('modal-grafik-komorka').classList.add('hidden');
@@ -773,6 +807,15 @@ window.cofnijPublikacjeGrafiku = async function() {
     if (!confirm("Czy na pewno chcesz ukryć grafik przed pracownikami (powrót do wersji roboczej)?")) return;
     aktualnyGrafikStan.published = false;
     await window.zapiszGrafikInteraktywny(false);
+};
+
+/* Jeden przycisk publikacji: w zależności od stanu publikuje albo cofa publikację. */
+window.przelaczPublikacjeGrafiku = function() {
+    if (aktualnyGrafikStan && aktualnyGrafikStan.published) {
+        window.cofnijPublikacjeGrafiku();
+    } else {
+        window.zapiszGrafikInteraktywny(true);
+    }
 };
 
 window.przeniesUrlopyNaKolejnyMiesiac = async function() {

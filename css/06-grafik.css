@@ -6,7 +6,7 @@
             position: relative;
         }
         table.grafik-grid-table {
-            width: 100%;
+            width: auto;
             border-collapse: separate;
             border-spacing: 0;
             font-size: 0.82em;
@@ -32,8 +32,12 @@
             background: var(--primary);
             color: #ffffff;
             font-weight: 700;
-            font-size: 0.85em;
+            font-size: 0.78em;
+            line-height: 1.1;
+            padding: 3px 2px;
             height: 30px;
+            overflow-wrap: anywhere;
+            word-break: break-word;
         }
         table.grafik-grid-table thead tr:nth-child(2) th.sub-th {
             position: sticky;
@@ -42,7 +46,10 @@
             background: var(--group-bg);
             color: var(--text-color);
             font-size: 0.76em;
-            padding: 3px 4px;
+            width: 28px;
+            min-width: 28px;
+            max-width: 34px;
+            padding: 3px 1px;
             border-bottom: 2px solid var(--primary);
         }
         table.grafik-grid-table th.emp-group-end,
@@ -76,8 +83,12 @@
             background-color: var(--grafik-holiday-bg) !important;
             color: var(--grafik-holiday-text);
         }
-        td.grafik-cell {
-            min-width: 44px;
+        table.grafik-grid-table td.grafik-cell {
+            width: 28px;
+            min-width: 28px;
+            max-width: 34px;
+            padding-left: 1px;
+            padding-right: 1px;
             height: 29px;
             font-weight: 700;
             transition: filter 0.12s, transform 0.1s;
@@ -121,12 +132,12 @@
             background: var(--group-bg) !important;
         }
         .grafik-stat-input {
-            width: 58px !important;
-            padding: 2px 4px !important;
+            width: 44px !important;
+            padding: 2px 1px !important;
             margin: 0 !important;
             text-align: center;
             font-weight: 700;
-            font-size: 0.92em;
+            font-size: 0.86em;
         }
         .day-alert-icon {
             display: inline-block;
