@@ -4,14 +4,31 @@
 /* ZOOM ZDJĘCIA */
 let scale = 1, panning = false, pointX = 0, pointY = 0, startX = 0, startY = 0, lastTouchDistance = null;
 
+// Modal, z którego otwarto zoom (np. planogram) — chowamy go na czas podglądu
+// i przywracamy po zamknięciu, żeby zdjęcie nigdy nie zostało „pod spodem".
+let modalPodZoomem = null;
+
 window.otworzZoomZdjecia = function(src) {
+    const oknoZoom = document.getElementById('modal-zoom-zdjecia');
+    if (oknoZoom && !oknoZoom.classList.contains('hidden')) return;
+    modalPodZoomem = null;
+    document.querySelectorAll('.modal-overlay:not(.hidden)').forEach(el => {
+        modalPodZoomem = el;
+        el.classList.add('hidden');
+    });
     document.getElementById('zoom-image-element').src = src;
     scale = 1; pointX = 0; pointY = 0;
     updateImageTransform();
     document.getElementById('modal-zoom-zdjecia').classList.remove('hidden');
 };
 
-window.zamknijZoomZdjecia = () => document.getElementById('modal-zoom-zdjecia').classList.add('hidden');
+window.zamknijZoomZdjecia = function() {
+    document.getElementById('modal-zoom-zdjecia').classList.add('hidden');
+    if (modalPodZoomem) {
+        modalPodZoomem.classList.remove('hidden');
+        modalPodZoomem = null;
+    }
+};
 
 function updateImageTransform() {
     document.getElementById('zoom-image-element').style.transform = `translate(${pointX}px, ${pointY}px) scale(${scale})`;
