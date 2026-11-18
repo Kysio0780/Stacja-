@@ -37,7 +37,8 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 2000;
+            /* Zawsze nad pozostałymi modalami (np. planogramem). */
+            z-index: 3000 !important;
             overflow: hidden;
             touch-action: none;
         }
@@ -68,7 +69,7 @@
             width: 44px;
             height: 44px;
             border-radius: 50%;
-            z-index: 2010;
+            z-index: 3010;
             padding: 0;
             margin: 0;
         }
