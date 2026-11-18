@@ -372,6 +372,9 @@
 
                 <label>Załącz zdjęcie (opcjonalnie):</label>
                 <input type="file" id="msg-zdjecie-input" accept="image/*">
+                <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px;">
+                    <button type="button" onclick="window.otworzAparatDlaWiadomosci()" class="btn-info" style="margin:0;">📷 Zrób zdjęcie aparatem i wyślij</button>
+                </div>
                 <div id="msg-zdjecie-preview" style="margin-top: 5px; text-align: center;"></div>
 
                 <div class="field-group" style="background: var(--preview-bg);">
@@ -788,13 +791,34 @@
                 
                 <div id="admin-planogram-edycja" class="field-group hidden" style="margin-top: 16px;">
                     <h5 style="color: var(--success);">⚙️ Panel Administratora (Dodaj zdjęcia)</h5>
-                    <label>Wybierz jedno lub więcej zdjęć:</label>
+                    <label>Wybierz jedno lub więcej zdjęć z galerii:</label>
                     <input type="file" id="admin-planogram-file" accept="image/*" multiple>
-                    <button onclick="window.dodajZdjeciaDoPlanogramu()" class="btn-success" style="margin: 0;">➕ Dodaj wybrane zdjęcia</button>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px;">
+                        <button onclick="window.dodajZdjeciaDoPlanogramu()" class="btn-success" style="margin: 0;">➕ Dodaj wybrane zdjęcia</button>
+                        <button onclick="window.otworzAparatDlaPlanogramu()" class="btn-info" style="margin: 0;">📷 Zrób zdjęcie aparatem</button>
+                    </div>
                 </div>
 
                 <div style="margin-top: 18px;">
                     <button onclick="window.zamknijModalPlanogramu()" class="btn-neutral" style="margin:0;">Zamknij</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL APARATU (zdjęcie planogramu) -->
+        <div id="modal-aparat" class="modal-overlay hidden">
+            <div class="modal-content" style="max-width: 520px;">
+                <h4>📷 Aparat — nowe zdjęcie planogramu</h4>
+                <div id="aparat-blad" class="error hidden" style="margin-bottom: 10px;"></div>
+                <div style="position: relative; background: #000; border-radius: 8px; overflow: hidden;">
+                    <video id="aparat-video" autoplay playsinline muted style="width: 100%; display: block;"></video>
+                    <canvas id="aparat-canvas" class="hidden" style="width: 100%; display: block;"></canvas>
+                </div>
+                <div style="margin-top: 14px; display: flex; gap: 8px; flex-wrap: wrap;">
+                    <button id="aparat-btn-zrob" onclick="window.zrobZdjecieAparatem()" class="btn-success" style="margin:0;">📸 Zrób zdjęcie</button>
+                    <button id="aparat-btn-zatwierdz" onclick="window.zatwierdzZdjecieAparatem()" class="btn-success hidden" style="margin:0;">✔️ Zatwierdź</button>
+                    <button id="aparat-btn-nowe" onclick="window.zrobNoweZdjecieAparatem()" class="btn-info hidden" style="margin:0;">🔄 Zrób nowe</button>
+                    <button id="aparat-btn-anuluj" onclick="window.zamknijAparat()" class="btn-neutral" style="margin:0;">✖️ Anuluj</button>
                 </div>
             </div>
         </div>
@@ -848,6 +872,9 @@
 
                 <label>Zdjęcie kontrolne (opcjonalnie):</label>
                 <input type="file" id="m-zdjecie" accept="image/*">
+                <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px;">
+                    <button type="button" onclick="window.otworzAparatDlaSprzatania()" class="btn-info" style="margin:0;">📷 Zrób zdjęcie aparatem</button>
+                </div>
                 <div id="m-zdjecie-preview" style="margin-top: 8px; text-align: center;"></div>
 
                 <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 18px;" id="modal-buttons-container">
@@ -1192,6 +1219,7 @@
     <script defer src="js/modules/statystyki.js"></script>
     <script defer src="js/modules/misje.js"></script>
     <script defer src="js/modules/planogramy.js"></script>
+    <script defer src="js/modules/aparat.js"></script>
     <script defer src="js/modules/sprzatanie.js"></script>
     <script defer src="js/modules/liczenie.js"></script>
     <script defer src="js/modules/sprzedaz.js"></script>
