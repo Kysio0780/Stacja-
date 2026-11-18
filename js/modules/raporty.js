@@ -362,14 +362,14 @@ function statystykiLicznikow(raporty) {
             .map(r => r.liczniki && r.liczniki[l.klucz] && r.liczniki[l.klucz].roznica)
             .filter(v => v !== null && v !== undefined && Number.isFinite(Number(v)))
             .map(Number);
-        if (wartosci.length === 0) return { ...l, srednia: 0, min: 0, max: 0, liczba: 0 };
+        if (wartosci.length === 0) return { ...l, min: 0, max: 0, liczba: 0, suma: 0 };
         const suma = wartosci.reduce((a, b) => a + b, 0);
         return {
             ...l,
-            srednia: suma / wartosci.length,
             min: Math.min(...wartosci),
             max: Math.max(...wartosci),
-            liczba: wartosci.length
+            liczba: wartosci.length,
+            suma
         };
     });
 }
@@ -442,13 +442,13 @@ window.zaladujRaporty = async function() {
         const opisZakresu = document.getElementById('raporty-stat-zakres')?.selectedOptions?.[0]?.text || '';
         const statHtml = `<p class="text-muted">Zakres: ${ucieczkaHtml(opisZakresu)} (od ${ucieczkaHtml(formatujDateDoWyswietlenia(granica))})</p>
             <div class="table-responsive"><table class="standard-table">
-                <tr><th>Licznik</th><th>Średnia różnica</th><th>Min</th><th>Max</th><th>Liczba raportów</th></tr>
+                <tr><th>Licznik</th><th>Liczba raportów</th><th>Min</th><th>Max</th><th>Total</th></tr>
                 ${stats.map(s => `<tr>
                     <td style="text-align:left;">${ucieczkaHtml(s.etykieta)}</td>
-                    <td>${s.srednia.toFixed(2)}</td>
+                    <td>${s.liczba}</td>
                     <td>${s.min}</td>
                     <td>${s.max}</td>
-                    <td>${s.liczba}</td>
+                    <td><strong>${s.suma}</strong></td>
                 </tr>`).join('')}
             </table></div>`;
         const statContainer = document.getElementById('raporty-statystyki');
