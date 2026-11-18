@@ -7,7 +7,9 @@ const DOMYSLNE_KATEGORIE_LICZENIA = [
 ];
 const LICZENIE_KATEGORIE_DOK = 'liczenie_kategorie';
 
-let kategorieLiczenia = [];
+// Kategorie są dostępne od razu — otwarcie modalu nie może zależeć od tego,
+// czy udało się już pobrać dokument z Firestore.
+let kategorieLiczenia = [...DOMYSLNE_KATEGORIE_LICZENIA];
 let wynikiLiczenia = [];
 let widoczneLiczenia = [];
 
@@ -42,11 +44,17 @@ function posortujLiczeniaMalejaco(liczenia) {
 }
 
 async function pobierzKategorieLiczenia() {
-    const ref = doc(db, 'system_ustawienia', LICZENIE_KATEGORIE_DOK);
-    const snap = await getDoc(ref);
-    if (snap.exists() && Array.isArray(snap.data().lista)) return [...snap.data().lista];
-    await setDoc(ref, { lista: [...DOMYSLNE_KATEGORIE_LICZENIA] });
-    return [...DOMYSLNE_KATEGORIE_LICZENIA];
+    try {
+        const ref = doc(db, 'system_ustawienia', LICZENIE_KATEGORIE_DOK);
+        const snap = await getDoc(ref);
+        if (snap.exists() && Array.isArray(snap.data().lista) && snap.data().lista.length > 0) {
+            return [...snap.data().lista];
+        }
+        await setDoc(ref, { lista: [...DOMYSLNE_KATEGORIE_LICZENIA] });
+    } catch (e) {
+        console.warn('Nie udało się pobrać kategorii liczenia — używam listy domyślnej:', e);
+    }
+    return kategorieLiczenia.length > 0 ? [...kategorieLiczenia] : [...DOMYSLNE_KATEGORIE_LICZENIA];
 }
 
 async function zapiszKategorieLiczenia(lista) {
@@ -129,31 +137,32 @@ window.zaladujLiczenie = async function() {
     const panelAdmina = document.getElementById('admin-liczenie-kategorie-panel');
     if (panelAdmina) panelAdmina.classList.toggle('hidden', !czyAdminLiczenia());
 
+    // Kategorie i wyniki pobieramy osobno — błąd odczytu jednej kolekcji
+    // nie może zablokować drugiej ani samego przycisku „Dodaj liczenie".
+    kategorieLiczenia = await pobierzKategorieLiczenia();
+    wyswietlKategorieLiczenia();
+
     try {
-        const [kategorie, snap] = await Promise.all([
-            pobierzKategorieLiczenia(),
-            getDocs(collection(db, 'liczenie'))
-        ]);
-        kategorieLiczenia = kategorie;
+        const snap = await getDocs(collection(db, 'liczenie'));
         wynikiLiczenia = posortujLiczeniaMalejaco(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-
-        // Tabela pokazuje tylko najnowsze liczenie z każdej kategorii.
-        widoczneLiczenia = [];
-        const widzianeKategorie = new Set();
-        wynikiLiczenia.forEach(w => {
-            const klucz = String(w.kategoria || '');
-            if (!widzianeKategorie.has(klucz)) {
-                widzianeKategorie.add(klucz);
-                widoczneLiczenia.push(w);
-            }
-        });
-
-        wyswietlKategorieLiczenia();
-        wyswietlWynikiLiczenia();
     } catch (e) {
+        console.warn('Nie udało się pobrać wyników liczenia:', e);
+        wynikiLiczenia = [];
         const kontener = document.getElementById('liczenie-container');
-        if (kontener) kontener.innerHTML = `<span class="error">Błąd ładowania liczeń: ${ucieczkaHtml(e.message)}</span>`;
+        if (kontener) kontener.innerHTML = `<span class="error">Błąd ładowania wyników: ${ucieczkaHtml(e.message)}</span>`;
     }
+
+    // Tabela pokazuje tylko najnowsze liczenie z każdej kategorii.
+    widoczneLiczenia = [];
+    const widzianeKategorie = new Set();
+    wynikiLiczenia.forEach(w => {
+        const klucz = String(w.kategoria || '');
+        if (!widzianeKategorie.has(klucz)) {
+            widzianeKategorie.add(klucz);
+            widoczneLiczenia.push(w);
+        }
+    });
+    wyswietlWynikiLiczenia();
 };
 
 window.dodajKategorieLiczenia = async function() {
@@ -185,7 +194,7 @@ window.otworzModalLiczenia = async function(id = null) {
     const admin = czyAdminLiczenia();
     const rekord = edycja ? wynikiLiczenia.find(w => w.id === id) : null;
     if (edycja && !rekord) return alert('Nie znaleziono tego liczenia.');
-    if (kategorieLiczenia.length === 0) return alert('Brak kategorii. Najpierw dodaj kategorię w panelu admina.');
+    if (kategorieLiczenia.length === 0) kategorieLiczenia = [...DOMYSLNE_KATEGORIE_LICZENIA];
 
     const moznaEdytowac = !edycja || admin;
 
@@ -218,7 +227,18 @@ window.otworzModalLiczenia = async function(id = null) {
     const wybranaOsoba = rekord
         ? { id: rekord.osobaId, imie: rekord.osoba }
         : (currentUserData ? { id: currentUserData.uid, imie: currentUserData.imie } : null);
-    await wypelnijSelectPracownikow('liczenie-osoba', wybranaOsoba);
+
+    const historia = document.getElementById('liczenie-historia');
+    historia.classList.add('hidden');
+    historia.innerHTML = '';
+
+    // Modal pojawia się natychmiast — lista pracowników może się dograć później.
+    document.getElementById('modal-liczenie').classList.remove('hidden');
+
+    if (typeof wypelnijSelectPracownikow === 'function') {
+        try { await wypelnijSelectPracownikow('liczenie-osoba', wybranaOsoba); }
+        catch (e) { console.warn('Nie udało się pobrać listy pracowników:', e); }
+    }
 
     const selectOsob = document.getElementById('liczenie-osoba');
     if (!selectOsob.value && rekord?.osoba) {
@@ -235,12 +255,6 @@ window.otworzModalLiczenia = async function(id = null) {
 
     document.getElementById('liczenie-btn-zapisz').classList.toggle('hidden', !moznaEdytowac);
     document.getElementById('liczenie-btn-usun').classList.toggle('hidden', !(edycja && admin));
-
-    const historia = document.getElementById('liczenie-historia');
-    historia.classList.add('hidden');
-    historia.innerHTML = '';
-
-    document.getElementById('modal-liczenie').classList.remove('hidden');
 };
 
 window.zamknijModalLiczenia = function() {
@@ -253,7 +267,12 @@ window.zapiszLiczenie = async function() {
 
     const kategoria = document.getElementById('liczenie-kategoria').value;
     const data = document.getElementById('liczenie-data').value;
-    const osoba = pobierzDaneWybranegoPracownika('liczenie-osoba');
+    const selectOsob = document.getElementById('liczenie-osoba');
+    const opcjaOsoby = selectOsob?.options?.[selectOsob.selectedIndex];
+    const osoba = {
+        id: selectOsob?.value || '',
+        imie: opcjaOsoby?.dataset?.imie || opcjaOsoby?.textContent?.trim() || ''
+    };
     if (!kategoria) return alert('Wybierz kategorię.');
     if (!data) return alert('Podaj datę.');
     if (!osoba.id) return alert('Wybierz osobę.');
