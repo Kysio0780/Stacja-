@@ -4,36 +4,6 @@
 window.otworzModalInfo = () => document.getElementById('modal-info-app').classList.remove('hidden');
 window.zamknijModalInfo = () => document.getElementById('modal-info-app').classList.add('hidden');
 
-/* Wyłączenie aplikacji — jedyny sposób na jej zamknięcie (własne okno potwierdzenia,
-   bo natywny confirm() bywa zablokowany w WebView i zwraca undefined). */
-window.wylaczAplikacje = function() {
-    window.zamknijDropdownMenu();
-    const modal = document.getElementById('modal-wylaczenie');
-    if (modal) modal.classList.remove('hidden');
-};
-
-window.anulujWylaczenie = function() {
-    const modal = document.getElementById('modal-wylaczenie');
-    if (modal) modal.classList.add('hidden');
-};
-
-window.potwierdzWylaczenie = function() {
-    window.anulujWylaczenie();
-    sessionStorage.setItem("sklep_wylaczone", "1");
-    const login = document.getElementById('login-screen');
-    const app = document.getElementById('app-screen');
-    const ekran = document.getElementById('ekran-wylaczone');
-    if (login) login.classList.add('hidden');
-    if (app) app.classList.add('hidden');
-    if (ekran) ekran.classList.remove('hidden');
-    try { window.close(); } catch (e) { /* przeglądarka może blokować zamknięcie karty */ }
-};
-
-window.uruchomPonownieAplikacje = function() {
-    sessionStorage.removeItem("sklep_wylaczone");
-    window.location.reload();
-};
-
 window.toggleDropdownMenu = (e) => {
     e.stopPropagation();
     document.getElementById('user-dropdown-menu').classList.toggle('hidden');
@@ -53,20 +23,22 @@ window.toggleCollapsible = function(id, arrowId) {
     arrow.innerText = content.classList.contains('open') ? "▲ Zwiń" : "▼ Rozwiń";
 };
 
-/* Zamyka ostatni otwarty modal (okno info i zoom też są modalami). */
-function zamknijOtwartyModal() {
-    const otwarte = Array.from(document.querySelectorAll('.modal-overlay, .modal-image-overlay'))
-        .filter(el => !el.classList.contains('hidden'));
-    if (otwarte.length === 0) return false;
-    otwarte[otwarte.length - 1].classList.add('hidden');
-    return true;
-}
-
 function obsluzCofanie() {
     window.zamknijDropdownMenu();
     window.zamknijModalInfo();
-    if (zamknijOtwartyModal()) return;
-
+    const modals = [
+        'modal-zoom-zdjecia', 'modal-polka', 'modal-planogram-szczegoly', 
+        'modal-zmien-haslo', 'modal-uniwersalna-misja', 'modal-szczegoly-pracownika', 
+        'modal-nowa-wiadomosc', 'modal-podglad-wiadomosci', 'modal-premia-warunki',
+        'modal-grafik-komorka', 'modal-grafik-druk'
+    ];
+    for (let mId of modals) {
+        const el = document.getElementById(mId);
+        if (el && !el.classList.contains('hidden')) {
+            el.classList.add('hidden');
+            return;
+        }
+    }
     const hash = window.location.hash;
     if (hash === '#dzien') window.location.hash = '#sprzedaz';
     else if (hash && hash !== '#menu') window.location.hash = '#menu';
@@ -82,43 +54,3 @@ window.addEventListener('contextmenu', (e) => {
     e.preventDefault();
     obsluzCofanie();
 });
-
-/* Wstecz nigdy nie zamyka aplikacji — zakładamy kilka wpisów strażnika,
-   żeby nawet kilka szybkich naciśnięć nie mogło opuścić strony. */
-if (!window.location.hash || window.location.hash === '#') {
-    history.replaceState(null, '', '#menu');
-}
-for (let i = 0; i < 4; i++) {
-    history.pushState({ sklepSentinel: true, index: i }, '', location.href);
-}
-
-window.addEventListener('popstate', () => {
-    if (sessionStorage.getItem("sklep_wylaczone") === "1") return;
-
-    // Jeśli jest otwarty modal — wstecz zamyka tylko jego i nie rusza historii modułów.
-    window.zamknijDropdownMenu();
-    if (zamknijOtwartyModal()) {
-        history.pushState({ sklepBackGuard: true }, '', location.href);
-        return;
-    }
-
-    // Każde cofnięcie dodaje nowy wpis — historia nigdy nie cofa się poza aplikację.
-    history.pushState({ sklepBackGuard: true }, '', location.href);
-    const hash = window.location.hash;
-    if (hash === '#dzien') window.location.hash = '#sprzedaz';
-    else if (hash && hash !== '#menu') window.location.hash = '#menu';
-    else if (!hash || hash === '#') {
-        history.replaceState(null, '', '#menu');
-        window.dispatchEvent(new HashChangeEvent('hashchange'));
-    }
-});
-
-/* Po przeładowaniu strony stan wyłączenia pozostaje widoczny. */
-if (sessionStorage.getItem("sklep_wylaczone") === "1") {
-    const login = document.getElementById('login-screen');
-    const app = document.getElementById('app-screen');
-    const ekran = document.getElementById('ekran-wylaczone');
-    if (login) login.classList.add('hidden');
-    if (app) app.classList.add('hidden');
-    if (ekran) ekran.classList.remove('hidden');
-}
