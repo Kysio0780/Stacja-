@@ -24,6 +24,8 @@ window.toggleCollapsible = function(id, arrowId) {
 };
 
 function obsluzCofanie() {
+    // W trybie kiosku Esc i przycisk wstecz nie mogą wyprowadzić z aplikacji.
+    if (typeof jestTrybemKiosk === 'function' && jestTrybemKiosk()) return;
     window.zamknijDropdownMenu();
     window.zamknijModalInfo();
     const modals = [
