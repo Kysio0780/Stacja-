@@ -10,6 +10,10 @@ window.addEventListener("hashchange", () => {
 
     if (hash === "#menu" || hash === "") {
         document.getElementById('menu-tiles').classList.remove('hidden');
+        // Wstecz z menu nie może opuścić aplikacji — dodajemy kolejny wpis historii.
+        if (!history.state || !history.state.sklepMenuGuard) {
+            history.pushState({ sklepMenuGuard: true }, '', '#menu');
+        }
         if (currentUserData) {
             const imieKrotkie = pobierzImieKrotkie(currentUserData.imie);
             sprawdzPowiadomieniaMisje(currentUserData.uid, imieKrotkie, currentUserData.rola === 'admin');
