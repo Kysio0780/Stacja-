@@ -1175,17 +1175,6 @@
 
             <div id="raporty-admin-panel" class="hidden">
                 <div class="field-group">
-                    <h4 style="margin-top:0; color: var(--primary);">⛽ Minimalne ilości paliw</h4>
-                    <div class="grid-2">
-                        <div><label for="raport-prog-p95">95 (L):</label><input type="number" id="raport-prog-p95" min="0" step="1" style="margin-bottom:0;"></div>
-                        <div><label for="raport-prog-on">ON (L):</label><input type="number" id="raport-prog-on" min="0" step="1" style="margin-bottom:0;"></div>
-                        <div><label for="raport-prog-v98">V98 (L):</label><input type="number" id="raport-prog-v98" min="0" step="1" style="margin-bottom:0;"></div>
-                        <div><label for="raport-prog-von">VON (L):</label><input type="number" id="raport-prog-von" min="0" step="1" style="margin-bottom:0;"></div>
-                    </div>
-                    <button onclick="window.zapiszProgiPaliwRaportow()" class="btn-success" style="margin-top: 12px;">💾 Zapisz progi paliw</button>
-                </div>
-
-                <div class="field-group">
                     <h4 style="margin-top:0;">📊 Podsumowanie statystyk liczników</h4>
                     <div class="flex-row flex-row-mobile-col" style="margin-bottom: 12px;">
                         <div>
@@ -1205,25 +1194,40 @@
                     <div id="raporty-statystyki">Ładowanie statystyk...</div>
                 </div>
 
+                <details class="field-group" style="border-style: dashed; border-color: var(--primary);">
+                    <summary style="cursor: pointer; color: var(--primary); font-weight: 700;">⛽ Minimalne ilości paliw (kliknij, aby rozwinąć)</summary>
+                    <div style="margin-top: 12px;">
+                        <div class="grid-2">
+                            <div><label for="raport-prog-p95">95 (L):</label><input type="number" id="raport-prog-p95" min="0" step="1" style="margin-bottom:0;"></div>
+                            <div><label for="raport-prog-on">ON (L):</label><input type="number" id="raport-prog-on" min="0" step="1" style="margin-bottom:0;"></div>
+                            <div><label for="raport-prog-v98">V98 (L):</label><input type="number" id="raport-prog-v98" min="0" step="1" style="margin-bottom:0;"></div>
+                            <div><label for="raport-prog-von">VON (L):</label><input type="number" id="raport-prog-von" min="0" step="1" style="margin-bottom:0;"></div>
+                        </div>
+                        <button onclick="window.zapiszProgiPaliwRaportow()" class="btn-success" style="margin-top: 12px;">💾 Zapisz progi paliw</button>
+                    </div>
+                </details>
+
                 <h4>Historia raportów</h4>
                 <div id="raporty-historia">Ładowanie historii...</div>
 
-                <div class="field-group" style="margin-top: 18px; border-style: dashed; border-color: var(--danger);">
-                    <h4 style="margin-top:0; color: var(--danger);">🗑️ Usuwanie danych raportów</h4>
-                    <p class="val-red" style="font-size: 0.88em; margin-top: 0;">Usuwanie archiwalnych raportów pozwala zwolnić miejsce na serwerze.</p>
-                    <label>Usuń raporty starsze niż:</label>
-                    <select id="raporty-cleanup-zakres" onchange="window.odswiezZakresCzyszczeniaRaportow()">
-                        <option value="6">6 miesięcy</option>
-                        <option value="12">12 miesięcy</option>
-                        <option value="24">24 miesięcy</option>
-                        <option value="custom">Własny zakres (data graniczna)</option>
-                    </select>
-                    <div id="raporty-cleanup-custom-box" class="hidden">
-                        <label>Wybierz datę graniczną:</label>
-                        <input type="date" id="raporty-cleanup-custom-date">
+                <details class="field-group" style="margin-top: 18px; border-style: dashed; border-color: var(--danger);">
+                    <summary style="cursor: pointer; color: var(--danger); font-weight: 700;">🗑️ Usuwanie danych raportów (kliknij, aby rozwinąć)</summary>
+                    <div style="margin-top: 12px;">
+                        <p class="val-red" style="font-size: 0.88em; margin-top: 0;">Usuwanie archiwalnych raportów pozwala zwolnić miejsce na serwerze.</p>
+                        <label>Usuń raporty starsze niż:</label>
+                        <select id="raporty-cleanup-zakres" onchange="window.odswiezZakresCzyszczeniaRaportow()">
+                            <option value="6">6 miesięcy</option>
+                            <option value="12">12 miesięcy</option>
+                            <option value="24">24 miesięcy</option>
+                            <option value="custom">Własny zakres (data graniczna)</option>
+                        </select>
+                        <div id="raporty-cleanup-custom-box" class="hidden">
+                            <label>Wybierz datę graniczną:</label>
+                            <input type="date" id="raporty-cleanup-custom-date">
+                        </div>
+                        <button onclick="window.usunDaneRaportow()" class="btn-danger" style="margin-top: 10px;">⚠️ Usuń stare raporty</button>
                     </div>
-                    <button onclick="window.usunDaneRaportow()" class="btn-danger" style="margin-top: 10px;">⚠️ Usuń stare raporty</button>
-                </div>
+                </details>
             </div>
         </div>
 
@@ -1238,14 +1242,9 @@
                     <legend style="font-weight: 700;">⛽ Paliwa</legend>
                     <div class="table-responsive">
                         <table class="standard-table">
-                            <tr><th>Paliwo</th><th>Pojemność przekracza</th><th>Stan OK</th></tr>
+                            <tr><th>Paliwo</th><th>Pojemność przekracza / Stan OK</th><th>Dostawa</th></tr>
                             <tbody id="raport-paliwa-wiersze"></tbody>
                         </table>
-                    </div>
-                    <div style="display: flex; gap: 18px; flex-wrap: wrap; margin-top: 10px;">
-                        <label style="display:flex; align-items:center; gap:8px; cursor:pointer; margin:0;">
-                            <input type="checkbox" id="raport-paliwo-dostawa" onchange="window.odswiezRaportPaliwa()"> <span>Dostawa</span>
-                        </label>
                     </div>
                     <div id="raport-stockout-msg" class="error hidden" style="margin-top: 10px; font-weight: 700;">Zgłoś ryzyko StockOut</div>
                 </fieldset>
@@ -1257,6 +1256,8 @@
 
                 <div style="margin-top: 18px; display: flex; gap: 8px; flex-wrap: wrap;">
                     <button onclick="window.zapiszRaport()" id="raport-btn-zapisz" class="btn-success" style="margin:0;">💾 Zapisz raport</button>
+                    <button onclick="window.edytujRaportZPodgladu()" id="raport-btn-edytuj" class="btn-info hidden" style="margin:0;">✏️ Edytuj raport</button>
+                    <button onclick="window.usunRaportZPodgladu()" id="raport-btn-usun" class="btn-danger hidden" style="margin:0;">🗑️ Usuń raport</button>
                     <button onclick="window.zamknijModalRaportu()" class="btn-neutral" style="margin:0;">Zamknij</button>
                 </div>
             </div>
