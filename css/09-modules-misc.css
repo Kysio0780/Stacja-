@@ -66,11 +66,11 @@
         }
         #kiosk-settings-btn:hover { opacity: 1; }
 
-        body.tryb-kiosk .app-header-bar,
-        body.tryb-kiosk .module-nav-bar,
-        body.tryb-kiosk .btn-back,
-        body.tryb-kiosk .storage-usage {
-            display: none !important;
+        html.tryb-kiosk, body.tryb-kiosk {
+            /* Blokuje pull-to-refresh i „wyciąganie" paska narzędzi gestem. */
+            overscroll-behavior: none;
+            overscroll-behavior-x: none;
+            overscroll-behavior-y: none;
         }
         body.tryb-kiosk #kiosk-settings-btn { display: block; }
         body.tryb-kiosk #app-screen {
