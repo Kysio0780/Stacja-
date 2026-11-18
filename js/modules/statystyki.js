@@ -384,6 +384,7 @@ window.uruchomProcedureUsuwaniaDanych = async function() {
                 }
             }
         }
+        if (typeof window.odswiezRozmiarZdjecJesliAdmin === 'function') window.odswiezRozmiarZdjecJesliAdmin();
         alert("Operacja czyszczenia zakończona pomyślnie.");
     } catch (e) { alert("Błąd podczas usuwania danych: " + e.message); }
 };
