@@ -1060,12 +1060,63 @@
         <!-- MODUŁ LICZENIE (dostępny dla wszystkich) -->
         <div id="modul-liczenie" class="hidden">
             <div class="module-nav-bar">
-                <h3>🧮 Liczenie</h3>
+                <h3>🧮 Liczenie stanu faktycznego</h3>
                 <button class="btn-back" onclick="window.otworzModul('menu')">⬅ Menu</button>
             </div>
-            <div class="field-group" style="text-align:center; padding:28px 16px;">
-                <h4 style="margin-bottom:8px;">Moduł w przygotowaniu</h4>
-                <p class="text-muted" style="margin:0;">Funkcja liczenia zostanie dodana w kolejnym etapie.</p>
+
+            <div id="admin-liczenie-kategorie-panel" class="field-group hidden" style="background: var(--card-bg); border-style: dashed; border-color: var(--primary);">
+                <h4 style="color: var(--primary);">⚙️ Panel Admina: Kategorie towarowe</h4>
+                <div class="flex-row flex-row-mobile-col">
+                    <input type="text" id="nowa-kategoria-liczenie" placeholder="Nazwa nowej kategorii" style="margin:0;">
+                    <button onclick="window.dodajKategorieLiczenia()" class="btn-success btn-auto" style="margin:0; white-space: nowrap;">➕ Dodaj kategorię</button>
+                </div>
+                <div id="liczenie-kategorie-lista" style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px;"></div>
+            </div>
+
+            <div class="field-group" style="display: flex; justify-content: flex-end; margin-bottom: 8px;">
+                <button onclick="window.otworzModalLiczenia()" class="btn-success" style="margin:0;">➕ Dodaj liczenie</button>
+            </div>
+
+            <div id="liczenie-container">Ładowanie listy liczeń...</div>
+        </div>
+
+        <!-- MODAL LICZENIA -->
+        <div id="modal-liczenie" class="modal-overlay hidden">
+            <div class="modal-content" style="max-width: 560px;">
+                <h4 id="modal-liczenie-tytul">Nowe liczenie</h4>
+                <input type="hidden" id="liczenie-id">
+
+                <div class="field-group grid-2">
+                    <div>
+                        <label for="liczenie-kategoria">Kategoria:</label>
+                        <select id="liczenie-kategoria" style="margin-bottom:0;"></select>
+                    </div>
+                    <div>
+                        <label for="liczenie-data">Data:</label>
+                        <input type="date" id="liczenie-data" style="margin-bottom:0;">
+                    </div>
+                    <div>
+                        <label for="liczenie-osoba">Osoba:</label>
+                        <select id="liczenie-osoba" style="margin-bottom:0;"></select>
+                    </div>
+                    <div>
+                        <label for="liczenie-liczba">Liczenia (stan faktyczny):</label>
+                        <input type="number" id="liczenie-liczba" min="0" step="1" placeholder="0" style="margin-bottom:0;">
+                    </div>
+                    <div>
+                        <label for="liczenie-plusy">Plusy:</label>
+                        <input type="number" id="liczenie-plusy" min="0" step="1" placeholder="0" style="margin-bottom:0;">
+                    </div>
+                    <div>
+                        <label for="liczenie-minusy">Minusy:</label>
+                        <input type="number" id="liczenie-minusy" min="0" step="1" placeholder="0" style="margin-bottom:0;">
+                    </div>
+                </div>
+
+                <div style="margin-top: 18px; display: flex; gap: 8px; flex-wrap: wrap;">
+                    <button onclick="window.zapiszLiczenie()" class="btn-success" style="margin:0;">💾 Zapisz liczenie</button>
+                    <button onclick="window.zamknijModalLiczenia()" class="btn-neutral" style="margin:0;">Anuluj</button>
+                </div>
             </div>
         </div>
 
@@ -1131,6 +1182,7 @@
     <script defer src="js/modules/misje.js"></script>
     <script defer src="js/modules/planogramy.js"></script>
     <script defer src="js/modules/sprzatanie.js"></script>
+    <script defer src="js/modules/liczenie.js"></script>
     <script defer src="js/modules/sprzedaz.js"></script>
     <script defer src="js/modules/auth.js"></script>
 </body>
