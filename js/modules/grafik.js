@@ -283,10 +283,10 @@ window.zaladujGrafikInteraktywny = async function() {
             }
         }
 
-        // Potwierdzenia obecności (admin widzi wszystkie, pracownik tylko swoje).
+        // Podświetlanie obecności dotyczy wszystkich pracowników i jest widoczne dla każdego.
         if (typeof window.zaladujPotwierdzeniaGrafiku === 'function' && currentUserData) {
-            const uidObecnosci = czyAdmin ? null : String(pobierzIdPracownika(currentUserData));
-            await window.zaladujPotwierdzeniaGrafiku(miesiacStr, uidObecnosci);
+            const uidyGrafiku = (aktualnyGrafikStan.employees || []).map(e => e.id).filter(Boolean);
+            await window.zaladujPotwierdzeniaGrafiku(miesiacStr, null, uidyGrafiku);
         }
 
         renderujGrafikInteraktywny();
