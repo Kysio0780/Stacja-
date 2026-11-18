@@ -4,11 +4,22 @@
 window.otworzModalInfo = () => document.getElementById('modal-info-app').classList.remove('hidden');
 window.zamknijModalInfo = () => document.getElementById('modal-info-app').classList.add('hidden');
 
-/* Wyłączenie aplikacji — jedyny sposób na jej zamknięcie. */
+/* Wyłączenie aplikacji — jedyny sposób na jej zamknięcie (własne okno potwierdzenia,
+   bo natywny confirm() bywa zablokowany w WebView i zwraca undefined). */
 window.wylaczAplikacje = function() {
-    if (!confirm("Czy na pewno chcesz wyłączyć aplikację?")) return;
-    sessionStorage.setItem("sklep_wylaczone", "1");
     window.zamknijDropdownMenu();
+    const modal = document.getElementById('modal-wylaczenie');
+    if (modal) modal.classList.remove('hidden');
+};
+
+window.anulujWylaczenie = function() {
+    const modal = document.getElementById('modal-wylaczenie');
+    if (modal) modal.classList.add('hidden');
+};
+
+window.potwierdzWylaczenie = function() {
+    window.anulujWylaczenie();
+    sessionStorage.setItem("sklep_wylaczone", "1");
     const login = document.getElementById('login-screen');
     const app = document.getElementById('app-screen');
     const ekran = document.getElementById('ekran-wylaczone');
@@ -49,7 +60,7 @@ function obsluzCofanie() {
         'modal-zoom-zdjecia', 'modal-polka', 'modal-planogram-szczegoly', 
         'modal-zmien-haslo', 'modal-uniwersalna-misja', 'modal-szczegoly-pracownika', 
         'modal-nowa-wiadomosc', 'modal-podglad-wiadomosci', 'modal-premia-warunki',
-        'modal-grafik-komorka', 'modal-grafik-druk', 'modal-obecnosc-grafik'
+        'modal-grafik-komorka', 'modal-grafik-druk', 'modal-obecnosc-grafik', 'modal-wylaczenie'
     ];
     for (let mId of modals) {
         const el = document.getElementById(mId);
@@ -82,6 +93,9 @@ history.pushState({ sklepSentinel: true }, '', window.location.hash || '#menu');
 
 window.addEventListener('popstate', () => {
     if (sessionStorage.getItem("sklep_wylaczone") === "1") return;
+    // Przycisk wstecz (także Android) — zawsze dodajemy nowy wpis strażnika,
+    // żeby cofanie nigdy nie opuściło aplikacji.
+    history.pushState({ sklepBackGuard: true }, '', window.location.href);
     if (!window.location.hash || window.location.hash === '#') {
         history.replaceState(null, '', '#menu');
         window.dispatchEvent(new HashChangeEvent('hashchange'));
