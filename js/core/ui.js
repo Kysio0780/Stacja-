@@ -28,6 +28,12 @@ function obsluzCofanie() {
     if (typeof jestTrybemKiosk === 'function' && jestTrybemKiosk()) return;
     window.zamknijDropdownMenu();
     window.zamknijModalInfo();
+    const oknoAparatu = document.getElementById('modal-aparat');
+    if (oknoAparatu && !oknoAparatu.classList.contains('hidden')) {
+        if (typeof window.zamknijAparat === 'function') window.zamknijAparat();
+        else oknoAparatu.classList.add('hidden');
+        return;
+    }
     const oknoZoom = document.getElementById('modal-zoom-zdjecia');
     if (oknoZoom && !oknoZoom.classList.contains('hidden')) {
         if (typeof window.zamknijZoomZdjecia === 'function') window.zamknijZoomZdjecia();
