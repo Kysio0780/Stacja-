@@ -54,7 +54,8 @@ window.generujWydrukGrafikuPDF = async function() {
             const cZamk = entries[`${emp.id}_${d}_zamkniecie`] || {};
 
             const formatPrintCell = (c) => {
-                if (c.type === 'niedostepny' || (c.pink && (!c.type || c.type === 'puste'))) return 'X';
+                // „Niedostępny (X)” jest widoczny w tabeli, ale nie w wydruku PDF.
+                if (c.type === 'niedostepny' || (c.pink && (!c.type || c.type === 'puste'))) return '';
                 if (c.type === 'praca' && c.hours) return c.hours;
                 if (c.type === 'urlop') return `U ${c.hours || ''}`;
                 if (c.type === 'l4') return `L4 ${c.hours || ''}`;
@@ -68,9 +69,16 @@ window.generujWydrukGrafikuPDF = async function() {
                 : null;
             const odVal = potw ? ucieczkaHtml(String(potw.od || '')) : '';
             const doVal = potw ? ucieczkaHtml(String(potw.do || '')) : '';
-            const podpisVal = potw
-                ? `${ucieczkaHtml(emp.imie)}<br><span style="font-size:6px; font-weight:normal;">(potwierdzono cyfrowo)</span>`
-                : '';
+            const jestUrlop = cRano.type === 'urlop' || cZamk.type === 'urlop';
+            const jestChorobowe = cRano.type === 'l4' || cZamk.type === 'l4';
+            let podpisVal = '';
+            if (jestUrlop) {
+                podpisVal = 'Urlop';
+            } else if (jestChorobowe) {
+                podpisVal = 'Chorobowe';
+            } else if (potw) {
+                podpisVal = `${ucieczkaHtml(emp.imie)}<br><span style="font-size:6px; font-weight:normal;">(potwierdzono cyfrowo)</span>`;
+            }
 
             tbody += `
                 <td style="border-left:2px solid #000; width:24px;">${rVal}</td>
