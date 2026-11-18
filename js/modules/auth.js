@@ -60,6 +60,7 @@ onAuthStateChanged(auth, async (user) => {
             document.getElementById('tile-finanse').style.display = czyAdmin ? 'flex' : 'none';
             if (typeof window.inicjalizujWskaznikMagazynu === 'function') window.inicjalizujWskaznikMagazynu();
             if (typeof window.sprawdzObecnoscGrafikuGlobal === 'function') window.sprawdzObecnoscGrafikuGlobal();
+            if (typeof window.sprawdzBadgeRaportu === 'function') window.sprawdzBadgeRaportu();
             
             sprawdzPowiadomieniaMisje(user.uid, imieKrotkie, czyAdmin);
             sprawdzPowiadomieniaWiadomosci(user.uid, currentUserData.imie);
@@ -83,5 +84,7 @@ onAuthStateChanged(auth, async (user) => {
         if (wskaznikRozmiaru) wskaznikRozmiaru.classList.add('hidden');
         const badgeGrafiku = document.getElementById('grafik-badge');
         if (badgeGrafiku) badgeGrafiku.classList.add('hidden');
+        const badgeRaportu = document.getElementById('raporty-badge');
+        if (badgeRaportu) badgeRaportu.classList.add('hidden');
     }
 });
