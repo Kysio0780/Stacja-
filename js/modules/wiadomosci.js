@@ -59,9 +59,12 @@ window.otworzFormularzNowejWiadomosci = async function(domyslnyOdbiorca = null) 
     document.getElementById('modal-nowa-wiadomosc').classList.remove('hidden');
 };
 
-window.zamknijModalNowejWiadomosci = () => document.getElementById('modal-nowa-wiadomosc').classList.add('hidden');
+window.zamknijModalNowejWiadomosci = () => {
+    if (typeof window.zamknijAparat === 'function') window.zamknijAparat();
+    document.getElementById('modal-nowa-wiadomosc').classList.add('hidden');
+};
 
-window.wyslijWiadomosc = async function() {
+window.wyslijWiadomosc = async function(opcje = {}) {
     const odbiorcy = Array.from(document.querySelectorAll('input[name="msg-odbiorca-chk"]:checked')).map(cb => ({
         id: cb.value,
         imie: cb.dataset.imie || cb.parentElement?.textContent?.trim() || cb.value
@@ -101,6 +104,10 @@ window.wyslijWiadomosc = async function() {
         } catch (e) { alert("Błąd wysyłania wiadomości: " + e.message); }
     };
 
+    if (opcje.aparat) {
+        window.otworzAparat(plik => kompresujObraz(plik, base64 => stworzIWyslij(base64)));
+        return;
+    }
     if (fileInput.files?.length > 0) kompresujObraz(fileInput.files[0], stworzIWyslij);
     else await stworzIWyslij(null);
 };
