@@ -96,9 +96,12 @@ window.otworzModalPolki = function(index, nazwaPolki, jestBiezacy) {
     document.getElementById('modal-polka').classList.remove('hidden');
 };
 
-window.zamknijModalPolki = () => document.getElementById('modal-polka').classList.add('hidden');
+window.zamknijModalPolki = () => {
+    if (typeof window.zamknijAparat === 'function') window.zamknijAparat();
+    document.getElementById('modal-polka').classList.add('hidden');
+};
 
-window.zapiszSzczegolyPolki = function() {
+window.zapiszSzczegolyPolki = function(opcje = {}) {
     const index = document.getElementById('modal-polka-index').value;
     const nazwa = document.getElementById('modal-polka-nazwa').value;
     const fileInput = document.getElementById('m-zdjecie');
@@ -125,6 +128,10 @@ window.zapiszSzczegolyPolki = function() {
             window.zaladujSprzatanie();
         } catch (e) { alert("Błąd zapisu: " + e.message); }
     };
+    if (opcje.aparat) {
+        window.otworzAparat(plik => kompresujObraz(plik, executeSave));
+        return;
+    }
     if (fileInput.files?.length > 0) kompresujObraz(fileInput.files[0], executeSave);
     else executeSave(null);
 };
