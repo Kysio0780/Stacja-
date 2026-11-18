@@ -44,7 +44,7 @@ function obsluzCofanie() {
         'modal-polka', 'modal-planogram-szczegoly', 
         'modal-zmien-haslo', 'modal-uniwersalna-misja', 'modal-szczegoly-pracownika', 
         'modal-nowa-wiadomosc', 'modal-podglad-wiadomosci', 'modal-premia-warunki',
-        'modal-grafik-komorka', 'modal-grafik-druk', 'modal-liczenie'
+        'modal-grafik-komorka', 'modal-grafik-druk', 'modal-liczenie', 'modal-raport'
     ];
     for (let mId of modals) {
         const el = document.getElementById(mId);
