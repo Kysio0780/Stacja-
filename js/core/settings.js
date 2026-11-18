@@ -52,9 +52,7 @@ function ustawKlaseKiosku(wlaczony) {
     document.body.classList.toggle("tryb-kiosk", aktywny);
     document.documentElement.classList.toggle("tryb-kiosk", aktywny);
     const toggleMenu = document.getElementById('kiosk-toggle-dd');
-    const toggleModal = document.getElementById('kiosk-toggle-modal');
     if (toggleMenu) toggleMenu.checked = aktywny;
-    if (toggleModal) toggleModal.checked = aktywny;
 }
 
 async function poproszOSFullscreen() {
@@ -117,13 +115,6 @@ document.addEventListener("fullscreenchange", () => {
         if (jestTrybemKiosk() && !pelnyEkranAktywny()) poproszOSFullscreen();
     });
 });
-
-window.otworzUstawieniaKiosku = function() {
-    document.getElementById('modal-kiosk-ustawienia').classList.remove('hidden');
-};
-window.zamknijUstawieniaKiosku = function() {
-    document.getElementById('modal-kiosk-ustawienia').classList.add('hidden');
-};
 
 zastosujMotyw(localStorage.getItem("sklep_motyw") || MOTYW_DOMYSLNY);
 zastosujCzcionke(localStorage.getItem("sklep_czcionka") || "normal");
