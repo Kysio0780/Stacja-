@@ -4,6 +4,25 @@
 window.otworzModalInfo = () => document.getElementById('modal-info-app').classList.remove('hidden');
 window.zamknijModalInfo = () => document.getElementById('modal-info-app').classList.add('hidden');
 
+/* Wyłączenie aplikacji — jedyny sposób na jej zamknięcie. */
+window.wylaczAplikacje = function() {
+    if (!confirm("Czy na pewno chcesz wyłączyć aplikację?")) return;
+    sessionStorage.setItem("sklep_wylaczone", "1");
+    window.zamknijDropdownMenu();
+    const login = document.getElementById('login-screen');
+    const app = document.getElementById('app-screen');
+    const ekran = document.getElementById('ekran-wylaczone');
+    if (login) login.classList.add('hidden');
+    if (app) app.classList.add('hidden');
+    if (ekran) ekran.classList.remove('hidden');
+    try { window.close(); } catch (e) { /* przeglądarka może blokować zamknięcie karty */ }
+};
+
+window.uruchomPonownieAplikacje = function() {
+    sessionStorage.removeItem("sklep_wylaczone");
+    window.location.reload();
+};
+
 window.toggleDropdownMenu = (e) => {
     e.stopPropagation();
     document.getElementById('user-dropdown-menu').classList.toggle('hidden');
@@ -30,7 +49,7 @@ function obsluzCofanie() {
         'modal-zoom-zdjecia', 'modal-polka', 'modal-planogram-szczegoly', 
         'modal-zmien-haslo', 'modal-uniwersalna-misja', 'modal-szczegoly-pracownika', 
         'modal-nowa-wiadomosc', 'modal-podglad-wiadomosci', 'modal-premia-warunki',
-        'modal-grafik-komorka', 'modal-grafik-druk'
+        'modal-grafik-komorka', 'modal-grafik-druk', 'modal-obecnosc-grafik'
     ];
     for (let mId of modals) {
         const el = document.getElementById(mId);
@@ -54,3 +73,27 @@ window.addEventListener('contextmenu', (e) => {
     e.preventDefault();
     obsluzCofanie();
 });
+
+/* Wstecz nigdy nie zamyka aplikacji — zatrzymujemy ją na widoku #menu. */
+if (!window.location.hash || window.location.hash === '#') {
+    history.replaceState(null, '', '#menu');
+}
+history.pushState({ sklepSentinel: true }, '', window.location.hash || '#menu');
+
+window.addEventListener('popstate', () => {
+    if (sessionStorage.getItem("sklep_wylaczone") === "1") return;
+    if (!window.location.hash || window.location.hash === '#') {
+        history.replaceState(null, '', '#menu');
+        window.dispatchEvent(new HashChangeEvent('hashchange'));
+    }
+});
+
+/* Po przeładowaniu strony stan wyłączenia pozostaje widoczny. */
+if (sessionStorage.getItem("sklep_wylaczone") === "1") {
+    const login = document.getElementById('login-screen');
+    const app = document.getElementById('app-screen');
+    const ekran = document.getElementById('ekran-wylaczone');
+    if (login) login.classList.add('hidden');
+    if (app) app.classList.add('hidden');
+    if (ekran) ekran.classList.remove('hidden');
+}
