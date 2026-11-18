@@ -139,6 +139,7 @@
                 <div class="tile tile-info" onclick="window.otworzModul('raporty')">
                     <span class="tile-icon">📑</span>
                     <span>Raporty</span>
+                    <span id="raporty-badge" class="notification-badge hidden">!</span>
                 </div>
                 <div class="tile tile-success admin-only-tile" onclick="window.otworzModul('pracownicy')" id="tile-pracownicy" style="display: none;">
                     <span class="tile-icon">👥</span>
@@ -1162,12 +1163,64 @@
         <!-- MODUŁ RAPORTY (dostępny dla wszystkich) -->
         <div id="modul-raporty" class="hidden">
             <div class="module-nav-bar">
-                <h3>📑 Raporty</h3>
+                <h3>📑 Raporty operacyjne</h3>
                 <button class="btn-back" onclick="window.otworzModul('menu')">⬅ Menu</button>
             </div>
-            <div class="field-group" style="text-align:center; padding:28px 16px;">
-                <h4 style="margin-bottom:8px;">Moduł w przygotowaniu</h4>
-                <p class="text-muted" style="margin:0;">Raporty zostaną dodane w kolejnym etapie.</p>
+
+            <div class="field-group" style="display: flex; justify-content: flex-end; margin-bottom: 12px;">
+                <button onclick="window.otworzModalRaportu()" class="btn-success" style="margin:0;">📝 Wypełnij raport</button>
+            </div>
+
+            <div id="raporty-info"></div>
+
+            <div id="raporty-admin-panel" class="hidden">
+                <div class="field-group">
+                    <h4 style="margin-top:0;">📊 Podsumowanie statystyk liczników</h4>
+                    <div id="raporty-statystyki">Ładowanie statystyk...</div>
+                </div>
+                <h4>Historia raportów</h4>
+                <div id="raporty-historia">Ładowanie historii...</div>
+            </div>
+        </div>
+
+        <!-- MODAL RAPORTU OPERACYJNEGO -->
+        <div id="modal-raport" class="modal-overlay hidden">
+            <div class="modal-content" style="max-width: 660px;">
+                <h4 id="modal-raport-tytul">📝 Raport operacyjny</h4>
+                <input type="hidden" id="raport-data">
+                <p id="raport-tryb-info" class="text-muted hidden" style="margin: 0 0 12px 0;"></p>
+
+                <fieldset id="raport-sekcja-paliwa" class="raport-sekcja" style="border: 2px solid var(--border-color); border-radius: 8px; padding: 12px; margin-bottom: 14px;">
+                    <legend style="font-weight: 700;">⛽ Paliwa</legend>
+                    <div class="table-responsive">
+                        <table class="standard-table">
+                            <tr><th>Paliwo</th><th>Pojemność</th></tr>
+                            <tr><td style="text-align:left;">95</td><td>4000 L</td></tr>
+                            <tr><td style="text-align:left;">ON</td><td>4000 L</td></tr>
+                            <tr><td style="text-align:left;">V98</td><td>1000 L</td></tr>
+                            <tr><td style="text-align:left;">VON</td><td>1500 L</td></tr>
+                        </table>
+                    </div>
+                    <div style="display: flex; gap: 18px; flex-wrap: wrap; margin-top: 10px;">
+                        <label style="display:flex; align-items:center; gap:8px; cursor:pointer; margin:0;">
+                            <input type="checkbox" id="raport-paliwo-stan-ok" onchange="window.odswiezRaportPaliwa()"> <span>Stan OK</span>
+                        </label>
+                        <label style="display:flex; align-items:center; gap:8px; cursor:pointer; margin:0;">
+                            <input type="checkbox" id="raport-paliwo-dostawa" onchange="window.odswiezRaportPaliwa()"> <span>Dostawa</span>
+                        </label>
+                    </div>
+                    <div id="raport-stockout-msg" class="error hidden" style="margin-top: 10px; font-weight: 700;">Zgłoś ryzyko StockOut</div>
+                </fieldset>
+
+                <fieldset id="raport-sekcja-liczniki" class="raport-sekcja" style="border: 2px solid var(--border-color); border-radius: 8px; padding: 12px;">
+                    <legend style="font-weight: 700;">🔢 Liczniki</legend>
+                    <div id="raport-liczniki-wiersze"></div>
+                </fieldset>
+
+                <div style="margin-top: 18px; display: flex; gap: 8px; flex-wrap: wrap;">
+                    <button onclick="window.zapiszRaport()" id="raport-btn-zapisz" class="btn-success" style="margin:0;">💾 Zapisz raport</button>
+                    <button onclick="window.zamknijModalRaportu()" class="btn-neutral" style="margin:0;">Zamknij</button>
+                </div>
             </div>
         </div>
 
@@ -1223,6 +1276,7 @@
     <script defer src="js/modules/aparat.js"></script>
     <script defer src="js/modules/sprzatanie.js"></script>
     <script defer src="js/modules/liczenie.js"></script>
+    <script defer src="js/modules/raporty.js"></script>
     <script defer src="js/modules/sprzedaz.js"></script>
     <script defer src="js/modules/auth.js"></script>
 </body>
