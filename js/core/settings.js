@@ -36,8 +36,53 @@ function zastosujCzcionke(rozmiar) {
     if (selectDD) selectDD.value = rozmiar || "normal";
 }
 
+/* TRYB PEŁNOEKRANOWY (KIOSK) */
+const KLUCZ_TRYBU_KIOSKU = "sklep_tryb_kiosk";
+
+function ustawKlaseKiosku(wlaczony) {
+    const aktywny = !!wlaczony;
+    document.body.classList.toggle("tryb-kiosk", aktywny);
+    const toggleMenu = document.getElementById('kiosk-toggle-dd');
+    const toggleModal = document.getElementById('kiosk-toggle-modal');
+    if (toggleMenu) toggleMenu.checked = aktywny;
+    if (toggleModal) toggleModal.checked = aktywny;
+}
+
+window.ustawTrybKiosku = async function(wlaczony, probujFullscreen = false) {
+    const aktywny = !!wlaczony;
+    try { localStorage.setItem(KLUCZ_TRYBU_KIOSKU, aktywny ? "1" : "0"); } catch (e) { }
+    ustawKlaseKiosku(aktywny);
+    if (!probujFullscreen) return;
+
+    try {
+        if (aktywny) {
+            const element = document.documentElement;
+            if (element.requestFullscreen) {
+                try { await element.requestFullscreen({ navigationUI: "hide" }); }
+                catch (e) { await element.requestFullscreen(); }
+            } else if (element.webkitRequestFullscreen) {
+                await element.webkitRequestFullscreen();
+            }
+        } else if (document.fullscreenElement && document.exitFullscreen) {
+            await document.exitFullscreen();
+        }
+    } catch (e) {
+        // iPhone Safari nie obsługuje Fullscreen API dla zwykłych stron —
+        // sam układ kiosk i tak działa, a przeglądarkę ukrywa PWA z ekranu głównego.
+        console.warn("Fullscreen API niedostępne lub odrzucone:", e);
+    }
+};
+
+window.otworzUstawieniaKiosku = function() {
+    document.getElementById('modal-kiosk-ustawienia').classList.remove('hidden');
+};
+window.zamknijUstawieniaKiosku = function() {
+    document.getElementById('modal-kiosk-ustawienia').classList.add('hidden');
+};
+
 zastosujMotyw(localStorage.getItem("sklep_motyw") || MOTYW_DOMYSLNY);
 zastosujCzcionke(localStorage.getItem("sklep_czcionka") || "normal");
+ustawKlaseKiosku(localStorage.getItem(KLUCZ_TRYBU_KIOSKU) === "1");
 
 /* ZMIANA HASŁA */
 window.otworzModalZmianyHasla = () => {
