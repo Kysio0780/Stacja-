@@ -38,9 +38,10 @@
     <div id="app-screen" class="card hidden">
         
         <div class="app-header-bar">
-            <button class="info-btn" onclick="window.otworzModalInfo()" title="Informacje o aplikacji">i</button>
+            <button onclick="window.wylaczAplikacje()" class="btn-danger btn-sm" title="Wyłącz aplikację">⏻ Wyłącz</button>
             <div class="current-date-display" id="header-current-date">Ładowanie daty...</div>
-            
+            <button class="info-btn" onclick="window.otworzModalInfo()" title="Informacje o aplikacji">i</button>
+
             <div class="user-profile-container">
                 <button class="user-profile-btn" id="user-profile-btn" onclick="window.toggleDropdownMenu(event)">
                     <span>👤</span> <span id="profile-btn-label">Zaloguj</span>
@@ -1086,6 +1087,13 @@
                 <p class="text-muted" style="margin:0;">Dane finansowe zostaną dodane w kolejnym etapie.</p>
             </div>
         </div>
+    </div>
+
+    <!-- EKRAN PO WYŁĄCZENIU APLIKACJI -->
+    <div id="ekran-wylaczone" class="hidden" style="position:fixed; inset:0; z-index:9999; background:var(--bg-color); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; text-align:center; padding:24px;">
+        <h2 style="margin:0;">🛑 Aplikacja została wyłączona</h2>
+        <p class="text-muted" style="margin:0;">Aby uruchomić ją ponownie, użyj poniższego przycisku.</p>
+        <button onclick="window.uruchomPonownieAplikacje()" class="btn-success">🔄 Uruchom ponownie</button>
     </div>
 
     <!-- SKRYPTY FIREBASE -->
