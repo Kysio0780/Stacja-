@@ -2,6 +2,9 @@
 // Moduł Planogramy (kategorie półek, zdjęcia).
 
 /* ==================== PLANOGRAMY ==================== */
+// Margines bezpieczeństwa poniżej limitu 1 MiB dokumentu Firestore.
+const LIMIT_DOKUMENTU_FIRESTORE = 1_000_000;
+
 async function pobierzListePolokDlaPlanogramu() {
     try {
         const docSnap = await getDoc(doc(db, "system_ustawienia", "planogramy_kategorie"));
@@ -72,6 +75,7 @@ window.usunPolkeZListyPlanogramu = async function(nazwa) {
         if (typeof window.usunPolkeZDanychSprzatania === 'function') {
             await window.usunPolkeZDanychSprzatania(nazwa);
         }
+        if (typeof window.odswiezRozmiarZdjecJesliAdmin === 'function') window.odswiezRozmiarZdjecJesliAdmin();
         window.zaladujPlanogramyMenu();
     } catch (e) { alert("Błąd usuwania."); }
 };
@@ -116,15 +120,33 @@ window.dodajZdjeciaDoPlanogramu = async function() {
     const fileInput = document.getElementById('admin-planogram-file');
     if (!fileInput.files || fileInput.files.length === 0) return alert("Wybierz przynajmniej jedno zdjęcie!");
 
-    const compressedResults = await Promise.all(
-        Array.from(fileInput.files).map(f => new Promise(res => kompresujObraz(f, res)))
-    );
-    const noweZdjecia = compressedResults.filter(Boolean);
-    if (noweZdjecia.length === 0) return alert("Nie udało się przetworzyć zdjęć. Spróbuj ponownie.");
-
     const nazwa = aktualnieOtwartyPlanogram;
     try {
         const docRef = doc(db, "planogramy", nazwa);
+
+        // Dokument Firestore ma limit 1 MiB. Wyznaczamy budżet dla nowych zdjęć
+        // na podstawie już zapisanych, żeby dwa zdjęcia na półkę się zmieściły.
+        const snapPrzed = await getDoc(docRef);
+        const danePrzed = snapPrzed.exists() ? snapPrzed.data() : {};
+        const obecnePrzed = Array.isArray(danePrzed.zdjęcia) && danePrzed.zdjęcia.length > 0
+            ? danePrzed.zdjęcia
+            : (danePrzed.plik ? [danePrzed.plik] : []);
+        const zajeteBajty = obecnePrzed.reduce((sum, z) => sum + String(z || "").length, 0);
+        const dostepneKb = Math.floor((LIMIT_DOKUMENTU_FIRESTORE - 2000 - zajeteBajty) / 1024 / fileInput.files.length);
+        const targetKb = Math.max(120, Math.min(KOMPRESJA_MAX_KB, dostepneKb - 10));
+
+        const compressedResults = await Promise.all(
+            Array.from(fileInput.files).map(f => new Promise(res => kompresujObraz(f, res, targetKb)))
+        );
+        const noweZdjecia = compressedResults.filter(Boolean);
+        if (noweZdjecia.length === 0) return alert("Nie udało się przetworzyć zdjęć. Spróbuj ponownie.");
+
+        const rozmiarPo = [...obecnePrzed, ...noweZdjecia].reduce((sum, z) => sum + String(z || "").length, 0) + 2000;
+        if (rozmiarPo > LIMIT_DOKUMENTU_FIRESTORE) {
+            alert(`Zdjęcia nie zmieściłyby się w dokumencie (${(rozmiarPo / 1024 / 1024).toFixed(2)} MB > 1 MB). Usuń jedno z istniejących zdjęć i spróbuj ponownie.`);
+            return;
+        }
+
         const teraz = new Date().toISOString();
         const autor = currentUserData.imie;
         const autorId = pobierzIdPracownika(currentUserData);
@@ -146,6 +168,7 @@ window.dodajZdjeciaDoPlanogramu = async function() {
             }, { merge: true });
         });
 
+        if (typeof window.odswiezRozmiarZdjecJesliAdmin === 'function') window.odswiezRozmiarZdjecJesliAdmin();
         alert(`Dodano ${noweZdjecia.length} zdjęć!`);
         fileInput.value = "";
         window.otworzModalPlanogramu(nazwa);
@@ -178,6 +201,7 @@ window.usunPojedynczeZdjeciePlanogramu = async function(index) {
                 autor: currentUserData.imie
             }, { merge: true });
         });
+        if (typeof window.odswiezRozmiarZdjecJesliAdmin === 'function') window.odswiezRozmiarZdjecJesliAdmin();
         window.otworzModalPlanogramu(nazwa);
         window.zaladujPlanogramyMenu();
     } catch (e) { alert("Błąd usuwania: " + e.message); }
