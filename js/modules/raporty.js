@@ -113,31 +113,52 @@ function renderujWierszePaliw() {
     kontener.innerHTML = RAPORTY_PALIWA.map(p => `
         <tr class="raport-wiersz" id="raport-paliwo-wiersz-${p.klucz}">
             <td style="text-align:left;">${ucieczkaHtml(p.etykieta)}</td>
-            <td><span id="raport-min-${p.klucz}">${ucieczkaHtml(String(progiPaliwRaportu[p.klucz]))}</span> L</td>
             <td>
-                <input type="checkbox" id="raport-paliwo-${p.klucz}" onchange="window.odswiezRaportPaliwa()">
+                <span id="raport-min-${p.klucz}">${ucieczkaHtml(String(progiPaliwRaportu[p.klucz]))}</span> L
+                <input type="checkbox" id="raport-paliwo-${p.klucz}" onchange="window.odswiezRaportPaliwa()"
+                       title="Stan OK" style="margin-left: 6px;">
+            </td>
+            <td>
+                <input type="checkbox" id="raport-paliwo-${p.klucz}-dostawa" onchange="window.odswiezRaportPaliwa()"
+                       title="Dostawa">
             </td>
         </tr>`).join('');
 }
 
+// Zgodność ze starszymi formatami zapisu paliw.
+function normalizujPaliwoRaportu(zapis, dostawaGlobalna, stareStanOk) {
+    if (zapis && typeof zapis === 'object') {
+        return { stanOk: !!zapis.stanOk, dostawa: !!zapis.dostawa };
+    }
+    if (typeof zapis === 'boolean') {
+        return { stanOk: zapis, dostawa: !!dostawaGlobalna };
+    }
+    return { stanOk: !!stareStanOk, dostawa: !!dostawaGlobalna };
+}
+
 window.odswiezRaportPaliwa = function() {
-    let wszystkie = true;
+    const ryzyko = [];
     RAPORTY_PALIWA.forEach(p => {
-        const zaznaczone = !!document.getElementById(`raport-paliwo-${p.klucz}`)?.checked;
-        if (!zaznaczone) wszystkie = false;
+        const stanOk = !!document.getElementById(`raport-paliwo-${p.klucz}`)?.checked;
+        const dostawa = !!document.getElementById(`raport-paliwo-${p.klucz}-dostawa`)?.checked;
+        const dobrze = stanOk || dostawa;
+        if (!dobrze) ryzyko.push(p.etykieta);
         const wiersz = document.getElementById(`raport-paliwo-wiersz-${p.klucz}`);
         if (wiersz) {
-            wiersz.classList.toggle('raport-ok', zaznaczone);
-            wiersz.classList.toggle('raport-blad', !zaznaczone);
+            wiersz.classList.toggle('raport-ok', dobrze);
+            wiersz.classList.toggle('raport-blad', !dobrze);
         }
     });
     const sekcja = document.getElementById('raport-sekcja-paliwa');
     if (sekcja) {
-        sekcja.classList.toggle('raport-ok', wszystkie);
-        sekcja.classList.toggle('raport-blad', !wszystkie);
+        sekcja.classList.toggle('raport-ok', ryzyko.length === 0);
+        sekcja.classList.toggle('raport-blad', ryzyko.length > 0);
     }
     const komunikat = document.getElementById('raport-stockout-msg');
-    if (komunikat) komunikat.classList.toggle('hidden', wszystkie);
+    if (komunikat) {
+        komunikat.innerText = ryzyko.length > 0 ? `Zgłoś ryzyko StockOut: ${ryzyko.join(', ')}` : '';
+        komunikat.classList.toggle('hidden', ryzyko.length === 0);
+    }
 };
 
 /* ===== Liczniki w modalu ===== */
@@ -215,11 +236,10 @@ window.otworzModalRaportu = async function(data = null, tylkoPodglad = false) {
 
         const stareStanOk = !!paliwa.stanOk;
         RAPORTY_PALIWA.forEach(p => {
-            const zapisane = paliwa[p.klucz];
-            document.getElementById(`raport-paliwo-${p.klucz}`).checked =
-                zapisane === undefined ? stareStanOk : !!zapisane;
+            const norm = normalizujPaliwoRaportu(paliwa[p.klucz], paliwa.dostawa, stareStanOk);
+            document.getElementById(`raport-paliwo-${p.klucz}`).checked = norm.stanOk;
+            document.getElementById(`raport-paliwo-${p.klucz}-dostawa`).checked = norm.dostawa;
         });
-        document.getElementById('raport-paliwo-dostawa').checked = !!paliwa.dostawa;
         window.odswiezRaportPaliwa();
 
         RAPORTY_LICZNIKI.forEach(l => {
@@ -236,6 +256,9 @@ window.otworzModalRaportu = async function(data = null, tylkoPodglad = false) {
     const modal = document.getElementById('modal-raport');
     modal.querySelectorAll('input').forEach(wejscie => { wejscie.disabled = tylkoPodglad; });
     document.getElementById('raport-btn-zapisz').classList.toggle('hidden', tylkoPodglad);
+    const moznaZarzadzac = tylkoPodglad && czyAdminRaportow();
+    document.getElementById('raport-btn-edytuj').classList.toggle('hidden', !moznaZarzadzac);
+    document.getElementById('raport-btn-usun').classList.toggle('hidden', !moznaZarzadzac);
     modal.classList.remove('hidden');
 };
 
@@ -246,9 +269,11 @@ window.zapiszRaport = async function() {
 
     const paliwa = {};
     RAPORTY_PALIWA.forEach(p => {
-        paliwa[p.klucz] = !!document.getElementById(`raport-paliwo-${p.klucz}`).checked;
+        paliwa[p.klucz] = {
+            stanOk: !!document.getElementById(`raport-paliwo-${p.klucz}`).checked,
+            dostawa: !!document.getElementById(`raport-paliwo-${p.klucz}-dostawa`).checked
+        };
     });
-    paliwa.dostawa = !!document.getElementById('raport-paliwo-dostawa').checked;
 
     const liczniki = {};
     for (const l of RAPORTY_LICZNIKI) {
@@ -284,6 +309,26 @@ window.zapiszRaport = async function() {
         await window.zaladujRaporty();
         alert('Raport został zapisany!');
     } catch (e) { alert('Błąd zapisu raportu: ' + e.message); }
+};
+
+window.edytujRaportZPodgladu = function() {
+    const data = document.getElementById('raport-data').value;
+    window.zamknijModalRaportu();
+    window.otworzModalRaportu(data, false);
+};
+
+window.usunRaportZPodgladu = async function() {
+    if (!czyAdminRaportow()) return alert('Brak uprawnień!');
+    const data = document.getElementById('raport-data').value;
+    if (!data) return;
+    if (!confirm(`Usunąć raport z dnia ${formatujDateDoWyswietlenia(data)}? Tej operacji nie da się cofnąć.`)) return;
+    try {
+        await deleteDoc(doc(db, RAPORTY_OPERACYJNE_KOLEKCJA, data));
+        window.zamknijModalRaportu();
+        await window.zaladujRaporty();
+        window.sprawdzBadgeRaportu();
+        alert('Raport został usunięty.');
+    } catch (e) { alert('Błąd usuwania raportu: ' + e.message); }
 };
 
 /* ===== Zakresy statystyk ===== */
@@ -415,12 +460,12 @@ window.zaladujRaporty = async function() {
                 historia.innerHTML = '<p class="text-muted">Brak zapisanych raportów.</p>';
             } else {
                 historia.innerHTML = `<div class="table-responsive"><table class="standard-table">
-                    <tr><th>Data</th><th>Osoba</th><th>Paliwa</th><th>Liczniki</th><th>Podgląd</th></tr>
+                    <tr><th>Data</th><th>Osoba</th><th>Paliwa</th><th>Liczniki</th></tr>
                     ${raporty.map(r => {
                         const p = r.paliwa || {};
                         const nieok = RAPORTY_PALIWA.filter(x => {
-                            const zapisane = p[x.klucz];
-                            return zapisane === undefined ? !p.stanOk : !zapisane;
+                            const norm = normalizujPaliwoRaportu(p[x.klucz], p.dostawa, p.stanOk);
+                            return !(norm.stanOk || norm.dostawa);
                         }).map(x => x.etykieta);
                         const paliwaOpis = nieok.length === 0 ? 'OK' : 'STOCKOUT: ' + nieok.join(', ');
                         const licznikiOpis = RAPORTY_LICZNIKI.map(l => {
@@ -429,11 +474,12 @@ window.zaladujRaporty = async function() {
                             return `${l.etykieta}: ${wartosc}`;
                         }).join(' | ');
                         return `<tr>
-                            <td>${ucieczkaHtml(formatujDateDoWyswietlenia(r.id))}</td>
+                            <td style="cursor:pointer; text-decoration:underline;"
+                                onclick="window.otworzModalRaportu('${ucieczkaHtml(ucieczkaJs(r.id))}', true)"
+                                title="Podgląd, edycja lub usunięcie raportu">${ucieczkaHtml(formatujDateDoWyswietlenia(r.id))}</td>
                             <td>${ucieczkaHtml(r.osoba || '—')}</td>
                             <td>${ucieczkaHtml(paliwaOpis)}</td>
                             <td style="text-align:left;">${ucieczkaHtml(licznikiOpis)}</td>
-                            <td><button onclick="window.otworzModalRaportu('${ucieczkaHtml(ucieczkaJs(r.id))}', true)" class="btn-info btn-sm" style="margin:0;">👁️</button></td>
                         </tr>`;
                     }).join('')}
                 </table></div>`;
