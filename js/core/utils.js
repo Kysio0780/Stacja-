@@ -18,28 +18,52 @@ function ustawBiezacaDateWNaglowku() {
 }
 ustawBiezacaDateWNaglowku();
 
-function kompresujObraz(file, callback) {
+// Zdjęcia są zapisywane jako data URL bezpośrednio w dokumencie Firestore (limit 1 MiB).
+// Na jedną półkę przypadają maks. 2 zdjęcia, więc jeden string base64 nie powinien
+// przekraczać ~495 kB. Kompresja celuje w ten rozmiar i w razie potrzeby go egzekwuje.
+const KOMPRESJA_MAX_DIM = 1500;
+const KOMPRESJA_JAKOSC = 0.80;
+const KOMPRESJA_MAX_KB = 495;
+
+function kompresujObraz(file, callback, maxKb = KOMPRESJA_MAX_KB) {
     if (!file) { callback(null); return; }
     const reader = new FileReader();
     reader.onload = function (e) {
         const img = new Image();
         img.onload = function () {
             const canvas = document.createElement('canvas');
-            const MAX_DIM = 900;
-            let { width, height } = img;
+            const ctx = canvas.getContext('2d');
+            const limitZnakow = Math.floor(maxKb * 1024);
+            const { width, height } = img;
+            const wsp = Math.min(1, KOMPRESJA_MAX_DIM / Math.max(width, height));
+            const bazowaSzer = Math.max(1, Math.round(width * wsp));
+            const bazowaWys = Math.max(1, Math.round(height * wsp));
 
-            if (width > height && width > MAX_DIM) {
-                height *= MAX_DIM / width;
-                width = MAX_DIM;
-            } else if (height >= width && height > MAX_DIM) {
-                width *= MAX_DIM / height;
-                height = MAX_DIM;
+            const rysuj = (skala) => {
+                canvas.width = Math.max(1, Math.round(bazowaSzer * skala));
+                canvas.height = Math.max(1, Math.round(bazowaWys * skala));
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            };
+
+            rysuj(1);
+
+            let jakosc = KOMPRESJA_JAKOSC;
+            let skala = 1;
+            let dataUrl = canvas.toDataURL('image/jpeg', jakosc);
+
+            // Najpierw obniżamy jakość, dopiero potem wymiary — dzięki temu
+            // zdjęcie mieści się w limicie, nawet jeśli jest bardzo detaliczne.
+            while (dataUrl.length > limitZnakow && skala > 0.55) {
+                if (jakosc > 0.55) {
+                    jakosc = Math.max(0.55, +(jakosc - 0.05).toFixed(2));
+                } else {
+                    skala = +(skala - 0.1).toFixed(2);
+                    rysuj(skala);
+                    jakosc = 0.7;
+                }
+                dataUrl = canvas.toDataURL('image/jpeg', jakosc);
             }
-
-            canvas.width = width;
-            canvas.height = height;
-            canvas.getContext('2d').drawImage(img, 0, 0, width, height);
-            callback(canvas.toDataURL('image/jpeg', 0.72));
+            callback(dataUrl);
         };
         img.src = e.target.result;
     };
