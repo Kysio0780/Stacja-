@@ -86,18 +86,12 @@
                         <input type="checkbox" id="kiosk-toggle-dd" onchange="window.ustawTrybKiosku(this.checked, true)">
                         <span>🖥️ Tryb pełnoekranowy (kiosk)</span>
                     </label>
-                    <p class="text-muted" style="font-size:0.8em; margin: 4px 0 0 0;">W trybie kiosku wyłączysz go przyciskiem ⚙️ w rogu ekranu.</p>
-
                     <hr style="margin: 12px 0; border: 0; border-top: 1px solid var(--border-color);">
                     <button onclick="window.otworzModalZmianyHasla(); window.zamknijDropdownMenu();" class="btn-info" style="margin: 0 0 8px 0;">🔑 Zmień hasło</button>
                     <button onclick="window.wyloguj(); window.zamknijDropdownMenu();" class="btn-danger" style="margin: 0;">🚪 Wyloguj się</button>
                 </div>
             </div>
         </div>
-
-        <!-- Pływający przycisk ustawień widoczny tylko w trybie kiosku -->
-        <button type="button" id="kiosk-settings-btn" onclick="window.otworzUstawieniaKiosku()"
-                title="Ustawienia widoku" aria-label="Ustawienia widoku">⚙️</button>
 
         <!-- MENU KAFELKOWE -->
         <div id="menu-tiles">
@@ -1134,22 +1128,6 @@
                 </div>
 
                 <div id="liczenie-historia" class="hidden" style="margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--border-color);"></div>
-            </div>
-        </div>
-
-        <!-- USTAWIENIA WIDOKU W TRYBIE KIOSKU -->
-        <div id="modal-kiosk-ustawienia" class="modal-overlay hidden">
-            <div class="modal-content" style="max-width: 420px;">
-                <h4>⚙️ Ustawienia widoku</h4>
-                <p class="text-muted">Aplikacja pracuje w trybie pełnoekranowym. Pasek przeglądarki jest ukryty, a gesty wyciągające pasek narzędzi zablokowane. Nagłówek i nawigacja pozostają widoczne.</p>
-                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin: 14px 0;">
-                    <input type="checkbox" id="kiosk-toggle-modal" onchange="window.ustawTrybKiosku(this.checked, true)">
-                    <span>🖥️ Tryb pełnoekranowy (kiosk)</span>
-                </label>
-                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                    <button onclick="window.ustawTrybKiosku(false, true); window.zamknijUstawieniaKiosku();" class="btn-success" style="margin:0;">↩️ Wróć do normalnego widoku</button>
-                    <button onclick="window.zamknijUstawieniaKiosku()" class="btn-neutral" style="margin:0;">Zamknij</button>
-                </div>
             </div>
         </div>
 
