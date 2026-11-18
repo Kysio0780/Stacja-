@@ -68,13 +68,16 @@ window.generujWydrukGrafikuPDF = async function() {
                 : null;
             const odVal = potw ? ucieczkaHtml(String(potw.od || '')) : '';
             const doVal = potw ? ucieczkaHtml(String(potw.do || '')) : '';
+            const podpisVal = potw
+                ? `${ucieczkaHtml(emp.imie)}<br><span style="font-size:6px; font-weight:normal;">(potwierdzono cyfrowo)</span>`
+                : '';
 
             tbody += `
                 <td style="border-left:2px solid #000; width:24px;">${rVal}</td>
                 <td style="width:24px;">${zVal}</td>
                 <td style="width:32px;">${odVal}</td>
                 <td style="width:32px;">${doVal}</td>
-                <td style="width:58px;"></td>`;
+                <td style="width:58px; line-height:1.1;">${podpisVal}</td>`;
         });
         tbody += `</tr>`;
     }
@@ -97,14 +100,15 @@ window.generujWydrukGrafikuPDF = async function() {
     });
 
     const pdfContainer = document.createElement('div');
-    pdfContainer.style.cssText = 'background:#ffffff; color:#000000; font-family:Arial,sans-serif; padding:6px; width:1080px;';
+    pdfContainer.style.cssText = 'background:#ffffff; color:#000000; font-family:Arial,sans-serif; padding:3px; width:1080px;';
     pdfContainer.innerHTML = `
         <style>
-            .pdf-export-table { width: 100%; border-collapse: collapse; font-size: 9px; color: #000; }
-            .pdf-export-table th, .pdf-export-table td { border: 1px solid #444; padding: 2px 2px; text-align: center; }
-            .pdf-export-table th { background: #e2e8f0; font-weight: bold; }
+            .pdf-export-table { width: 100%; border-collapse: collapse; font-size: 8px; line-height: 1.05; color: #000; page-break-inside: avoid; }
+            .pdf-export-table th, .pdf-export-table td { border: 1px solid #444; padding: 1px; text-align: center; page-break-inside: avoid; }
+            .pdf-export-table th { background: #e2e8f0; color: #000 !important; font-weight: bold; }
+            .pdf-export-table tr { page-break-inside: avoid; }
         </style>
-        <h2 style="text-align:center; margin:0 0 6px 0; font-size:13px; color:#000;">LISTA OBECNOŚCI / GRAFIK ZA MIESIĄC: ${nazwaMiesiaca}</h2>
+        <h2 style="text-align:center; margin:0 0 4px 0; font-size:12px; color:#000;">LISTA OBECNOŚCI / GRAFIK ZA MIESIĄC: ${nazwaMiesiaca}</h2>
         <table class="pdf-export-table">
             <thead>${thead1}${thead2}</thead>
             <tbody>${tbody}</tbody>
@@ -115,8 +119,9 @@ window.generujWydrukGrafikuPDF = async function() {
 
     if (typeof window.html2pdf !== 'undefined') {
         const opt = {
-            margin: [5, 5, 5, 5],
+            margin: [3, 3, 3, 3],
             filename: nazwaPlikuPdf,
+            pagebreak: { mode: 'avoid-all' },
             image: { type: 'jpeg', quality: 0.98 },
             html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
