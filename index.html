@@ -40,6 +40,12 @@
         <div class="app-header-bar">
             <button class="info-btn" onclick="window.otworzModalInfo()" title="Informacje o aplikacji">i</button>
             <div class="current-date-display" id="header-current-date">Ładowanie daty...</div>
+
+            <div class="storage-usage hidden" id="header-storage-usage"
+                 title="Rozmiar zdjęć w bazie. Kliknij, aby przeliczyć."
+                 onclick="window.odswiezRozmiarZdjec()">
+                💾 <span id="header-storage-value">—</span>
+            </div>
             
             <div class="user-profile-container">
                 <button class="user-profile-btn" id="user-profile-btn" onclick="window.toggleDropdownMenu(event)">
@@ -1109,6 +1115,7 @@
     <script defer src="js/core/firebase.js"></script>
     <script defer src="js/core/state.js"></script>
     <script defer src="js/core/utils.js"></script>
+    <script defer src="js/core/storage-stats.js"></script>
     <script defer src="js/core/ui.js"></script>
     <script defer src="js/core/zoom.js"></script>
     <script defer src="js/core/settings.js"></script>
