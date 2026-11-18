@@ -109,16 +109,19 @@ window.otworzModalPlanogramu = async function(nazwaPolki) {
 };
 
 window.zamknijModalPlanogramu = () => {
+    if (typeof window.zamknijAparat === 'function') window.zamknijAparat();
     document.getElementById('modal-planogram-szczegoly').classList.add('hidden');
     aktualnieOtwartyPlanogram = null;
 };
 
-window.dodajZdjeciaDoPlanogramu = async function() {
-    if (!aktualnieOtwartyPlanogram) return alert("Najpierw otwórz planogram wybranej półki.");
-    if (!(currentUserData && currentUserData.rola === 'admin')) return alert("Brak uprawnień!");
+// Wspólny zapis dla zdjęć z galerii oraz z aparatu.
+// źródła to pliki (File) albo gotowe data URL (np. fallback z aparatu).
+window.zapiszZdjeciaWPlanogramie = async function(zrodla, opcje = {}) {
+    if (!aktualnieOtwartyPlanogram) { alert("Najpierw otwórz planogram wybranej półki."); return false; }
+    if (!(currentUserData && currentUserData.rola === 'admin')) { alert("Brak uprawnień!"); return false; }
 
-    const fileInput = document.getElementById('admin-planogram-file');
-    if (!fileInput.files || fileInput.files.length === 0) return alert("Wybierz przynajmniej jedno zdjęcie!");
+    const lista = Array.isArray(zrodla) ? zrodla : [];
+    if (lista.length === 0) { alert("Wybierz przynajmniej jedno zdjęcie!"); return false; }
 
     const nazwa = aktualnieOtwartyPlanogram;
     try {
@@ -132,19 +135,25 @@ window.dodajZdjeciaDoPlanogramu = async function() {
             ? danePrzed.zdjęcia
             : (danePrzed.plik ? [danePrzed.plik] : []);
         const zajeteBajty = obecnePrzed.reduce((sum, z) => sum + String(z || "").length, 0);
-        const dostepneKb = Math.floor((LIMIT_DOKUMENTU_FIRESTORE - 2000 - zajeteBajty) / 1024 / fileInput.files.length);
+        const dostepneKb = Math.floor((LIMIT_DOKUMENTU_FIRESTORE - 2000 - zajeteBajty) / 1024 / lista.length);
         const targetKb = Math.max(120, Math.min(KOMPRESJA_MAX_KB, dostepneKb - 10));
 
-        const compressedResults = await Promise.all(
-            Array.from(fileInput.files).map(f => new Promise(res => kompresujObraz(f, res, targetKb)))
-        );
+        const compressedResults = await Promise.all(lista.map(zrodlo => {
+            if (typeof zrodlo === 'string') {
+                // Data URL zamieniamy na plik, żeby przeszedł przez tę samą kompresję.
+                return fetch(zrodlo)
+                    .then(r => r.blob())
+                    .then(blob => new Promise(res => kompresujObraz(new File([blob], "aparat.jpg", { type: "image/jpeg" }), res, targetKb)));
+            }
+            return new Promise(res => kompresujObraz(zrodlo, res, targetKb));
+        }));
         const noweZdjecia = compressedResults.filter(Boolean);
-        if (noweZdjecia.length === 0) return alert("Nie udało się przetworzyć zdjęć. Spróbuj ponownie.");
+        if (noweZdjecia.length === 0) { alert("Nie udało się przetworzyć zdjęć. Spróbuj ponownie."); return false; }
 
         const rozmiarPo = [...obecnePrzed, ...noweZdjecia].reduce((sum, z) => sum + String(z || "").length, 0) + 2000;
         if (rozmiarPo > LIMIT_DOKUMENTU_FIRESTORE) {
             alert(`Zdjęcia nie zmieściłyby się w dokumencie (${(rozmiarPo / 1024 / 1024).toFixed(2)} MB > 1 MB). Usuń jedno z istniejących zdjęć i spróbuj ponownie.`);
-            return;
+            return false;
         }
 
         const teraz = new Date().toISOString();
@@ -170,10 +179,21 @@ window.dodajZdjeciaDoPlanogramu = async function() {
 
         if (typeof window.odswiezRozmiarZdjecJesliAdmin === 'function') window.odswiezRozmiarZdjecJesliAdmin();
         alert(`Dodano ${noweZdjecia.length} zdjęć!`);
-        fileInput.value = "";
+        if (opcje.czyscPliki) {
+            const fileInput = document.getElementById('admin-planogram-file');
+            if (fileInput) fileInput.value = "";
+        }
         window.otworzModalPlanogramu(nazwa);
         window.zaladujPlanogramyMenu();
-    } catch (e) { alert("Błąd zapisu: " + e.message); }
+        return true;
+    } catch (e) { alert("Błąd zapisu: " + e.message); return false; }
+};
+
+window.dodajZdjeciaDoPlanogramu = async function() {
+    const fileInput = document.getElementById('admin-planogram-file');
+    const pliki = Array.from(fileInput?.files || []);
+    if (pliki.length === 0) return alert("Wybierz przynajmniej jedno zdjęcie!");
+    await window.zapiszZdjeciaWPlanogramie(pliki, { czyscPliki: true });
 };
 
 window.usunPojedynczeZdjeciePlanogramu = async function(index) {
