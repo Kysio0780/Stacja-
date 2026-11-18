@@ -57,6 +57,7 @@ onAuthStateChanged(auth, async (user) => {
             document.getElementById('tile-pracownicy').style.display = czyAdmin ? 'flex' : 'none';
             document.getElementById('tile-statystyki').style.display = czyAdmin ? 'flex' : 'none';
             document.getElementById('tile-finanse').style.display = czyAdmin ? 'flex' : 'none';
+            if (typeof window.inicjalizujWskaznikMagazynu === 'function') window.inicjalizujWskaznikMagazynu();
             if (typeof window.sprawdzObecnoscGrafikuGlobal === 'function') window.sprawdzObecnoscGrafikuGlobal();
             
             sprawdzPowiadomieniaMisje(user.uid, imieKrotkie, czyAdmin);
@@ -70,11 +71,15 @@ onAuthStateChanged(auth, async (user) => {
             try { await signOut(auth); } catch (e) { console.error(e); }
             document.getElementById('login-screen').classList.remove('hidden');
             document.getElementById('app-screen').classList.add('hidden');
+            const wskaznikRozmiaru = document.getElementById('header-storage-usage');
+            if (wskaznikRozmiaru) wskaznikRozmiaru.classList.add('hidden');
         }
     } else {
         currentUserData = null;
         document.getElementById('login-screen').classList.remove('hidden');
         document.getElementById('app-screen').classList.add('hidden');
+        const wskaznikRozmiaru = document.getElementById('header-storage-usage');
+        if (wskaznikRozmiaru) wskaznikRozmiaru.classList.add('hidden');
         const badgeGrafiku = document.getElementById('grafik-badge');
         if (badgeGrafiku) badgeGrafiku.classList.add('hidden');
     }
