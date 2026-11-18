@@ -106,6 +106,22 @@
             text-transform: capitalize;
         }
 
+        .storage-usage {
+            flex-shrink: 0;
+            font-size: 0.85em;
+            font-weight: 600;
+            white-space: nowrap;
+            color: var(--text-color);
+            background: var(--group-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 5px 10px;
+            cursor: pointer;
+            transition: opacity 0.2s ease;
+        }
+        .storage-usage:hover { border-color: var(--primary); }
+        .storage-usage.liczenie { opacity: 0.5; }
+
         .user-profile-container { position: relative; flex-shrink: 0; }
 
         .user-profile-btn {
