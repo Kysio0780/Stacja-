@@ -509,8 +509,9 @@
                     <span id="admin-misje-arrow">▼ Rozwiń</span>
                 </div>
                 <div id="admin-misje-content" class="collapsible-content" style="border-style: dashed; border-color: var(--success); background: var(--card-bg);">
-                    <label>Pracownik:</label>
-                    <select id="misja-pracownik-select"><option value="">Wczytuję pracowników...</option></select>
+                    <label>Pracownicy (można zaznaczyć kilku):</label>
+                    <div id="misja-pracownicy-checkboxy" style="display: flex; flex-wrap: wrap; gap: 8px 14px; margin-bottom: 10px;">Wczytuję pracowników...</div>
+                    <button type="button" onclick="window.zaznaczWszystkichPracownikowMisji()" class="btn-neutral btn-sm" style="margin: 0 0 12px 0;">☑️ Zaznacz / odznacz wszystkich</button>
 
                     <label>Zadanie:</label>
                     <textarea id="misja-tresc" rows="2" placeholder="Wpisz treść zadania..."></textarea>
