@@ -623,6 +623,17 @@
 
             <!-- Główna tabela grafiku -->
             <div id="grafik-tabela-wrapper">Ładowanie grafiku...</div>
+
+            <!-- Podsumowanie statystyczne (tylko administrator) -->
+            <div id="grafik-podsumowanie-admin" class="hidden" style="margin-top:16px;">
+                <div class="collapsible-header" onclick="window.toggleCollapsible('grafik-podsumowanie-content', 'grafik-podsumowanie-arrow')" style="padding:8px 10px; font-size:0.9em;">
+                    <span>📊 Podsumowanie statystyczne pracowników</span>
+                    <span id="grafik-podsumowanie-arrow">▲ Zwiń</span>
+                </div>
+                <div id="grafik-podsumowanie-content" class="collapsible-content open" style="padding-top:10px;">
+                    <div id="grafik-podsumowanie-tabela"></div>
+                </div>
+            </div>
         </div>
 
         <!-- MODAL EDYCJI KOMÓRKI GRAFIKU (ADMIN) -->
