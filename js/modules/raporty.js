@@ -426,10 +426,10 @@ window.zaladujRaporty = async function() {
             ? ''
             : '<p class="text-muted">Raport operacyjny wypełniasz raz dziennie na zakończenie zmiany.</p>';
     }
-    if (!admin) return;
-
-    progiPaliwRaportu = await pobierzProgiPaliwRaportow();
-    wypelnijPolaProgow(progiPaliwRaportu);
+    if (admin) {
+        progiPaliwRaportu = await pobierzProgiPaliwRaportow();
+        wypelnijPolaProgow(progiPaliwRaportu);
+    }
 
     try {
         const snap = await getDocs(collection(db, RAPORTY_OPERACYJNE_KOLEKCJA));
@@ -455,7 +455,7 @@ window.zaladujRaporty = async function() {
         if (statContainer) statContainer.innerHTML = statHtml;
 
         const historia = document.getElementById('raporty-historia');
-        if (historia) {
+        if (admin && historia) {
             if (raporty.length === 0) {
                 historia.innerHTML = '<p class="text-muted">Brak zapisanych raportów.</p>';
             } else {
