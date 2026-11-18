@@ -36,42 +36,87 @@ function zastosujCzcionke(rozmiar) {
     if (selectDD) selectDD.value = rozmiar || "normal";
 }
 
-/* TRYB PEŁNOEKRANOWY (KIOSK) */
+/* TRYB PEŁNOEKRANOWY (KIOSK) – domyślnie włączony */
 const KLUCZ_TRYBU_KIOSKU = "sklep_tryb_kiosk";
+
+function jestTrybemKiosk() {
+    return document.body.classList.contains("tryb-kiosk");
+}
+
+function pelnyEkranAktywny() {
+    return !!(document.fullscreenElement || document.webkitFullscreenElement);
+}
 
 function ustawKlaseKiosku(wlaczony) {
     const aktywny = !!wlaczony;
     document.body.classList.toggle("tryb-kiosk", aktywny);
+    document.documentElement.classList.toggle("tryb-kiosk", aktywny);
     const toggleMenu = document.getElementById('kiosk-toggle-dd');
     const toggleModal = document.getElementById('kiosk-toggle-modal');
     if (toggleMenu) toggleMenu.checked = aktywny;
     if (toggleModal) toggleModal.checked = aktywny;
 }
 
+async function poproszOSFullscreen() {
+    if (pelnyEkranAktywny()) return;
+    const element = document.documentElement;
+    try {
+        if (element.requestFullscreen) {
+            try { await element.requestFullscreen({ navigationUI: "hide" }); }
+            catch (e) { await element.requestFullscreen(); }
+        } else if (element.webkitRequestFullscreen) {
+            await element.webkitRequestFullscreen();
+        }
+    } catch (e) {
+        // iPhone Safari nie obsługuje Fullscreen API poza wideo —
+        // PWA dodana do ekranu głównego i tak ukrywa pasek Safari.
+    }
+}
+
+function kioskPopstate() {
+    if (!jestTrybemKiosk()) return;
+    history.pushState({ kiosk: true }, "");
+    poproszOSFullscreen();
+}
+
+let blokadaWsteczAktywna = false;
+function ustawBlokadeWstecz(aktywny) {
+    if (aktywny && !blokadaWsteczAktywna) {
+        blokadaWsteczAktywna = true;
+        history.pushState({ kiosk: true }, "");
+        window.addEventListener("popstate", kioskPopstate);
+    } else if (!aktywny && blokadaWsteczAktywna) {
+        blokadaWsteczAktywna = false;
+        window.removeEventListener("popstate", kioskPopstate);
+    }
+}
+
 window.ustawTrybKiosku = async function(wlaczony, probujFullscreen = false) {
     const aktywny = !!wlaczony;
     try { localStorage.setItem(KLUCZ_TRYBU_KIOSKU, aktywny ? "1" : "0"); } catch (e) { }
     ustawKlaseKiosku(aktywny);
+    ustawBlokadeWstecz(aktywny);
     if (!probujFullscreen) return;
 
-    try {
-        if (aktywny) {
-            const element = document.documentElement;
-            if (element.requestFullscreen) {
-                try { await element.requestFullscreen({ navigationUI: "hide" }); }
-                catch (e) { await element.requestFullscreen(); }
-            } else if (element.webkitRequestFullscreen) {
-                await element.webkitRequestFullscreen();
-            }
-        } else if (document.fullscreenElement && document.exitFullscreen) {
-            await document.exitFullscreen();
-        }
-    } catch (e) {
-        // iPhone Safari nie obsługuje Fullscreen API dla zwykłych stron —
-        // sam układ kiosk i tak działa, a przeglądarkę ukrywa PWA z ekranu głównego.
-        console.warn("Fullscreen API niedostępne lub odrzucone:", e);
+    if (aktywny) {
+        await poproszOSFullscreen();
+    } else if (pelnyEkranAktywny()) {
+        try {
+            if (document.exitFullscreen) await document.exitFullscreen();
+            else if (document.webkitExitFullscreen) await document.webkitExitFullscreen();
+        } catch (e) { }
     }
 };
+
+// Gdy system wyjdzie z fullscreenu, wracamy do niego przy najbliższej interakcji.
+document.addEventListener("fullscreenchange", () => {
+    if (jestTrybemKiosk() && !pelnyEkranAktywny()) poproszOSFullscreen();
+});
+["pointerdown", "keydown"].forEach(typZdarzenia => {
+    document.addEventListener(typZdarzenia, () => {
+        if (jestTrybemKiosk() && !pelnyEkranAktywny()) poproszOSFullscreen();
+    });
+});
 
 window.otworzUstawieniaKiosku = function() {
     document.getElementById('modal-kiosk-ustawienia').classList.remove('hidden');
@@ -82,7 +127,14 @@ window.zamknijUstawieniaKiosku = function() {
 
 zastosujMotyw(localStorage.getItem("sklep_motyw") || MOTYW_DOMYSLNY);
 zastosujCzcionke(localStorage.getItem("sklep_czcionka") || "normal");
-ustawKlaseKiosku(localStorage.getItem(KLUCZ_TRYBU_KIOSKU) === "1");
+
+const kioskZapisany = localStorage.getItem(KLUCZ_TRYBU_KIOSKU);
+const kioskDomyslnieWlaczony = kioskZapisany !== "0";
+ustawKlaseKiosku(kioskDomyslnieWlaczony);
+ustawBlokadeWstecz(kioskDomyslnieWlaczony);
+if (kioskZapisany === null) {
+    try { localStorage.setItem(KLUCZ_TRYBU_KIOSKU, "1"); } catch (e) { }
+}
 
 /* ZMIANA HASŁA */
 window.otworzModalZmianyHasla = () => {
