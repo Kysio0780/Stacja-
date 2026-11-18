@@ -117,19 +117,36 @@ window.generujWydrukGrafikuPDF = async function() {
 
     window.zamknijModalDrukuGrafiku();
 
-    /* Render całej tabeli do jednego obrazka i dopasowanie go do jednej strony A4. */
+    const opisBladu = (err) => (err && (err.message || String(err))) || 'nieznany błąd';
     const jsPDFCtor = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF;
-    try {
-        if (typeof window.html2canvas === 'function' && typeof jsPDFCtor === 'function') {
+
+    /* 1) Próba: cała tabela jako jeden obrazek dopasowany do jednej strony A4. */
+    if (typeof window.html2canvas === 'function' && typeof jsPDFCtor === 'function') {
+        const poprzedniStyl = {
+            position: pdfContainer.style.position,
+            left: pdfContainer.style.left,
+            top: pdfContainer.style.top,
+            zIndex: pdfContainer.style.zIndex
+        };
+        let dodanyDoDokumentu = false;
+        try {
+            pdfContainer.style.position = 'fixed';
+            pdfContainer.style.left = '-10000px';
+            pdfContainer.style.top = '0';
+            pdfContainer.style.zIndex = '-1';
+            document.body.appendChild(pdfContainer);
+            dodanyDoDokumentu = true;
+
             const canvas = await window.html2canvas(pdfContainer, {
                 scale: 2,
                 backgroundColor: '#ffffff',
                 useCORS: true,
-                windowWidth: pdfContainer.scrollWidth,
-                windowHeight: pdfContainer.scrollHeight,
+                windowWidth: Math.max(pdfContainer.scrollWidth, 1080),
+                windowHeight: Math.max(pdfContainer.scrollHeight, 400),
                 scrollX: 0,
                 scrollY: 0
             });
+            if (!canvas || !canvas.width || !canvas.height) throw new Error('Pusty obraz tabeli PDF.');
 
             const pdf = new jsPDFCtor({ orientation: 'landscape', unit: 'mm', format: 'a4' });
             const margines = 3;
@@ -141,15 +158,24 @@ window.generujWydrukGrafikuPDF = async function() {
             );
             const szer = canvas.width * skala;
             const wys = canvas.height * skala;
-            const x = (szerStrony - szer) / 2;
-            const y = (wysStrony - wys) / 2;
 
-            pdf.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', x, y, szer, wys);
+            pdf.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', (szerStrony - szer) / 2, (wysStrony - wys) / 2, szer, wys);
             pdf.save(nazwaPlikuPdf);
             return;
+        } catch (err) {
+            console.warn('PDF: metoda jednej strony nie udała się — próbuję fallback.', err);
+        } finally {
+            if (dodanyDoDokumentu && pdfContainer.parentNode) pdfContainer.parentNode.removeChild(pdfContainer);
+            pdfContainer.style.position = poprzedniStyl.position;
+            pdfContainer.style.left = poprzedniStyl.left;
+            pdfContainer.style.top = poprzedniStyl.top;
+            pdfContainer.style.zIndex = poprzedniStyl.zIndex;
         }
+    }
 
-        if (typeof window.html2pdf !== 'undefined') {
+    /* 2) Fallback: klasyczny html2pdf (może podzielić wydruk na strony). */
+    if (typeof window.html2pdf !== 'undefined') {
+        try {
             const opt = {
                 margin: [3, 3, 3, 3],
                 filename: nazwaPlikuPdf,
@@ -159,9 +185,10 @@ window.generujWydrukGrafikuPDF = async function() {
             };
             await window.html2pdf().set(opt).from(pdfContainer).save();
             return;
+        } catch (err) {
+            alert("Błąd podczas zapisywania pliku PDF: " + opisBladu(err));
+            return;
         }
-        alert("Nie udało się załadować generatora PDF (sprawdź połączenie z internetem).");
-    } catch (err) {
-        alert("Błąd podczas zapisywania pliku PDF: " + err.message);
     }
+    alert("Nie udało się załadować generatora PDF (sprawdź połączenie z internetem).");
 };
