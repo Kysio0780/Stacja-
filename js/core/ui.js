@@ -28,8 +28,14 @@ function obsluzCofanie() {
     if (typeof jestTrybemKiosk === 'function' && jestTrybemKiosk()) return;
     window.zamknijDropdownMenu();
     window.zamknijModalInfo();
+    const oknoZoom = document.getElementById('modal-zoom-zdjecia');
+    if (oknoZoom && !oknoZoom.classList.contains('hidden')) {
+        if (typeof window.zamknijZoomZdjecia === 'function') window.zamknijZoomZdjecia();
+        else oknoZoom.classList.add('hidden');
+        return;
+    }
     const modals = [
-        'modal-zoom-zdjecia', 'modal-polka', 'modal-planogram-szczegoly', 
+        'modal-polka', 'modal-planogram-szczegoly', 
         'modal-zmien-haslo', 'modal-uniwersalna-misja', 'modal-szczegoly-pracownika', 
         'modal-nowa-wiadomosc', 'modal-podglad-wiadomosci', 'modal-premia-warunki',
         'modal-grafik-komorka', 'modal-grafik-druk', 'modal-liczenie'
