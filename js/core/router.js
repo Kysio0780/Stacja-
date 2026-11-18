@@ -17,6 +17,7 @@ window.addEventListener("hashchange", () => {
             sprawdzPowiadomieniaPracownicyGlobal();
             sprawdzPowiadomieniaTpsGlobal();
             if (typeof window.sprawdzObecnoscGrafikuGlobal === 'function') window.sprawdzObecnoscGrafikuGlobal();
+            if (typeof window.sprawdzBadgeRaportu === 'function') window.sprawdzBadgeRaportu();
         }
     } else if (hash === "#tpsy") {
         document.getElementById('modul-tpsy').classList.remove('hidden');
@@ -77,6 +78,7 @@ window.addEventListener("hashchange", () => {
         window.zaladujLiczenie();
     } else if (hash === "#raporty") {
         document.getElementById('modul-raporty').classList.remove('hidden');
+        window.zaladujRaporty();
     } else if (hash === "#finanse") {
         if (!(currentUserData && currentUserData.rola === 'admin')) { window.location.hash = "#menu"; return; }
         document.getElementById('modul-finanse').classList.remove('hidden');
