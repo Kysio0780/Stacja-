@@ -117,21 +117,51 @@ window.generujWydrukGrafikuPDF = async function() {
 
     window.zamknijModalDrukuGrafiku();
 
-    if (typeof window.html2pdf !== 'undefined') {
-        const opt = {
-            margin: [3, 3, 3, 3],
-            filename: nazwaPlikuPdf,
-            pagebreak: { mode: 'avoid-all' },
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
-        };
-        try {
-            await window.html2pdf().set(opt).from(pdfContainer).save();
-        } catch (err) {
-            alert("Błąd podczas zapisywania pliku PDF: " + err.message);
+    /* Render całej tabeli do jednego obrazka i dopasowanie go do jednej strony A4. */
+    const jsPDFCtor = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF;
+    try {
+        if (typeof window.html2canvas === 'function' && typeof jsPDFCtor === 'function') {
+            const canvas = await window.html2canvas(pdfContainer, {
+                scale: 2,
+                backgroundColor: '#ffffff',
+                useCORS: true,
+                windowWidth: pdfContainer.scrollWidth,
+                windowHeight: pdfContainer.scrollHeight,
+                scrollX: 0,
+                scrollY: 0
+            });
+
+            const pdf = new jsPDFCtor({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+            const margines = 3;
+            const szerStrony = pdf.internal.pageSize.getWidth();
+            const wysStrony = pdf.internal.pageSize.getHeight();
+            const skala = Math.min(
+                (szerStrony - 2 * margines) / canvas.width,
+                (wysStrony - 2 * margines) / canvas.height
+            );
+            const szer = canvas.width * skala;
+            const wys = canvas.height * skala;
+            const x = (szerStrony - szer) / 2;
+            const y = (wysStrony - wys) / 2;
+
+            pdf.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', x, y, szer, wys);
+            pdf.save(nazwaPlikuPdf);
+            return;
         }
-    } else {
+
+        if (typeof window.html2pdf !== 'undefined') {
+            const opt = {
+                margin: [3, 3, 3, 3],
+                filename: nazwaPlikuPdf,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+            };
+            await window.html2pdf().set(opt).from(pdfContainer).save();
+            return;
+        }
         alert("Nie udało się załadować generatora PDF (sprawdź połączenie z internetem).");
+    } catch (err) {
+        alert("Błąd podczas zapisywania pliku PDF: " + err.message);
     }
 };
