@@ -15,10 +15,63 @@ function prawidlowyMotyw(tryb) {
     return MOTYWY_PRZEKIEROWANE[tryb] || tryb || MOTYW_DOMYSLNY;
 }
 
+/* Preferencje per użytkownik — localStorage służy tylko do natychmiastowego
+   wyglądu przed zalogowaniem; po zalogowaniu wygrywa zapis z Firestore. */
+const PREFERENCJE_UZYTKOWNIKA_KOLEKCJA = 'preferencje_uzytkownika';
+let ladowaniePreferencji = false;
+
+function identyfikatorUzytkownikaPreferencji() {
+    if (!currentUserData) return "";
+    return String(currentUserData.uid || currentUserData.id || "");
+}
+
+async function zapiszPreferencjeDoFirestore() {
+    if (ladowaniePreferencji) return;
+    const uid = identyfikatorUzytkownikaPreferencji();
+    if (!uid) return;
+    try {
+        await setDoc(doc(db, PREFERENCJE_UZYTKOWNIKA_KOLEKCJA, uid), {
+            motyw: prawidlowyMotyw(localStorage.getItem("sklep_motyw") || MOTYW_DOMYSLNY),
+            czcionka: localStorage.getItem("sklep_czcionka") || "normal",
+            updatedAt: new Date().toISOString()
+        }, { merge: true });
+    } catch (e) {
+        console.warn('Nie udało się zapisać preferencji użytkownika:', e);
+    }
+}
+
+window.wczytajPreferencjeUzytkownika = async function() {
+    const uid = identyfikatorUzytkownikaPreferencji();
+    if (!uid) return;
+    try {
+        const snap = await getDoc(doc(db, PREFERENCJE_UZYTKOWNIKA_KOLEKCJA, uid));
+        if (snap.exists()) {
+            const dane = snap.data();
+            ladowaniePreferencji = true;
+            if (dane.motyw) {
+                localStorage.setItem("sklep_motyw", dane.motyw);
+                zastosujMotyw(dane.motyw);
+            }
+            const czcionka = dane.czcionka || "normal";
+            localStorage.setItem("sklep_czcionka", czcionka);
+            zastosujCzcionke(czcionka);
+            ladowaniePreferencji = false;
+        } else {
+            // Pierwsze logowanie — ustawienia dotychczas używane na tym urządzeniu
+            // stają się domyślnymi dla tego konta.
+            await zapiszPreferencjeDoFirestore();
+        }
+    } catch (e) {
+        ladowaniePreferencji = false;
+        console.warn('Nie udało się wczytać preferencji użytkownika:', e);
+    }
+};
+
 window.zmienMotyw = (tryb) => {
     const poprawny = prawidlowyMotyw(tryb);
     localStorage.setItem("sklep_motyw", poprawny);
     zastosujMotyw(poprawny);
+    zapiszPreferencjeDoFirestore();
 };
 function zastosujMotyw(tryb) {
     const poprawny = prawidlowyMotyw(tryb);
@@ -28,7 +81,11 @@ function zastosujMotyw(tryb) {
     if (selectDD) selectDD.value = poprawny;
 }
 
-window.zmienCzcionke = (rozmiar) => { localStorage.setItem("sklep_czcionka", rozmiar); zastosujCzcionke(rozmiar); };
+window.zmienCzcionke = (rozmiar) => {
+    localStorage.setItem("sklep_czcionka", rozmiar);
+    zastosujCzcionke(rozmiar);
+    zapiszPreferencjeDoFirestore();
+};
 function zastosujCzcionke(rozmiar) {
     if (rozmiar && rozmiar !== "normal") document.documentElement.setAttribute("data-fontsize", rozmiar);
     else document.documentElement.removeAttribute("data-fontsize");
