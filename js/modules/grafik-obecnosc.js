@@ -37,8 +37,9 @@ window.pobierzPotwierdzenieObecnosci = function(uid, data) {
     return potwierdzeniaGrafiku[kluczObecnosci(uid, data)] || null;
 };
 
-/* Pobiera potwierdzenia dla miesiąca grafiku. Pracownik czyta tylko swoje. */
-window.zaladujPotwierdzeniaGrafiku = async function(miesiacStr, tylkoUid) {
+/* Pobiera potwierdzenia dla miesiąca grafiku. Bez tylkoUid pobiera wszystkie;
+   awaryjnie próbuje odczytać dokumenty po kluczach dla przekazanych uidów. */
+window.zaladujPotwierdzeniaGrafiku = async function(miesiacStr, tylkoUid, uidyDoProb = null) {
     potwierdzeniaGrafiku = {};
     if (!miesiacStr) return;
 
@@ -54,16 +55,20 @@ window.zaladujPotwierdzeniaGrafiku = async function(miesiacStr, tylkoUid) {
         const snap = await getDocs(collection(db, POTWIERDZENIA_GRAFIKU_KOLEKCJA));
         snap.forEach(d => zapisz(d.id, d.data()));
     } catch (e) {
-        // Awaryjnie: pracownik czyta swoje dokumenty po kluczu (bez zapytania o cudze).
-        if (tylkoUid) {
+        // Awaryjnie próbujemy czytać dokumenty po kluczach — dla własnego uid
+        // albo dla wszystkich pracowników grafiku, jeśli zapytanie zbiorcze nie wyszło.
+        const uidy = tylkoUid ? [tylkoUid] : (Array.isArray(uidyDoProb) ? uidyDoProb : []);
+        if (uidy.length > 0) {
             const [rok, m] = miesiacStr.split('-').map(Number);
             const dni = new Date(rok, m, 0).getDate();
-            for (let d = 1; d <= dni; d++) {
-                const data = `${miesiacStr}-${String(d).padStart(2, '0')}`;
-                try {
-                    const s = await getDoc(doc(db, POTWIERDZENIA_GRAFIKU_KOLEKCJA, kluczObecnosci(tylkoUid, data)));
-                    if (s.exists()) zapisz(s.id, s.data());
-                } catch (err) { /* brak dostępu do pojedynczego dokumentu */ }
+            for (const uid of uidy) {
+                for (let d = 1; d <= dni; d++) {
+                    const data = `${miesiacStr}-${String(d).padStart(2, '0')}`;
+                    try {
+                        const s = await getDoc(doc(db, POTWIERDZENIA_GRAFIKU_KOLEKCJA, kluczObecnosci(uid, data)));
+                        if (s.exists()) zapisz(s.id, s.data());
+                    } catch (err) { /* brak dostępu do pojedynczego dokumentu */ }
+                }
             }
         } else {
             console.warn("Nie udało się pobrać potwierdzeń obecności:", e);
