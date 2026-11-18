@@ -120,6 +120,7 @@ window.zapiszSzczegolyPolki = function() {
         };
         try {
             await zapiszZmianePolki(nazwa, index, wpis);
+            if (typeof window.odswiezRozmiarZdjecJesliAdmin === 'function') window.odswiezRozmiarZdjecJesliAdmin();
             window.zamknijModalPolki();
             window.zaladujSprzatanie();
         } catch (e) { alert("Błąd zapisu: " + e.message); }
@@ -144,6 +145,7 @@ window.usunPotwierdzeniePolki = async function() {
     };
     try {
         await zapiszZmianePolki(nazwa, index, wpis);
+        if (typeof window.odswiezRozmiarZdjecJesliAdmin === 'function') window.odswiezRozmiarZdjecJesliAdmin();
         window.zamknijModalPolki();
         window.zaladujSprzatanie();
     } catch (e) { alert("Błąd resetowania."); }
@@ -170,5 +172,6 @@ window.usunPolkeZDanychSprzatania = async function(nazwa) {
                 }, { merge: true });
             }
         }
+        if (typeof window.odswiezRozmiarZdjecJesliAdmin === 'function') window.odswiezRozmiarZdjecJesliAdmin();
     } catch (e) { console.warn("Nie udało się usunąć danych sprzątania dla półki:", e); }
 };
