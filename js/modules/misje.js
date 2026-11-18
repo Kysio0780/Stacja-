@@ -50,23 +50,64 @@ function pobierzDaneWybranegoPracownika(selectId) {
     };
 }
 
+async function wypelnijCheckboxPracownikowMisji() {
+    const kontener = document.getElementById('misja-pracownicy-checkboxy');
+    if (!kontener) return;
+    try {
+        const pracownicy = await pobierzListePracownikow();
+        if (pracownicy.length === 0) {
+            kontener.innerHTML = '<span class="text-muted">Brak pracowników do wyboru.</span>';
+            return;
+        }
+        kontener.innerHTML = pracownicy.map(u => `
+            <label style="display:flex; align-items:center; gap:6px; cursor:pointer; margin:0;">
+                <input type="checkbox" class="misja-pracownik-chk" value="${ucieczkaHtml(u.id)}" data-imie="${ucieczkaHtml(u.imie || '')}">
+                <span>${ucieczkaHtml(u.imie || u.login || u.id)}</span>
+            </label>`).join('');
+    } catch (e) {
+        kontener.innerHTML = '<span class="error">Błąd ładowania pracowników.</span>';
+    }
+}
+
+function pobierzWybranychPracownikowMisji() {
+    return Array.from(document.querySelectorAll('.misja-pracownik-chk:checked')).map(chk => ({
+        id: chk.value,
+        imie: chk.dataset.imie || chk.parentElement?.textContent?.trim() || ""
+    }));
+}
+
+window.zaznaczWszystkichPracownikowMisji = function() {
+    const pola = Array.from(document.querySelectorAll('.misja-pracownik-chk'));
+    const zaznaczyc = pola.some(p => !p.checked);
+    pola.forEach(p => { p.checked = zaznaczyc; });
+};
+
 window.dodajMisje = async function() {
-    const wybrany = pobierzDaneWybranegoPracownika('misja-pracownik-select');
+    const wybrani = pobierzWybranychPracownikowMisji();
     const zadanie = document.getElementById('misja-tresc').value.trim();
     const doKiedy = document.getElementById('misja-termin').value;
-    if (!wybrany.id || !zadanie || !doKiedy) return alert("Wypełnij wszystkie pola misji!");
+    if (wybrani.length === 0 || !zadanie || !doKiedy) {
+        return alert("Wypełnij zadanie i termin oraz zaznacz przynajmniej jednego pracownika!");
+    }
     try {
-        await addDoc(collection(db, "misje"), {
-            pracownikId: wybrany.id,
-            pracownik: wybrany.imie,
+        const teraz = new Date().toISOString();
+        const wspolne = {
             zadanie,
             doKiedy,
             status: STATUSY_MISJI.NOWE,
             uwagi: "",
-            dataUtworzenia: new Date().toISOString(),
+            dataUtworzenia: teraz,
             timestamp: Date.now()
-        });
-        alert("Misja przypisana!");
+        };
+        // Jedna misja na pracownika — dzięki temu statusy, powiadomienia
+        // i edycja poszczególnych zadań działają tak jak dotąd.
+        await Promise.all(wybrani.map(w => addDoc(collection(db, "misje"), {
+            ...wspolne,
+            pracownikId: w.id,
+            pracownik: w.imie
+        })));
+        alert(wybrani.length === 1 ? "Misja przypisana!" : `Misja przypisana do ${wybrani.length} pracowników!`);
+        document.querySelectorAll('.misja-pracownik-chk').forEach(chk => { chk.checked = false; });
         document.getElementById('misja-tresc').value = "";
         document.getElementById('misja-termin').value = "";
         window.zaladujMisje();
@@ -77,7 +118,7 @@ window.zaladujMisje = async function() {
     const container = document.getElementById('misje-lista-container');
     container.innerHTML = "Pobieranie misji...";
     const czyAdmin = currentUserData && currentUserData.rola === 'admin';
-    if (czyAdmin) wypelnijSelectPracownikow('misja-pracownik-select');
+    if (czyAdmin) wypelnijCheckboxPracownikowMisji();
 
     try {
         const snap = await getDocs(collection(db, "misje"));
