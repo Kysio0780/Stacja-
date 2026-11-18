@@ -45,38 +45,15 @@
         .flex-row { display: flex; gap: 10px; align-items: center; }
 
         /* Tryb pełnoekranowy (kiosk) */
-        #kiosk-settings-btn {
-            display: none;
-            position: fixed;
-            right: 14px;
-            bottom: 14px;
-            z-index: 1500;
-            width: 46px;
-            height: 46px;
-            border-radius: 50%;
-            border: 1px solid var(--border-color);
-            background: var(--group-bg);
-            color: var(--text-color);
-            font-size: 20px;
-            line-height: 1;
-            padding: 0;
-            margin: 0;
-            opacity: 0.7;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
-        }
-        #kiosk-settings-btn:hover { opacity: 1; }
-
         html.tryb-kiosk, body.tryb-kiosk {
             /* Blokuje pull-to-refresh i „wyciąganie" paska narzędzi gestem. */
             overscroll-behavior: none;
             overscroll-behavior-x: none;
             overscroll-behavior-y: none;
         }
-        body.tryb-kiosk #kiosk-settings-btn { display: block; }
         body.tryb-kiosk #app-screen {
             padding-top: max(8px, env(safe-area-inset-top));
             padding-left: max(8px, env(safe-area-inset-left));
             padding-right: max(8px, env(safe-area-inset-right));
             padding-bottom: max(8px, env(safe-area-inset-bottom));
         }
-        body.tryb-kiosk .modal-overlay { z-index: 2100; }
