@@ -376,8 +376,61 @@ function walidujObsadeGrafiku(grafikData, dniWMiesiacu) {
     return { bledyDni, listaAlertow };
 }
 
+/* Osobne okno dla admina: statystyka dni pracy każdego pracownika w miesiącu. */
+function renderujPodsumowanieStatystyczneGrafiku(czyAdmin, emps, entries, holidays, rok, m, dniWMiesiacu) {
+    const panel = document.getElementById('grafik-podsumowanie-admin');
+    const tabela = document.getElementById('grafik-podsumowanie-tabela');
+    if (!panel || !tabela) return;
+
+    panel.classList.toggle('hidden', !czyAdmin);
+    if (!czyAdmin) {
+        tabela.innerHTML = '';
+        return;
+    }
+
+    const kom = 'padding:5px 6px; border-bottom:1px solid var(--border-color);';
+    let html = `<div class="table-responsive"><table style="width:100%; border-collapse:collapse; font-size:0.85em;">
+        <thead><tr style="background:var(--group-bg);">
+            <th style="text-align:left; ${kom}">Pracownik</th>
+            <th style="${kom}">Dni R</th>
+            <th style="${kom}">Dni Z</th>
+            <th style="${kom}">Soboty</th>
+            <th style="${kom}">Niedziele i święta</th>
+        </tr></thead><tbody>`;
+
+    (emps || []).forEach(emp => {
+        let r = 0, z = 0, sob = 0, niedzSw = 0;
+        for (let d = 1; d <= dniWMiesiacu; d++) {
+            const cR = entries[`${emp.id}_${d}_rano`];
+            const cZ = entries[`${emp.id}_${d}_zamkniecie`];
+            const pracujeR = cR && cR.type === 'praca' && (Number(cR.hours) || 0) > 0;
+            const pracujeZ = cZ && cZ.type === 'praca' && (Number(cZ.hours) || 0) > 0;
+            if (pracujeR) r++;
+            if (pracujeZ) z++;
+            if (!pracujeR && !pracujeZ) continue;
+
+            const dzien = new Date(rok, m - 1, d).getDay();
+            const swieto = !!holidays[String(d)];
+            if (dzien === 6 && !swieto) sob++;
+            else if (dzien === 0 || swieto) niedzSw++;
+        }
+        html += `<tr>
+            <td style="text-align:left; ${kom} font-weight:600;">${ucieczkaHtml(emp.imie)}</td>
+            <td style="text-align:center; ${kom}">${r}</td>
+            <td style="text-align:center; ${kom}">${z}</td>
+            <td style="text-align:center; ${kom}">${sob}</td>
+            <td style="text-align:center; ${kom}">${niedzSw}</td>
+        </tr>`;
+    });
+
+    html += `</tbody></table></div>`;
+    tabela.innerHTML = html;
+}
+
 function renderujGrafikInteraktywny() {
     const czyAdmin = currentUserData && currentUserData.rola === 'admin';
+    const panelPodsum = document.getElementById('grafik-podsumowanie-admin');
+    if (panelPodsum && !czyAdmin) panelPodsum.classList.add('hidden');
     const wrapper = document.getElementById('grafik-tabela-wrapper');
     const walidacjaBox = document.getElementById('grafik-walidacja-box');
     const legendaBar = document.getElementById('grafik-legenda-bar');
@@ -425,6 +478,8 @@ function renderujGrafikInteraktywny() {
     const emps = aktualnyGrafikStan.employees || [];
     const entries = aktualnyGrafikStan.entries || {};
     const holidays = aktualnyGrafikStan.holidays || {};
+
+    renderujPodsumowanieStatystyczneGrafiku(czyAdmin, emps, entries, holidays, rok, m, dniWMiesiacu);
 
     // Walidacja obsady (pokazujemy adminowi na bieżąco)
     const { bledyDni, listaAlertow } = walidujObsadeGrafiku(aktualnyGrafikStan, dniWMiesiacu);
