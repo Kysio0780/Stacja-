@@ -94,6 +94,7 @@ window.wyslijWiadomosc = async function() {
                 data: new Date().toISOString(),
                 timestamp: Date.now()
             });
+            if (typeof window.odswiezRozmiarZdjecJesliAdmin === 'function') window.odswiezRozmiarZdjecJesliAdmin();
             alert("Wiadomość została wysłana!");
             window.zamknijModalNowejWiadomosci();
             window.zaladujWiadomosci();
@@ -243,6 +244,7 @@ window.usunWiadomoscAdminBezposrednio = async function(id) {
     if (!confirm("Czy na pewno chcesz trwale usunąć tę wiadomość?")) return;
     try {
         await deleteDoc(doc(db, "wiadomosci", id));
+        if (typeof window.odswiezRozmiarZdjecJesliAdmin === 'function') window.odswiezRozmiarZdjecJesliAdmin();
         window.zaladujWiadomosci();
     } catch (e) { alert("Błąd usuwania: " + e.message); }
 };
@@ -252,6 +254,7 @@ window.usunWiadomoscPrzezAdmina = async function() {
     if (id && confirm("Czy na pewno chcesz usunąć tę wiadomość?")) {
         try {
             await deleteDoc(doc(db, "wiadomosci", id));
+            if (typeof window.odswiezRozmiarZdjecJesliAdmin === 'function') window.odswiezRozmiarZdjecJesliAdmin();
             document.getElementById('modal-podglad-wiadomosci').classList.add('hidden');
             window.zaladujWiadomosci();
         } catch (e) { alert("Błąd usuwania: " + e.message); }
