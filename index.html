@@ -1173,27 +1173,27 @@
 
             <div id="raporty-info"></div>
 
-            <div id="raporty-admin-panel" class="hidden">
-                <div class="field-group">
-                    <h4 style="margin-top:0;">📊 Podsumowanie liczników</h4>
-                    <div class="flex-row flex-row-mobile-col" style="margin-bottom: 12px;">
-                        <div>
-                            <label for="raporty-stat-zakres">Zakres:</label>
-                            <select id="raporty-stat-zakres" onchange="window.odswiezZakresStatystykRaportow()" style="margin-bottom:0;">
-                                <option value="current-month">Bieżący miesiąc</option>
-                                <option value="previous-month">Poprzedni miesiąc</option>
-                                <option value="current-quarter">Bieżący kwartał</option>
-                                <option value="custom">Własny (data graniczna)</option>
-                            </select>
-                        </div>
-                        <div id="raporty-stat-custom-box" class="hidden">
-                            <label for="raporty-stat-custom-date">Data graniczna:</label>
-                            <input type="date" id="raporty-stat-custom-date" onchange="window.zaladujRaporty()" style="margin-bottom:0;">
-                        </div>
+            <div class="field-group">
+                <h4 style="margin-top:0;">📊 Podsumowanie liczników</h4>
+                <div class="flex-row flex-row-mobile-col" style="margin-bottom: 12px;">
+                    <div>
+                        <label for="raporty-stat-zakres">Zakres:</label>
+                        <select id="raporty-stat-zakres" onchange="window.odswiezZakresStatystykRaportow()" style="margin-bottom:0;">
+                            <option value="current-month">Bieżący miesiąc</option>
+                            <option value="previous-month">Poprzedni miesiąc</option>
+                            <option value="current-quarter">Bieżący kwartał</option>
+                            <option value="custom">Własny (data graniczna)</option>
+                        </select>
                     </div>
-                    <div id="raporty-statystyki">Ładowanie statystyk...</div>
+                    <div id="raporty-stat-custom-box" class="hidden">
+                        <label for="raporty-stat-custom-date">Data graniczna:</label>
+                        <input type="date" id="raporty-stat-custom-date" onchange="window.zaladujRaporty()" style="margin-bottom:0;">
+                    </div>
                 </div>
+                <div id="raporty-statystyki">Ładowanie statystyk...</div>
+            </div>
 
+            <div id="raporty-admin-panel" class="hidden">
                 <details class="field-group" style="border-style: dashed; border-color: var(--primary);">
                     <summary style="cursor: pointer; color: var(--primary); font-weight: 700;">⛽ Minimalne ilości paliw (kliknij, aby rozwinąć)</summary>
                     <div style="margin-top: 12px;">
