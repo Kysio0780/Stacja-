@@ -74,6 +74,7 @@ window.addEventListener("hashchange", () => {
         document.getElementById('modul-statystyki').classList.remove('hidden');
     } else if (hash === "#liczenie") {
         document.getElementById('modul-liczenie').classList.remove('hidden');
+        window.zaladujLiczenie();
     } else if (hash === "#raporty") {
         document.getElementById('modul-raporty').classList.remove('hidden');
     } else if (hash === "#finanse") {
