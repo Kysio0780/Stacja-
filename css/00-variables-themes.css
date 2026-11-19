@@ -57,7 +57,7 @@
             --obecnosc-zalegla: #991b1b;
         }
 
-        /* ==================== JASNE MOTYWY (4) ==================== */
+        /* ==================== JASNE MOTYWY (5) ==================== */
 
         /* Miętowy — zachowany */
         [data-theme="mint-light"] {
@@ -93,21 +93,38 @@
             --primary-soft: rgba(2, 132, 199, 0.12);
         }
 
-        /* Piaskowy — ciepły, mniej niebieskiego światła, przyjemny wieczorem */
-        [data-theme="sand-light"] {
-            --bg-color: #f8f3e9;
-            --card-bg: #fffdf7;
-            --text-color: #3b2f22;
-            --text-muted: #7a6852;
-            --border-color: #e3d6bf;
-            --input-bg: #fffaf0;
-            --input-text: #3b2f22;
-            --group-bg: #f3ead9;
-            --group-label: #6b563f;
-            --preview-bg: #faf4e8;
-            --primary: #b45309;
-            --primary-hover: #92400e;
-            --primary-soft: rgba(180, 83, 9, 0.12);
+        /* Sepia — ciepły, paperowy odcień z brązowym akcentem */
+        [data-theme="sepia-light"] {
+            --bg-color: #f5efe3;
+            --card-bg: #fffaf0;
+            --text-color: #3f3226;
+            --text-muted: #7c6a55;
+            --border-color: #ddcdb4;
+            --input-bg: #fffdf6;
+            --input-text: #3f3226;
+            --group-bg: #efe4d1;
+            --group-label: #6b533c;
+            --preview-bg: #faf3e6;
+            --primary: #8b5e3c;
+            --primary-hover: #6b4429;
+            --primary-soft: rgba(139, 94, 60, 0.12);
+        }
+
+        /* Odcienie szarości — jasny, neutralny motyw bez kolorowych akcentów */
+        [data-theme="gray-light"] {
+            --bg-color: #f1f2f3;
+            --card-bg: #ffffff;
+            --text-color: #2f3336;
+            --text-muted: #6b7176;
+            --border-color: #d3d6d9;
+            --input-bg: #fafbfb;
+            --input-text: #2f3336;
+            --group-bg: #e9ebed;
+            --group-label: #4b5155;
+            --preview-bg: #f5f6f7;
+            --primary: #5b6166;
+            --primary-hover: #3f4448;
+            --primary-soft: rgba(91, 97, 102, 0.12);
         }
 
         /* Lawendowy — spokojny fiolet, wyraźne rozróżnienie elementów */
@@ -163,21 +180,21 @@
             --primary-soft: rgba(52, 211, 153, 0.15);
         }
 
-        /* Grafitowy — neutralny, pomarańczowy akcent dobrze widoczny na małym ekranie */
-        [data-theme="graphite-dark"] {
-            --bg-color: #121519;
-            --card-bg: #1b1f25;
-            --text-color: #eef2f6;
-            --text-muted: #a1aab5;
-            --border-color: #313841;
-            --input-bg: #232830;
-            --input-text: #f4f7fa;
-            --group-bg: #171a20;
-            --group-label: #cbd3dc;
-            --preview-bg: #14171c;
-            --primary: #fb923c;
-            --primary-hover: #f97316;
-            --primary-soft: rgba(251, 146, 60, 0.15);
+        /* Stalowy ciemny — neutralna szarość z chłodnym, niebieskawym akcentem */
+        [data-theme="steel-dark"] {
+            --bg-color: #13171c;
+            --card-bg: #1c2128;
+            --text-color: #e6edf3;
+            --text-muted: #9aa7b4;
+            --border-color: #34404d;
+            --input-bg: #252d36;
+            --input-text: #f0f4f8;
+            --group-bg: #171c22;
+            --group-label: #c3ced9;
+            --preview-bg: #1a2027;
+            --primary: #94a3b8;
+            --primary-hover: #cbd5e1;
+            --primary-soft: rgba(148, 163, 184, 0.15);
         }
 
         /* Śliwkowy — ciemny fiolet, wyraźny kontrast dla tekstu i przycisków */
@@ -200,7 +217,7 @@
         /* Wspólne ustawienia dla motywów ciemnych (ostrzeżenia i grafik). */
         [data-theme="midnight-blue"],
         [data-theme="forest-dark"],
-        [data-theme="graphite-dark"],
+        [data-theme="steel-dark"],
         [data-theme="plum-dark"] {
             --warning-bg: #451a03;
             --warning-text: #fcd34d;
