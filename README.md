@@ -79,9 +79,13 @@ i bez paska przeglądarki (wnętrze to systemowy WebView, nie przeglądarka inte
 - `capacitor.config.json` — identyfikator `pl.sklepapp.stacja`, `webDir: www`,
 - `scripts/prepare-web.js` — kopiuje `index.html`, `css/`, `js/`, ikony do `www/` i buduje
   `js/vendor/capacitor-native.js` (bundle pluginów, żeby nie wprowadzać bundlera do całej aplikacji),
-- `js/native-entry.js` — importy pluginów `@capacitor/core`, `camera`, `local-notifications`, `push-notifications`,
+- `js/native-entry.js` — importy pluginów `@capacitor/core`, `app`, `camera`, `filesystem`, `share`, `local-notifications`, `push-notifications`,
 - `js/core/native.js` — nakładka działająca tylko w APK: rejestracja FCM, zapis tokenu w
-  `uzytkownicy/{uid}.fcmToken`, codzienne przypomnienie o raporcie (20:00) i natywny aparat,
+  `uzytkownicy/{uid}.fcmToken`, codzienne przypomnienie o raporcie (20:00), natywny aparat,
+  zapis/udostępnianie PDF oraz zamykanie aplikacji przyciskiem ✕ w nagłówku,
+- `assets/icon.png` i `assets/splash.png` — źródła natywnej ikony i ekranu startowego (1024×1024 i 2732×2732,
+  przygotowane z `icon-512.png`). Pliki `icon-192.png` / `icon-512.png` w katalogu głównym są tylko dla PWA —
+  system Android ich nie używa. W workflow je generuje `@capacitor/assets` do `android/app/src/main/res/`.
 - `.github/workflows/build-apk.yml` — buduje APK w chmurze po każdym pushu na `main` albo ręcznie
   (zakładka Actions → „Build Android APK" → „Run workflow"). Gotowy plik jest w artefakcie
   `sklep-app-debug-apk`.
