@@ -1,6 +1,6 @@
 {
   "appId": "pl.sklepapp.stacja",
-  "appName": "System Obsługi Sklepu",
+  "appName": "SP580app",
   "webDir": "www",
   "server": {
     "androidScheme": "https",
