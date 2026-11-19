@@ -42,7 +42,10 @@
     <div id="app-screen" class="card hidden">
         
         <div class="app-header-bar">
-            <button class="info-btn" onclick="window.otworzModalInfo()" title="Informacje o aplikacji">i</button>
+            <div style="display:flex; align-items:center; gap:8px;">
+                <button class="info-btn" onclick="window.otworzModalInfo()" title="Informacje o aplikacji">i</button>
+                <button class="info-btn close-app-btn" onclick="window.zamknijAplikacje()" title="Zamknij aplikację" aria-label="Zamknij aplikację">✕</button>
+            </div>
             <div class="current-date-display" id="header-current-date">Ładowanie daty...</div>
 
             <div class="storage-usage hidden" id="header-storage-usage"
