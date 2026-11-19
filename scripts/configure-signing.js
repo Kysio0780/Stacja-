@@ -12,6 +12,7 @@ if (!src.includes('signingConfigs')) {
         release {
             if (project.hasProperty('SIGNING_STORE_PASSWORD')) {
                 storeFile file('release.keystore')
+                storeType 'PKCS12'
                 storePassword project.property('SIGNING_STORE_PASSWORD')
                 keyAlias project.property('SIGNING_KEY_ALIAS')
                 keyPassword project.property('SIGNING_KEY_PASSWORD')
