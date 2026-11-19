@@ -93,6 +93,7 @@
             margin: 0;
         }
         .info-btn:hover { background: var(--primary); color: #ffffff; border-color: var(--primary); }
+        .close-app-btn:hover { background: var(--danger); color: #ffffff; border-color: var(--danger); }
 
         .current-date-display {
             font-size: 0.95em;
