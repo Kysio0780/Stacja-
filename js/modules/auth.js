@@ -52,6 +52,9 @@ onAuthStateChanged(auth, async (user) => {
             currentUserData = { ...docSnap.data(), uid: user.uid };
             const imieKrotkie = pobierzImieKrotkie(currentUserData.imie);
             document.getElementById('profile-btn-label').innerText = imieKrotkie;
+            if (window.NativeApp && typeof window.NativeApp.initOnLogin === 'function') {
+                window.NativeApp.initOnLogin(user.uid);
+            }
             if (typeof window.wczytajPreferencjeUzytkownika === 'function') window.wczytajPreferencjeUzytkownika();
             const czyAdmin = currentUserData.rola === 'admin';
             document.getElementById('admin-daily-section').classList.toggle('hidden', !czyAdmin);
