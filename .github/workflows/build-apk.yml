@@ -8,14 +8,16 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      HAS_SIGNING: ${{ secrets.SIGNING_KEYSTORE_BASE64 != '' }}
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: '17'
@@ -51,12 +53,45 @@ jobs:
       - name: Synchronizacja Capacitor
         run: npx cap sync android
 
-      - name: Budowa APK (debug)
+      - name: Przygotowanie podpisu release
+        if: env.HAS_SIGNING == 'true'
+        env:
+          SIGNING_KEYSTORE_BASE64: ${{ secrets.SIGNING_KEYSTORE_BASE64 }}
+          SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
+          SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
+          SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
         run: |
+          printf '%s' "$SIGNING_KEYSTORE_BASE64" | base64 -d > android/app/release.keystore
+          {
+            echo "SIGNING_STORE_PASSWORD=$SIGNING_STORE_PASSWORD"
+            echo "SIGNING_KEY_PASSWORD=$SIGNING_KEY_PASSWORD"
+            echo "SIGNING_KEY_ALIAS=$SIGNING_KEY_ALIAS"
+          } >> android/gradle.properties
+          node scripts/configure-signing.js
+
+      - name: Budowa APK (release, podpisany)
+        if: env.HAS_SIGNING == 'true'
+        run: |
+          chmod +x android/gradlew
+          cd android && ./gradlew assembleRelease
+
+      - name: Budowa APK (debug, bez podpisu release)
+        if: env.HAS_SIGNING != 'true'
+        run: |
+          echo "UWAGA: brak sekretów podpisu — buduję APK debug (klucz zmienia się przy każdym buildzie)."
           chmod +x android/gradlew
           cd android && ./gradlew assembleDebug
 
-      - name: Upload artefaktu
+      - name: Upload artefaktu (release)
+        if: env.HAS_SIGNING == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: sklep-app-release-apk
+          path: android/app/build/outputs/apk/release/app-release.apk
+          if-no-files-found: error
+
+      - name: Upload artefaktu (debug)
+        if: env.HAS_SIGNING != 'true'
         uses: actions/upload-artifact@v4
         with:
           name: sklep-app-debug-apk
