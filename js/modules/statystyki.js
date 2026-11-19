@@ -46,7 +46,11 @@ function normalizujDzien(d) {
     return new Date(d.getFullYear(), d.getMonth(), d.getDate());
 }
 
-window.pokazOpcjeStatystyk = () => document.getElementById('statystyki-opcje-panel').classList.remove('hidden');
+window.pokazOpcjeStatystyk = () => {
+    const panel = document.getElementById('statystyki-opcje-panel');
+    if (panel && 'open' in panel) panel.open = true;
+    else if (panel) panel.classList.remove('hidden');
+};
 
 window.toggleStatsCustomDates = () => {
     const typ = document.getElementById('stats-okres-typ').value;
@@ -130,6 +134,9 @@ window.przeliczIWygenerujStatystyki = async function() {
         let htmlWynik = `<div style="display:flex; flex-direction:column; gap:14px;">
             <div style="background:var(--group-bg); padding:10px 14px; border-radius:var(--radius-sm); border:1px solid var(--border-color); font-weight:600;">📅 Wybrany okres: od ${ucieczkaHtml(formatujDateDoWyswietlenia(dOd))} do ${ucieczkaHtml(formatujDateDoWyswietlenia(dDo))}</div>`;
 
+        let sekcjaSprzedaz = '', sekcjaPracownicy = '', sekcjaPlany = '', sekcjaSprzatanie = '';
+        let sekcjaDniTygodnia = '', sekcjaMisje = '';
+
         if (document.getElementById('chk-stat-sprzedaz-ogolna').checked) {
             let sKawaW = 0, sHdW = 0, sSklepW = 0, sumaLaczna = 0;
             let najlepszyDzien = null, najgorszyDzien = null;
@@ -148,7 +155,7 @@ window.przeliczIWygenerujStatystyki = async function() {
             });
 
             const dniLiczba = przefiltrowaneRaporty.length || 1;
-            htmlWynik += `<div class="field-group" style="border-left:4px solid var(--primary);">
+            sekcjaSprzedaz = `<div class="field-group" style="border-left:4px solid var(--primary);">
                 <h4>📊 Sprzedaż Ogólna i Kategoriowa</h4>
                 <div class="table-responsive"><table class="standard-table" style="text-align: left;">
                     <tr><th>Kategoria</th><th>Wynik</th></tr>
@@ -190,7 +197,7 @@ window.przeliczIWygenerujStatystyki = async function() {
                     return `<tr><td><strong>${ucieczkaHtml(nazwaPracownikaStat(idOsoby, mapaPracownikow))}</strong></td><td>${pw.dni}</td><td>${pw.kawa.toFixed(2)}</td><td>${pw.hd.toFixed(2)}</td><td>${pw.sklep.toFixed(2)}</td><td><strong>${pw.suma.toFixed(2)}</strong></td></tr>`;
                 }).join('');
 
-            htmlWynik += `<div class="field-group" style="border-left:4px solid var(--success);">
+            sekcjaPracownicy = `<div class="field-group" style="border-left:4px solid var(--success);">
                 <h4>👥 Sprzedaż na pracowników (Proporcjonalnie)</h4>
                 ${pRows ? `<div class="table-responsive"><table class="standard-table"><tr><th>Pracownik</th><th>Dni</th><th>Kawa</th><th>HD</th><th>Sklep</th><th>Suma</th></tr>${pRows}</table></div>` : '<p class="text-muted">Brak danych sprzedażowych.</p>'}
             </div>`;
@@ -263,7 +270,7 @@ window.przeliczIWygenerujStatystyki = async function() {
                 </tr>`;
             };
 
-            htmlWynik += `<div class="field-group" style="border-left:4px solid var(--info);">
+            sekcjaPlany = `<div class="field-group" style="border-left:4px solid var(--info);">
                 <h4>🎯 Realizacja Planów (${etykietaOkresuPlanu})</h4>
                 <p class="text-muted">Proporcja wg ostatniego raportu: Dzień ${przepracowaneDni} z ${dniWOkresie} (${(ptProporcja*100).toFixed(1)}%)</p>
                 <div class="table-responsive"><table class="standard-table">
@@ -328,12 +335,72 @@ window.przeliczIWygenerujStatystyki = async function() {
                     `<tr><td><strong>${ucieczkaHtml(nazwaPracownikaStat(idOsoby, mapaPracownikow))}</strong></td><td>✔ ${pracownicySprzatanie[idOsoby]}</td></tr>`
                 ).join('');
 
-            htmlWynik += `<div class="field-group" style="border-left:4px solid var(--warning);">
+            sekcjaSprzatanie = `<div class="field-group" style="border-left:4px solid var(--warning);">
                 <h4>🧹 Kontrola Czystości i Półek</h4>
                 <p style="margin:4px 0;"><strong>Wykonane:</strong> <span class="val-green">${wykonaneRazem}</span> | <strong>Niewykonane:</strong> <span class="val-red">${niewykonaneRazem}</span> | <strong>Zresetowane:</strong> ${zresetowaneAdmin}</p>
                 ${spRows ? `<div class="table-responsive"><table class="standard-table"><tr><th>Pracownik</th><th>Kontrole</th></tr>${spRows}</table></div>` : ''}
             </div>`;
         }
+
+        if (document.getElementById('chk-stat-dni-tygodnia')?.checked) {
+            const nazwyDni = ['Niedziela', 'Poniedziałek', 'Wtorek', 'Środa', 'Czwartek', 'Piątek', 'Sobota'];
+            const dniStat = nazwyDni.map(() => ({ liczba: 0, suma: 0, kawa: 0, hd: 0, sklep: 0 }));
+            przefiltrowaneRaporty.forEach(r => {
+                const dt = pobierzDateDoObiektu(r.data);
+                if (!dt) return;
+                const stat = dniStat[dt.getDay()];
+                if (!stat) return;
+                const kawa = Number(r.kawa?.wartosc) || 0;
+                const hd = Number(r.hd?.wartosc) || 0;
+                const sklep = Number(r.sklep?.wartosc) || 0;
+                stat.liczba++;
+                stat.suma += kawa + hd + sklep;
+                stat.kawa += kawa;
+                stat.hd += hd;
+                stat.sklep += sklep;
+            });
+            const dniRows = nazwyDni.map((nazwa, idx) => {
+                const s = dniStat[idx];
+                const srednia = s.liczba > 0 ? s.suma / s.liczba : 0;
+                return `<tr><td><strong>${nazwa}</strong></td><td>${s.liczba}</td><td>${s.suma.toFixed(2)}</td><td>${srednia.toFixed(2)}</td><td>${s.kawa.toFixed(2)}</td><td>${s.hd.toFixed(2)}</td><td>${s.sklep.toFixed(2)}</td></tr>`;
+            }).join('');
+            sekcjaDniTygodnia = `<div class="field-group" style="border-left:4px solid var(--primary);">
+                <h4>🗓️ Sprzedaż w podziale na dni tygodnia</h4>
+                <div class="table-responsive"><table class="standard-table">
+                    <tr><th>Dzień</th><th>Liczba raportów</th><th>Suma</th><th>Średnia</th><th>Kawa</th><th>HD</th><th>Sklep</th></tr>
+                    ${dniRows}
+                </table></div>
+            </div>`;
+        }
+
+        if (document.getElementById('chk-stat-misje')?.checked) {
+            const misjeSnap = await getDocs(collection(db, "misje"));
+            const licznikiStatusow = {};
+            let misjeWZakresie = 0;
+            misjeSnap.forEach(d => {
+                const m = d.data();
+                const dt = pobierzDateDoObiektu(m.dataUtworzenia || m.data || m.doKiedy);
+                if (!dt) return;
+                const t = normalizujDzien(dt).getTime();
+                if (t < odZnacznik || t > doZnacznik) return;
+                misjeWZakresie++;
+                const status = String(m.status || 'brak statusu');
+                licznikiStatusow[status] = (licznikiStatusow[status] || 0) + 1;
+            });
+            const statusy = Object.keys(licznikiStatusow).sort();
+            const misjeRows = statusy.map(status =>
+                `<tr><td><strong>${ucieczkaHtml(status)}</strong></td><td>${licznikiStatusow[status]}</td></tr>`
+            ).join('');
+            const zakonczone = (licznikiStatusow['zaliczone'] || 0) + (licznikiStatusow['zrobione'] || 0);
+            const wTrakcie = (licznikiStatusow['nowe'] || 0) + (licznikiStatusow['odebrane'] || 0) + (licznikiStatusow['do wyjaśnienia'] || 0);
+            sekcjaMisje = `<div class="field-group" style="border-left:4px solid var(--danger);">
+                <h4>🎯 Misje i zadania</h4>
+                <p style="margin:4px 0;"><strong>Misje w okresie:</strong> ${misjeWZakresie} | <strong>Zakończone:</strong> <span class="val-green">${zakonczone}</span> | <strong>W toku:</strong> ${wTrakcie}</p>
+                ${misjeRows ? `<div class="table-responsive"><table class="standard-table"><tr><th>Status</th><th>Liczba</th></tr>${misjeRows}</table></div>` : '<p class="text-muted">Brak misji w wybranym okresie.</p>'}
+            </div>`;
+        }
+
+        htmlWynik += sekcjaPlany + sekcjaSprzedaz + sekcjaPracownicy + sekcjaDniTygodnia + sekcjaSprzatanie + sekcjaMisje;
 
         box.innerHTML = htmlWynik + `</div>`;
     } catch (e) {
