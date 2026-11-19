@@ -45,6 +45,9 @@ jobs:
             echo "UWAGA: brak sekretu GOOGLE_SERVICES_JSON — push notifications NIE BĘDĄ działać."
           fi
 
+      - name: Natywna ikona i ekran startowy
+        run: npx @capacitor/assets generate --android --assetPath assets --iconBackgroundColor '#2563eb' --splashBackgroundColor '#2563eb'
+
       - name: Synchronizacja Capacitor
         run: npx cap sync android
 
