@@ -63,13 +63,14 @@
                         <optgroup label="Jasne motywy">
                             <option value="mint-light">Miętowy (Pastelowy)</option>
                             <option value="sky-light">Błękitny (Niebo)</option>
-                            <option value="sand-light">Piaskowy (Ciepły)</option>
+                            <option value="sepia-light">Sepia</option>
                             <option value="lavender-light">Lawendowy (Fioletowy)</option>
+                            <option value="gray-light">Odcienie szarości</option>
                         </optgroup>
                         <optgroup label="Ciemne motywy">
                             <option value="midnight-blue">Niebieski (Midnight)</option>
                             <option value="forest-dark">Leśny (Zielony)</option>
-                            <option value="graphite-dark">Grafitowy (Pomarańczowy)</option>
+                            <option value="steel-dark">Stalowy (Ciemny)</option>
                             <option value="plum-dark">Śliwkowy (Fioletowy)</option>
                         </optgroup>
                     </select>
@@ -96,61 +97,61 @@
         <!-- MENU KAFELKOWE -->
         <div id="menu-tiles">
             <div class="tiles-grid">
-                <div class="tile" onclick="window.otworzModul('sprzedaz')">
+                <div class="tile tile-success" onclick="window.otworzModul('sprzedaz')">
                     <span class="tile-icon">📊</span>
                     <span>Sprzedaż</span>
                 </div>
-                <div class="tile tile-success" onclick="window.otworzModul('premia')">
-                    <span class="tile-icon">💰</span>
-                    <span>Premia</span>
-                </div>
-                <div class="tile" onclick="window.otworzModul('sprzatanie')">
-                    <span class="tile-icon">🧹</span>
-                    <span>Sprzątanie i Półki</span>
-                </div>
-                <div class="tile" onclick="window.otworzModul('planogram')">
-                    <span class="tile-icon">📋</span>
-                    <span>Planogramy</span>
-                </div>
-                <div class="tile tile-info" onclick="window.otworzModul('misje')">
-                    <span class="tile-icon">🎯</span>
-                    <span>Misje</span>
-                    <span id="misje-badge" class="notification-badge hidden">0</span>
-                </div>
-                <div class="tile" onclick="window.otworzModul('grafik')">
-                    <span class="tile-icon">📅</span>
-                    <span>Grafik</span>
-                    <span id="grafik-badge" class="notification-badge warning hidden" title="Potwierdź dzisiejszą obecność">!</span>
-                </div>
-                <div class="tile tile-info" onclick="window.otworzModul('wiadomosci')">
-                    <span class="tile-icon">💬</span>
-                    <span>Wiadomości</span>
-                    <span id="wiadomosci-badge" class="notification-badge hidden">0</span>
-                </div>
-                <div class="tile tile-warning" onclick="window.otworzModul('tpsy')">
-                    <span class="tile-icon">⏳</span>
-                    <span>TPSy</span>
-                    <span id="tpsy-badge" class="notification-badge warning hidden" title="Dzisiaj kończy się TPS!">!</span>
-                </div>
-                <div class="tile tile-info" onclick="window.otworzModul('liczenie')">
-                    <span class="tile-icon">🧮</span>
-                    <span>Liczenie</span>
-                </div>
-                <div class="tile tile-info" onclick="window.otworzModul('raporty')">
+                <div class="tile tile-success" onclick="window.otworzModul('raporty')">
                     <span class="tile-icon">📑</span>
                     <span>Raporty</span>
                     <span id="raporty-badge" class="notification-badge hidden">!</span>
                 </div>
-                <div class="tile tile-success admin-only-tile" onclick="window.otworzModul('pracownicy')" id="tile-pracownicy" style="display: none;">
+                <div class="tile tile-brown" onclick="window.otworzModul('sprzatanie')">
+                    <span class="tile-icon">🧹</span>
+                    <span>Sprzątanie i Półki</span>
+                </div>
+                <div class="tile tile-brown" onclick="window.otworzModul('tpsy')">
+                    <span class="tile-icon">⏳</span>
+                    <span>TPSy</span>
+                    <span id="tpsy-badge" class="notification-badge warning hidden" title="Dzisiaj kończy się TPS!">!</span>
+                </div>
+                <div class="tile tile-brown" onclick="window.otworzModul('liczenie')">
+                    <span class="tile-icon">🧮</span>
+                    <span>Liczenie</span>
+                </div>
+                <div class="tile tile-brown" onclick="window.otworzModul('planogram')">
+                    <span class="tile-icon">📋</span>
+                    <span>Planogramy</span>
+                </div>
+                <div class="tile tile-yellow" onclick="window.otworzModul('premia')">
+                    <span class="tile-icon">💰</span>
+                    <span>Premia</span>
+                </div>
+                <div class="tile tile-blue" onclick="window.otworzModul('grafik')">
+                    <span class="tile-icon">📅</span>
+                    <span>Grafik</span>
+                    <span id="grafik-badge" class="notification-badge warning hidden" title="Potwierdź dzisiejszą obecność">!</span>
+                </div>
+                <div class="tile tile-blue" onclick="window.otworzModul('wiadomosci')">
+                    <span class="tile-icon">💬</span>
+                    <span>Wiadomości</span>
+                    <span id="wiadomosci-badge" class="notification-badge hidden">0</span>
+                </div>
+                <div class="tile tile-blue" onclick="window.otworzModul('misje')">
+                    <span class="tile-icon">🎯</span>
+                    <span>Misje</span>
+                    <span id="misje-badge" class="notification-badge hidden">0</span>
+                </div>
+                <div class="tile tile-gray admin-only-tile" onclick="window.otworzModul('pracownicy')" id="tile-pracownicy" style="display: none;">
                     <span class="tile-icon">👥</span>
                     <span>Pracownicy</span>
                     <span id="pracownicy-badge" class="notification-badge warning hidden" title="Wymagane odnowienie badań/BHP">!</span>
                 </div>
-                <div class="tile tile-success admin-only-tile" onclick="window.otworzModul('statystyki')" id="tile-statystyki" style="display: none;">
+                <div class="tile tile-gray admin-only-tile" onclick="window.otworzModul('statystyki')" id="tile-statystyki" style="display: none;">
                     <span class="tile-icon">📈</span>
                     <span>Statystyki</span>
                 </div>
-                <div class="tile tile-success admin-only-tile" onclick="window.otworzModul('finanse')" id="tile-finanse" style="display: none;">
+                <div class="tile tile-gray admin-only-tile" onclick="window.otworzModul('finanse')" id="tile-finanse" style="display: none;">
                     <span class="tile-icon">💹</span>
                     <span>Finanse</span>
                 </div>
