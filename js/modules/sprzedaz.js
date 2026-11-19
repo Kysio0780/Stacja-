@@ -5,6 +5,13 @@
 let aktualnyRaportUpdatedAt = null;
 let aktualniSprzedawcyDnia = [];
 
+// Kolor wartości dziennej względem celu dziennego (plan / liczba dni w miesiącu).
+function klasaCeluDziennego(wartosc, cel) {
+    if (wartosc > cel) return 'val-green';
+    if (wartosc < cel) return 'val-red';
+    return '';
+}
+
 /* Bezpieczne odpowiedniki helperów z utils.js — moduł ma działać nawet przy nieaktualnym utils.js. */
 function pobierzBiezacyMiesiacSprzedazy() {
     if (typeof pobierzBiezacyOkresSystemowy === 'function') {
@@ -356,6 +363,11 @@ window.zaladujMiesiacTabela = async function() {
             hd: Number(planyRaw.hd) || 0,
             sklep: Number(planyRaw.sklep) || 0
         };
+        const celeDzienne = {
+            kawa: dniWMiesiacu > 0 ? plany.kawa / dniWMiesiacu : 0,
+            hd: dniWMiesiacu > 0 ? plany.hd / dniWMiesiacu : 0,
+            sklep: dniWMiesiacu > 0 ? plany.sklep / dniWMiesiacu : 0
+        };
         let ostatniDzienRaportu = 0;
         for (let d = 1; d <= dniWMiesiacu; d++) {
             if (raporty[`${wybranyMiesiac}-${String(d).padStart(2, '0')}`]) ostatniDzienRaportu = d;
@@ -376,14 +388,29 @@ window.zaladujMiesiacTabela = async function() {
         ${rowPlan('🌭 HD', 'hd', sHdW, plany.hd || 0)}
         ${rowPlan('🛒 Sklep', 'sklep', sSklepW, plany.sklep || 0)}</table></div>`;
 
-        let tableHtml = `<div class="table-responsive"><table class="month-table"><tr><th style="width: 110px;">Dzień / obsada</th><th>Kawa (szt / zł)</th><th>HD (szt / zł)</th><th>Sklep (zł)</th><th>Suma (zł)</th></tr>`;
+        let tableHtml = `<div class="table-responsive"><table class="month-table">
+            <tr><th style="width: 110px;">Dzień / obsada</th><th>Kawa (szt / zł)</th><th>HD (szt / zł)</th><th>Sklep (zł)</th><th>Suma (zł)</th></tr>
+            <tr>
+                <th style="font-weight:500; font-size:0.74em;">cel dzienny</th>
+                <th style="font-weight:500; font-size:0.74em;">${celeDzienne.kawa.toFixed(2)} zł</th>
+                <th style="font-weight:500; font-size:0.74em;">${celeDzienne.hd.toFixed(2)} zł</th>
+                <th style="font-weight:500; font-size:0.74em;">${celeDzienne.sklep.toFixed(2)} zł</th>
+                <th style="font-weight:500; font-size:0.74em;">—</th>
+            </tr>`;
         for (let d = 1; d <= dniWMiesiacu; d++) {
             const dStr = `${wybranyMiesiac}-${String(d).padStart(2, '0')}`;
             const r = raporty[dStr];
             const komorkaDnia = komorkaDniaZObsada(d, obsadaDni, Array.isArray(r?.sprzedawcy) ? r.sprzedawcy : []);
             if (r) {
-                const sumD = (Number(r.kawa?.wartosc)||0) + (Number(r.hd?.wartosc)||0) + (Number(r.sklep?.wartosc)||0);
-                tableHtml += `<tr class="cleaning-row" onclick="window.otworzDzien('${dStr}')">${komorkaDnia}<td>${r.kawa?.ilosc||0} / ${(Number(r.kawa?.wartosc)||0).toFixed(2)}</td><td>${r.hd?.ilosc||0} / ${(Number(r.hd?.wartosc)||0).toFixed(2)}</td><td>${(Number(r.sklep?.wartosc)||0).toFixed(2)}</td><td><strong>${sumD.toFixed(2)}</strong></td></tr>`;
+                const kW = Number(r.kawa?.wartosc) || 0;
+                const hW = Number(r.hd?.wartosc) || 0;
+                const sW = Number(r.sklep?.wartosc) || 0;
+                const sumD = kW + hW + sW;
+                tableHtml += `<tr class="cleaning-row" onclick="window.otworzDzien('${dStr}')">${komorkaDnia}
+                    <td class="${klasaCeluDziennego(kW, celeDzienne.kawa)}">${r.kawa?.ilosc||0} / ${kW.toFixed(2)}</td>
+                    <td class="${klasaCeluDziennego(hW, celeDzienne.hd)}">${r.hd?.ilosc||0} / ${hW.toFixed(2)}</td>
+                    <td class="${klasaCeluDziennego(sW, celeDzienne.sklep)}">${sW.toFixed(2)}</td>
+                    <td><strong>${sumD.toFixed(2)}</strong></td></tr>`;
             } else {
                 tableHtml += `<tr class="cleaning-row" style="opacity:0.75;" onclick="window.otworzDzien('${dStr}')">${komorkaDnia}<td>-</td><td>-</td><td>-</td><td>-</td></tr>`;
             }
