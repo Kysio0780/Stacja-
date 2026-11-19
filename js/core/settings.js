@@ -99,9 +99,9 @@ function zastosujCzcionke(rozmiar) {
 }
 
 /* TRYB PEŁNOEKRANOWY (KIOSK) – domyślnie włączony */
-// Nowy klucz celowo nie czyta starego "sklep_tryb_kiosk" — tam był automatycznie
-// zapisywany „1", więc wszyscy startowali z włączonym kioskiem.
-const KLUCZ_TRYBU_KIOSKU = "sklep_tryb_kiosk_v2";
+// Kolejny klucz celowo ignoruje poprzednie zapisy (v1/v2), żeby przywrócić
+// kiosk jako domyślnie włączony. Świadome wyłączenie zapisuje „0" i jest szanowane.
+const KLUCZ_TRYBU_KIOSKU = "sklep_tryb_kiosk_v3";
 
 function jestTrybemKiosk() {
     return document.body.classList.contains("tryb-kiosk");
@@ -184,12 +184,12 @@ zastosujMotyw(localStorage.getItem("sklep_motyw") || MOTYW_DOMYSLNY);
 zastosujCzcionke(localStorage.getItem("sklep_czcionka") || "normal");
 
 const kioskZapisany = localStorage.getItem(KLUCZ_TRYBU_KIOSKU);
-// Tryb kiosku pozostaje dostępny, ale domyślnie jest wyłączony.
-const kioskDomyslnieWlaczony = kioskZapisany === "1";
+// Tryb kiosku jest domyślnie włączony; wyłączenie zapisuje „0".
+const kioskDomyslnieWlaczony = kioskZapisany !== "0";
 ustawKlaseKiosku(kioskDomyslnieWlaczony);
 ustawBlokadeWstecz(kioskDomyslnieWlaczony);
 if (kioskZapisany === null) {
-    try { localStorage.setItem(KLUCZ_TRYBU_KIOSKU, "0"); } catch (e) { }
+    try { localStorage.setItem(KLUCZ_TRYBU_KIOSKU, "1"); } catch (e) { }
 }
 
 /* ZMIANA HASŁA */
