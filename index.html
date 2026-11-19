@@ -432,11 +432,9 @@
             </div>
             <p class="text-muted">Generuj zaawansowane raporty i analizuj wyniki zespołu.</p>
 
-            <div class="field-group">
-                <h4>📊 Generowanie raportów statystycznych</h4>
-                <button onclick="window.pokazOpcjeStatystyk()" class="btn-info">Konfiguruj / Odśwież statystyki</button>
-                
-                <div id="statystyki-opcje-panel" class="hidden" style="margin-top: 14px; padding: 14px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: var(--radius-sm);">
+            <details class="field-group" id="statystyki-opcje-panel">
+                <summary style="cursor: pointer; color: var(--primary); font-weight: 700;">📊 Generowanie raportów statystycznych (kliknij, aby rozwinąć)</summary>
+                <div style="margin-top: 14px;">
                     <label>Wybierz zakres czasu:</label>
                     <select id="stats-okres-typ" onchange="window.toggleStatsCustomDates()">
                         <option value="biezacy">Bieżący miesiąc</option>
@@ -463,6 +461,8 @@
                     <div style="display: grid; grid-template-columns: 1fr; gap: 8px; margin-top: 6px;">
                         <label style="display:flex; align-items:center; gap:8px; font-weight:normal; cursor:pointer;"><input type="checkbox" id="chk-stat-sprzedaz-ogolna" checked> Sprzedaż łącznie, średnia dzienna oraz Najlepszy/Najgorszy dzień</label>
                         <label style="display:flex; align-items:center; gap:8px; font-weight:normal; cursor:pointer;"><input type="checkbox" id="chk-stat-sprzedaz-pracownicy" checked> Sprzedaż w podziale na pracowników (proporcjonalnie)</label>
+                        <label style="display:flex; align-items:center; gap:8px; font-weight:normal; cursor:pointer;"><input type="checkbox" id="chk-stat-dni-tygodnia" checked> Sprzedaż w podziale na dni tygodnia</label>
+                        <label style="display:flex; align-items:center; gap:8px; font-weight:normal; cursor:pointer;"><input type="checkbox" id="chk-stat-misje" checked> Misje: liczba zadań i realizacja w okresie</label>
                         <label style="display:flex; align-items:center; gap:8px; font-weight:normal; cursor:pointer;"><input type="checkbox" id="chk-stat-plany" checked> Realizacja planów sprzedażowych</label>
                         <label style="display:flex; align-items:center; gap:8px; font-weight:normal; cursor:pointer;"><input type="checkbox" id="chk-stat-sprzatanie" checked> Sprzątanie: wykonane, niewykonane oraz udział pracowników</label>
                     </div>
@@ -471,7 +471,7 @@
                 </div>
 
                 <div id="statystyki-wynik-box" style="margin-top: 14px;">Kliknij przycisk powyżej, aby skonfigurować i wygenerować raport.</div>
-            </div>
+            </details>
 
             <div style="margin-top: 20px;">
                 <div class="collapsible-header danger" onclick="window.toggleCollapsible('cleanup-content', 'cleanup-arrow')">
