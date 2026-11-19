@@ -1,0 +1,19 @@
+{
+  "name": "sklep-app-apk",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Android APK wrapper dla Systemu Obsługi Sklepu (Capacitor)",
+  "scripts": {
+    "prepare:web": "node scripts/prepare-web.js",
+    "build:apk": "npm run prepare:web && cap sync android && cd android && ./gradlew assembleDebug"
+  },
+  "devDependencies": {
+    "@capacitor/android": "^6.0.0",
+    "@capacitor/cli": "^6.0.0",
+    "@capacitor/core": "^6.0.0",
+    "@capacitor/camera": "^6.0.0",
+    "@capacitor/local-notifications": "^6.0.0",
+    "@capacitor/push-notifications": "^6.0.0",
+    "esbuild": "^0.24.0"
+  }
+}
