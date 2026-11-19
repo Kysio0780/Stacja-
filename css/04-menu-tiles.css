@@ -31,12 +31,16 @@
         .tile:hover {
             transform: translateY(-2px);
             box-shadow: var(--shadow-md);
-            border-color: var(--primary);
             background: var(--card-bg);
         }
 
         .tile-icon { font-size: 1.6em; line-height: 1; }
-        .tile-success { border-top-color: var(--success); }
+        /* Kolory górnej ramki kafelków menu */
+        .tile-success { border-top-color: #16a34a; }
+        .tile-brown { border-top-color: #92400e; }
+        .tile-yellow { border-top-color: #eab308; }
+        .tile-blue { border-top-color: #2563eb; }
+        .tile-gray { border-top-color: #64748b; }
         .tile-info { border-top-color: var(--info); }
         .tile-warning { border-top-color: var(--warning); }
 
