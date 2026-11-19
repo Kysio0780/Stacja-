@@ -373,7 +373,6 @@ window.przeliczIWygenerujStatystyki = async function() {
                 const s = dniStat[idx];
                 return `<tr>
                     <td><strong>${nazwa}</strong></td>
-                    <td>${s.liczba}</td>
                     <td>${s.suma.toFixed(2)}</td>
                     <td>${sredniaZ(s.suma, s.liczba)}</td>
                     <td>${s.kawa.toFixed(2)} <span class="text-muted">(${sredniaZ(s.kawa, s.liczba)})</span></td>
@@ -384,7 +383,7 @@ window.przeliczIWygenerujStatystyki = async function() {
             sekcjaDniTygodnia = `<div class="field-group" style="border-left:4px solid var(--primary);">
                 <h4>🗓️ Sprzedaż w podziale na dni tygodnia</h4>
                 <div class="table-responsive"><table class="standard-table">
-                    <tr><th>Dzień</th><th>Liczba raportów</th><th>Suma</th><th>Średnia</th><th>Kawa</th><th>HD</th><th>Sklep</th></tr>
+                    <tr><th>Dzień</th><th>Suma</th><th>Średnia</th><th>Kawa</th><th>HD</th><th>Sklep</th></tr>
                     ${dniRows}
                 </table></div>
                 <p class="text-muted" style="font-size:0.82em; margin:6px 0 0 0;">W nawiasie średnia sprzedaż w danym dniu tygodnia.</p>
