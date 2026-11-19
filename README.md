@@ -71,6 +71,51 @@ js/vendor/                  lokalne kopie jsPDF i html2canvas (generowanie PDF)
 
 Bez odpowiednich reguł zapytania listujące (`getDocs`) zostaną odrzucone — moduł pokaże wtedy błąd ładowania.
 
+## Aplikacja Android (APK)
+
+Projekt jest opakowany w **Capacitor** — dzięki temu działa jako osobna aplikacja z własną ikoną
+i bez paska przeglądarki (wnętrze to systemowy WebView, nie przeglądarka internetowa).
+
+- `capacitor.config.json` — identyfikator `pl.sklepapp.stacja`, `webDir: www`,
+- `scripts/prepare-web.js` — kopiuje `index.html`, `css/`, `js/`, ikony do `www/` i buduje
+  `js/vendor/capacitor-native.js` (bundle pluginów, żeby nie wprowadzać bundlera do całej aplikacji),
+- `js/native-entry.js` — importy pluginów `@capacitor/core`, `camera`, `local-notifications`, `push-notifications`,
+- `js/core/native.js` — nakładka działająca tylko w APK: rejestracja FCM, zapis tokenu w
+  `uzytkownicy/{uid}.fcmToken`, codzienne przypomnienie o raporcie (20:00) i natywny aparat,
+- `.github/workflows/build-apk.yml` — buduje APK w chmurze po każdym pushu na `main` albo ręcznie
+  (zakładka Actions → „Build Android APK" → „Run workflow"). Gotowy plik jest w artefakcie
+  `sklep-app-debug-apk`.
+
+### Powiadomienia
+
+- **Lokalne:** codzienne przypomnienie o wypełnieniu raportu operacyjnego (można zmienić / wyłączyć
+  przez `NativeApp.ustawCodziennePrzypomnienie()` / `wylaczPrzypomnienie()`).
+- **Push (FCM):** po zalogowaniu aplikacja prosi o uprawnienia, rejestruje się w Firebase Cloud Messaging
+  i zapisuje token przy użytkowniku. Do *wysyłania* pushów (np. nowa wiadomość czy misja) potrzebne
+  są jeszcze Cloud Functions/serwer z uprawnieniem do FCM.
+
+### Pierwszy build
+
+1. W Firebase Console pobierz `google-services.json` dla aplikacji Android o pakiecie
+   `pl.sklepapp.stacja` (Project settings → Your apps → Add app → Android).
+2. Dodaj jego **zawartość** jako sekret repozytorium o nazwie `GOOGLE_SERVICES_JSON`
+   (Settings → Secrets and variables → Actions → New repository secret).
+3. Uruchom workflow. Jeśli sekretu nie ma, build się uda z placeholderem, ale push nie zadziała.
+
+Lokalnie (wymagany Node 20 + Android Studio / JDK 17):
+
+```
+npm install
+npm run prepare:web
+npx cap add android
+cp google-services.placeholder.json android/app/google-services.json   # lub prawdziwy plik
+npx cap sync android
+npm run build:apk
+```
+
+⚠️ Do poprawnego działania pushów potrzebny jest prawdziwy `google-services.json` — zastępczy plik
+pozwala tylko zbudować APK.
+
 ## Kopie zapasowe
 
 Przed każdym wgraniem na GitHub tworzony jest snapshot zdalnej gałęzi `main` w
