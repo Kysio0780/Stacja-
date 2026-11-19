@@ -163,6 +163,35 @@ window.odswiezGrafikPoObecnosci = function() {
 };
 
 /* ---------- FORMULARZ PRACOWNIKA ---------- */
+
+// Domyślne godziny potwierdzenia: dni powszednie R 6:00-18:00 / Z 10:00-22:00,
+// niedziela i święta (zawsze zmiana R) 7:00-19:00.
+function domyslneGodzinyPotwierdzenia(uid, data) {
+    const [rok, miesiac, dzien] = String(data || '').split('-').map(Number);
+    const dzienTygodnia = new Date(rok, miesiac - 1, dzien).getDay();
+    const swieto = !!(aktualnyGrafikStan && aktualnyGrafikStan.holidays && aktualnyGrafikStan.holidays[String(dzien)]);
+    const jestNiedzielaLubSwieto = dzienTygodnia === 0 || swieto;
+
+    const cRano = aktualnyGrafikStan?.entries?.[`${uid}_${dzien}_rano`];
+    const cZamk = aktualnyGrafikStan?.entries?.[`${uid}_${dzien}_zamkniecie`];
+    const pracujeRano = !!(cRano && cRano.type === 'praca' && (Number(cRano.hours) || 0) > 0);
+    const pracujeZamk = !!(cZamk && cZamk.type === 'praca' && (Number(cZamk.hours) || 0) > 0);
+
+    if (jestNiedzielaLubSwieto) return { od: '07:00', do: '19:00' };
+    if (pracujeZamk && !pracujeRano) return { od: '10:00', do: '22:00' };
+    return { od: '06:00', do: '18:00' };
+}
+
+window.ustawDomyslneGodzinyObecnosci = function() {
+    if (!currentUserData) return;
+    const uid = String(pobierzIdPracownika(currentUserData));
+    const data = document.getElementById('obecnosc-data')?.value;
+    if (!data) return;
+    const godziny = domyslneGodzinyPotwierdzenia(uid, data);
+    document.getElementById('obecnosc-od').value = godziny.od;
+    document.getElementById('obecnosc-do').value = godziny.do;
+};
+
 window.otworzModalObecnosciGrafiku = function() {
     if (!currentUserData) return;
     const uid = String(pobierzIdPracownika(currentUserData));
@@ -176,13 +205,9 @@ window.otworzModalObecnosciGrafiku = function() {
     poleData.max = dzis;
 
     const jestRano = window.czyPracownikPowinienBycWPracyGrafiku(aktualnyGrafikStan, uid, dzis);
-    const cRano = aktualnyGrafikStan?.entries?.[`${uid}_${Number(dzis.split('-')[2])}_rano`];
-    const cZamk = aktualnyGrafikStan?.entries?.[`${uid}_${Number(dzis.split('-')[2])}_zamkniecie`];
-    const pracujeZamk = !!(cZamk && cZamk.type === 'praca' && (Number(cZamk.hours) || 0) > 0);
-    const pracujeRano = !!(cRano && cRano.type === 'praca' && (Number(cRano.hours) || 0) > 0);
-
-    poleOd.value = pracujeZamk && !pracujeRano ? '14:00' : '06:00';
-    poleDo.value = pracujeZamk ? '21:00' : '14:00';
+    const domyslne = domyslneGodzinyPotwierdzenia(uid, dzis);
+    poleOd.value = domyslne.od;
+    poleDo.value = domyslne.do;
 
     const istniejace = window.pobierzPotwierdzenieObecnosci(uid, dzis);
     if (istniejace) {
