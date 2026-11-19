@@ -9,7 +9,12 @@ const MOTYWY_PRZEKIEROWANE = {
     "light": MOTYW_DOMYSLNY,
     "warm-light": MOTYW_DOMYSLNY,
     "dark": "midnight-blue",
-    "slate-dark": "midnight-blue"
+    "slate-dark": "steel-dark",
+    // Usunięty grafitowy z pomarańczowym akcentem — zastępuje go stalowy ciemny.
+    "graphite-dark": "steel-dark",
+    // Usunięte motywy jasne — ich wybór przekierowujemy na najbliższe nowe.
+    "sand-light": "sepia-light",
+    "steel-light": "gray-light"
 };
 function prawidlowyMotyw(tryb) {
     return MOTYWY_PRZEKIEROWANE[tryb] || tryb || MOTYW_DOMYSLNY;
