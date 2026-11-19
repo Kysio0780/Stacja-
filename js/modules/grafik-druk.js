@@ -33,7 +33,34 @@ window.generujWydrukGrafikuPDF = async function() {
     const holidays = aktualnyGrafikStan.holidays || {};
     const entries = aktualnyGrafikStan.entries || {};
 
-    let thead1 = `<tr><th rowspan="2" style="width:28px;">Dzień</th>`;
+    // Stały układ: każdy pracownik dostaje identyczną grupę 5 kolumn,
+    // a tabela mieści się w szerokości 1080 px używanej przy renderze.
+    // Szersza pierwsza kolumna, żeby etykiety statystyk (np. „Pozostało urlopu")
+    // mieściły się w wydruku — tam dozwolone jest zawijanie tekstu.
+    const szerokoscDnia = 100;
+    const dostepnaSzerokosc = 1080 - szerokoscDnia - 10;
+    const szerokoscGrupy = Math.max(70, Math.floor(dostepnaSzerokosc / wybraneEmps.length));
+    const szerokosciKolumn = [0.14, 0.14, 0.19, 0.19, 0.34]
+        .map(proporcja => Math.max(14, Math.floor(szerokoscGrupy * proporcja)));
+    const lacznaSzerokosc = szerokoscDnia + szerokoscGrupy * wybraneEmps.length;
+
+    // Wysokość wierszy dni dobieramy tak, żeby wydruk wykorzystywał całą
+    // dostępną wysokość strony A4 landscape (zamiast zostawiać puste pole).
+    const stosunekStrony = (297 - 2 * 3) / (210 - 2 * 3);
+    const docelowaWysokoscCanvas = (lacznaSzerokosc + 8) / stosunekStrony;
+    const staleWierszeWysokosc = 2 * 12 + 5 * 22; // nagłówek (2×12) + statystyki (5×22)
+    const dayRowHeight = Math.max(18, Math.min(36, Math.round(
+        (docelowaWysokoscCanvas - staleWierszeWysokosc - 30) / dniWMiesiacu
+    )));
+    const podpisLineHeight = Math.max(9, Math.round(dayRowHeight / 2));
+
+    let colgroup = `<colgroup><col style="width:${szerokoscDnia}px;">`;
+    wybraneEmps.forEach(() => {
+        szerokosciKolumn.forEach(w => { colgroup += `<col style="width:${w}px;">`; });
+    });
+    colgroup += `</colgroup>`;
+
+    let thead1 = `<tr><th rowspan="2">Dzień</th>`;
     let thead2 = `<tr>`;
     wybraneEmps.forEach(emp => {
         thead1 += `<th colspan="5" style="border-left:2px solid #000;">${ucieczkaHtml(emp.imie)}</th>`;
@@ -47,7 +74,7 @@ window.generujWydrukGrafikuPDF = async function() {
         const isHol = !!holidays[String(d)];
         const bg = isHol ? 'background:#fef08a;' : '';
         const dataDnia = `${miesiacStr}-${String(d).padStart(2, '0')}`;
-        tbody += `<tr style="${bg}"><td style="font-weight:bold;">${d}</td>`;
+        tbody += `<tr class="dzien" style="${bg}"><td style="font-weight:bold;">${d}</td>`;
 
         wybraneEmps.forEach(emp => {
             const cRano = entries[`${emp.id}_${d}_rano`] || {};
@@ -77,15 +104,15 @@ window.generujWydrukGrafikuPDF = async function() {
             } else if (jestChorobowe) {
                 podpisVal = 'Chorobowe';
             } else if (potw) {
-                podpisVal = `${ucieczkaHtml(emp.imie)}<br><span style="font-size:6px; font-weight:normal;">(potwierdzono cyfrowo)</span>`;
+                podpisVal = `${ucieczkaHtml(emp.imie)}<br><span style="font-size:6px; font-weight:normal;">potwierdzenie w aplikacji</span>`;
             }
 
             tbody += `
-                <td style="border-left:2px solid #000; width:24px;">${rVal}</td>
-                <td style="width:24px;">${zVal}</td>
-                <td style="width:32px;">${odVal}</td>
-                <td style="width:32px;">${doVal}</td>
-                <td style="width:58px; line-height:1.1;">${podpisVal}</td>`;
+                <td style="border-left:2px solid #000;">${rVal}</td>
+                <td>${zVal}</td>
+                <td>${odVal}</td>
+                <td>${doVal}</td>
+                <td>${podpisVal}</td>`;
         });
         tbody += `</tr>`;
     }
@@ -100,7 +127,7 @@ window.generujWydrukGrafikuPDF = async function() {
     ];
 
     summaryMetrics.forEach(metric => {
-        tbody += `<tr style="background:#f1f5f9; font-weight:bold;"><td>${metric.label}</td>`;
+        tbody += `<tr class="podsumowanie" style="background:#f1f5f9; font-weight:bold;"><td>${metric.label}</td>`;
         wybraneEmps.forEach(emp => {
             tbody += `<td colspan="2" style="border-left:2px solid #000;">${metric.fn(emp)}</td><td colspan="3"></td>`;
         });
@@ -108,16 +135,26 @@ window.generujWydrukGrafikuPDF = async function() {
     });
 
     const pdfContainer = document.createElement('div');
-    pdfContainer.style.cssText = 'background:#ffffff; color:#000000; font-family:Arial,sans-serif; padding:3px; width:1080px;';
+    pdfContainer.style.cssText = `background:#ffffff; color:#000000; font-family:Arial,sans-serif; padding:3px; width:${lacznaSzerokosc + 8}px;`;
     pdfContainer.innerHTML = `
         <style>
-            .pdf-export-table { width: 100%; border-collapse: collapse; font-size: 8px; line-height: 1.05; color: #000; page-break-inside: avoid; }
-            .pdf-export-table th, .pdf-export-table td { border: 1px solid #444; padding: 1px; text-align: center; page-break-inside: avoid; }
+            .pdf-export-table { border-collapse: collapse; font-size: 8px; color: #000; page-break-inside: avoid; table-layout: fixed; }
+            .pdf-export-table th, .pdf-export-table td {
+                border: 1px solid #444; padding: 0; text-align: center; vertical-align: middle;
+                height: 12px; line-height: 12px; white-space: nowrap; overflow: hidden;
+                page-break-inside: avoid;
+            }
             .pdf-export-table th { background: #e2e8f0; color: #000 !important; font-weight: bold; }
-            .pdf-export-table tr { page-break-inside: avoid; }
+            .pdf-export-table tr { height: 12px; page-break-inside: avoid; }
+            .pdf-export-table tr.dzien { height: ${dayRowHeight}px; }
+            .pdf-export-table tr.dzien td { height: ${dayRowHeight}px; line-height: ${podpisLineHeight}px; }
+            .pdf-export-table tr.podsumowanie { height: 22px; }
+            .pdf-export-table tr.podsumowanie td { height: 22px; line-height: 11px; }
+            .pdf-export-table tr.podsumowanie td:first-child { white-space: normal; overflow: visible; text-align: left; padding-left: 2px; }
         </style>
         <h2 style="text-align:center; margin:0 0 4px 0; font-size:12px; color:#000;">LISTA OBECNOŚCI / GRAFIK ZA MIESIĄC: ${nazwaMiesiaca}</h2>
-        <table class="pdf-export-table">
+        <table class="pdf-export-table" style="width:${lacznaSzerokosc}px;">
+            ${colgroup}
             <thead>${thead1}${thead2}</thead>
             <tbody>${tbody}</tbody>
         </table>
