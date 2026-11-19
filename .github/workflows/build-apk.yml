@@ -53,6 +53,9 @@ jobs:
       - name: Synchronizacja Capacitor
         run: npx cap sync android
 
+      - name: Nazwa aplikacji przy ikonie
+        run: sed -i 's|<string name="app_name">.*</string>|<string name="app_name">SP580app</string>|' android/app/src/main/res/values/strings.xml
+
       - name: Przygotowanie podpisu release
         if: env.HAS_SIGNING == 'true'
         env:
