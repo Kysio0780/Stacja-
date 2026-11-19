@@ -15,7 +15,10 @@ if (!src.includes('signingConfigs')) {
                 storeType 'PKCS12'
                 storePassword project.property('SIGNING_STORE_PASSWORD')
                 keyAlias project.property('SIGNING_KEY_ALIAS')
-                keyPassword project.property('SIGNING_KEY_PASSWORD')
+                // PKCS12 (domyślny format keytool w JDK 17) używa tego samego
+                // hasła do klucza i do magazynu — osobne keyPassword kończy się
+                // błędem "Given final block not properly padded".
+                keyPassword project.property('SIGNING_STORE_PASSWORD')
             }
         }
     }
