@@ -59,7 +59,7 @@ js/vendor/                  lokalne kopie jsPDF i html2canvas (generowanie PDF)
    (max 1500 px, JPEG 0.80, limit ~495 kB na string base64 — dokument Firestore ma limit 1 MiB).
 4. Aparat (`js/modules/aparat.js`) jest współdzielony przez planogramy, wiadomości i sprzątanie — przyjmuje callback z plikiem.
 5. Preferencje (motyw, czcionka) są zapisywane per użytkownik w `preferencje_uzytkownika/{uid}`;
-   `localStorage` służy tylko jako wygląd przed zalogowaniem. Tryb kiosku pozostaje ustawieniem urządzenia (domyślnie wyłączony).
+   `localStorage` służy tylko jako wygląd przed zalogowaniem. Tryb kiosku pozostaje ustawieniem urządzenia (domyślnie włączony; wyłącza się przełącznikiem w ustawieniach konta).
 6. Raporty operacyjne zapisują się w `raporty_operacyjne/{YYYY-MM-DD}`; progi paliw w `system_ustawienia/raporty_paliwa_min`.
 
 ## Reguły Firestore — czego wymaga aplikacja
@@ -98,6 +98,24 @@ i bez paska przeglądarki (wnętrze to systemowy WebView, nie przeglądarka inte
   i zapisuje token przy użytkowniku. Do *wysyłania* pushów (np. nowa wiadomość czy misja) potrzebne
   są jeszcze Cloud Functions/serwer z uprawnieniem do FCM.
 
+### Podpisany APK release (zalecane)
+
+Ważne: build z sekretami podpisu daje `sklep-app-release-apk` i **stabilny podpis** — kolejne wersje można
+instalować jedna na drugą bez odinstalowywania. Bez sekretów workflow buduje `sklep-app-debug-apk`
+(klucz zmienia się przy każdym buildzie, więc aktualizacja kończy się błędem „Aplikacja nie została zainstalowana").
+
+Jak przygotować sekrety (jednorazowo):
+
+1. Uruchom ręcznie workflow **„Generate Signing Keystore"** (Actions → Generate Signing Keystore → Run workflow).
+2. Skopiuj z logów cztery wartości i dodaj je jako sekrety repozytorium:
+   - `SIGNING_KEYSTORE_BASE64`
+   - `SIGNING_STORE_PASSWORD`
+   - `SIGNING_KEY_PASSWORD`
+   - `SIGNING_KEY_ALIAS` = `sklepapp`
+3. Plik `release.keystore` jest też w artefakcie tego workflow — **zapisz go w bezpiecznym miejscu**.
+   Jeśli go zgubisz, nie zaktualizujesz już aplikacji pod tym samym podpisem.
+4. Uruchom „Build Android APK" — artefakt będzie nazwany `sklep-app-release-apk`.
+
 ### Pierwszy build
 
 1. W Firebase Console pobierz `google-services.json` dla aplikacji Android o pakiecie
@@ -106,7 +124,7 @@ i bez paska przeglądarki (wnętrze to systemowy WebView, nie przeglądarka inte
    (Settings → Secrets and variables → Actions → New repository secret).
 3. Uruchom workflow. Jeśli sekretu nie ma, build się uda z placeholderem, ale push nie zadziała.
 
-Lokalnie (wymagany Node 20 + Android Studio / JDK 17):
+Lokalnie (wymagany Node 24 + Android Studio / JDK 17):
 
 ```
 npm install
