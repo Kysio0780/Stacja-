@@ -93,7 +93,7 @@ jobs:
             echo "BLAD: haslo SIGNING_STORE_PASSWORD jest niepoprawne."
             exit 1
           fi
-          if keytool -exportcert -alias "$KEY_ALIAS" -keystore android/app/release.keystore -storetype PKCS12 -storepass "$STORE_PASS" -keypass "$KEY_PASS" -file /tmp/cert.cer > /dev/null 2>&1; then
+          if keytool -exportcert -alias "$KEY_ALIAS" -keystore android/app/release.keystore -storetype PKCS12 -storepass "$STORE_PASS" -keypass "$STORE_PASS" -file /tmp/cert.cer > /dev/null 2>&1; then
             echo "OK: alias i haslo SIGNING_KEY_PASSWORD sa poprawne."
           else
             echo "BLAD: niepoprawny jest SIGNING_KEY_PASSWORD albo SIGNING_KEY_ALIAS (powinien byc: sklepapp)."
