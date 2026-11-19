@@ -35,6 +35,20 @@ window.zamknijAparat = function() {
 // callback(plik) zostaje wywołany po naciśnięciu „Zatwierdź".
 window.otworzAparat = async function(callback) {
     if (typeof callback !== 'function') { alert('Brak odbiorcy zdjęcia z aparatu.'); return; }
+
+    // W APK używamy natywnego aparatu (systemowy podgląd i zatwierdzenie).
+    if (window.NativeApp && typeof window.NativeApp.isNative === 'function' && window.NativeApp.isNative()) {
+        try {
+            const dataUrl = await window.NativeApp.takePicture();
+            if (!dataUrl) return;
+            const blob = await fetch(dataUrl).then(r => r.blob());
+            callback(new File([blob], `aparat_${Date.now()}.jpg`, { type: 'image/jpeg' }));
+        } catch (e) {
+            alert('Nie udało się zrobić zdjęcia: ' + e.message);
+        }
+        return;
+    }
+
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         alert('Ta przeglądarka nie udostępnia aparatu. Użyj wyboru zdjęcia z pliku.');
         return;
