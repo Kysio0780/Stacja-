@@ -194,12 +194,21 @@ window.przeliczIWygenerujStatystyki = async function() {
                 .sort((a, b) => pracownicyWyniki[b].suma - pracownicyWyniki[a].suma)
                 .map(idOsoby => {
                     const pw = pracownicyWyniki[idOsoby];
-                    return `<tr><td><strong>${ucieczkaHtml(nazwaPracownikaStat(idOsoby, mapaPracownikow))}</strong></td><td>${pw.dni}</td><td>${pw.kawa.toFixed(2)}</td><td>${pw.hd.toFixed(2)}</td><td>${pw.sklep.toFixed(2)}</td><td><strong>${pw.suma.toFixed(2)}</strong></td></tr>`;
+                    const liczbaZmian = Math.max(1, pw.dni);
+                    return `<tr>
+                        <td><strong>${ucieczkaHtml(nazwaPracownikaStat(idOsoby, mapaPracownikow))}</strong></td>
+                        <td>${pw.dni}</td>
+                        <td>${pw.kawa.toFixed(2)} <span class="text-muted">(${(pw.kawa / liczbaZmian).toFixed(2)}/zm.)</span></td>
+                        <td>${pw.hd.toFixed(2)} <span class="text-muted">(${(pw.hd / liczbaZmian).toFixed(2)}/zm.)</span></td>
+                        <td>${pw.sklep.toFixed(2)} <span class="text-muted">(${(pw.sklep / liczbaZmian).toFixed(2)}/zm.)</span></td>
+                        <td><strong>${pw.suma.toFixed(2)}</strong> <span class="text-muted">(${(pw.suma / liczbaZmian).toFixed(2)}/zm.)</span></td>
+                    </tr>`;
                 }).join('');
 
             sekcjaPracownicy = `<div class="field-group" style="border-left:4px solid var(--success);">
                 <h4>👥 Sprzedaż na pracowników (Proporcjonalnie)</h4>
                 ${pRows ? `<div class="table-responsive"><table class="standard-table"><tr><th>Pracownik</th><th>Dni</th><th>Kawa</th><th>HD</th><th>Sklep</th><th>Suma</th></tr>${pRows}</table></div>` : '<p class="text-muted">Brak danych sprzedażowych.</p>'}
+                <p class="text-muted" style="font-size:0.82em; margin:6px 0 0 0;">W nawiasie średnia na zmianę (wartość / liczba dni z raportem).</p>
             </div>`;
         }
 
@@ -359,10 +368,18 @@ window.przeliczIWygenerujStatystyki = async function() {
                 stat.hd += hd;
                 stat.sklep += sklep;
             });
+            const sredniaZ = (suma, liczba) => liczba > 0 ? (suma / liczba).toFixed(2) : '0.00';
             const dniRows = nazwyDni.map((nazwa, idx) => {
                 const s = dniStat[idx];
-                const srednia = s.liczba > 0 ? s.suma / s.liczba : 0;
-                return `<tr><td><strong>${nazwa}</strong></td><td>${s.liczba}</td><td>${s.suma.toFixed(2)}</td><td>${srednia.toFixed(2)}</td><td>${s.kawa.toFixed(2)}</td><td>${s.hd.toFixed(2)}</td><td>${s.sklep.toFixed(2)}</td></tr>`;
+                return `<tr>
+                    <td><strong>${nazwa}</strong></td>
+                    <td>${s.liczba}</td>
+                    <td>${s.suma.toFixed(2)}</td>
+                    <td>${sredniaZ(s.suma, s.liczba)}</td>
+                    <td>${s.kawa.toFixed(2)} <span class="text-muted">(${sredniaZ(s.kawa, s.liczba)})</span></td>
+                    <td>${s.hd.toFixed(2)} <span class="text-muted">(${sredniaZ(s.hd, s.liczba)})</span></td>
+                    <td>${s.sklep.toFixed(2)} <span class="text-muted">(${sredniaZ(s.sklep, s.liczba)})</span></td>
+                </tr>`;
             }).join('');
             sekcjaDniTygodnia = `<div class="field-group" style="border-left:4px solid var(--primary);">
                 <h4>🗓️ Sprzedaż w podziale na dni tygodnia</h4>
@@ -370,6 +387,7 @@ window.przeliczIWygenerujStatystyki = async function() {
                     <tr><th>Dzień</th><th>Liczba raportów</th><th>Suma</th><th>Średnia</th><th>Kawa</th><th>HD</th><th>Sklep</th></tr>
                     ${dniRows}
                 </table></div>
+                <p class="text-muted" style="font-size:0.82em; margin:6px 0 0 0;">W nawiasie średnia sprzedaż w danym dniu tygodnia.</p>
             </div>`;
         }
 
