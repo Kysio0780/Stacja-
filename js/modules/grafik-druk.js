@@ -165,6 +165,36 @@ window.generujWydrukGrafikuPDF = async function() {
     const opisBladu = (err) => (err && (err.message || String(err))) || 'nieznany błąd';
     const jsPDFCtor = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF;
 
+    // W APK WebView nie działa standardowe pobieranie z pdf.save(). Zapisujemy plik
+    // do pamięci urządzenia przez Capacitor i otwieramy systemowe okno udostępnienia/zapisu.
+    const zapiszPdf = async (pdf, nazwa) => {
+        const b = window.NativeBridge;
+        const wNatywnie = window.NativeApp && typeof window.NativeApp.isNative === 'function' && window.NativeApp.isNative();
+        if (!wNatywnie || !b || !b.Filesystem || !b.Share) {
+            pdf.save(nazwa);
+            return;
+        }
+        try {
+            const dataUri = pdf.output('datauristring');
+            const base64 = String(dataUri).split(',')[1];
+            const zapisany = await b.Filesystem.writeFile({
+                path: nazwa,
+                data: base64,
+                directory: b.Directory ? b.Directory.Cache : 'CACHE',
+                recursive: true
+            });
+            await b.Share.share({
+                title: 'Grafik - lista obecności',
+                text: nazwa,
+                url: zapisany.uri,
+                dialogTitle: 'Zapisz lub udostępnij plik PDF'
+            });
+        } catch (err) {
+            console.warn('PDF: zapis natywny nie udał się, próbuję standardowego pobrania.', err);
+            pdf.save(nazwa);
+        }
+    };
+
     /* 1) Próba: cała tabela jako jeden obrazek dopasowany do jednej strony A4. */
     if (typeof window.html2canvas === 'function' && typeof jsPDFCtor === 'function') {
         const poprzedniStyl = {
@@ -205,7 +235,7 @@ window.generujWydrukGrafikuPDF = async function() {
             const wys = canvas.height * skala;
 
             pdf.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', (szerStrony - szer) / 2, (wysStrony - wys) / 2, szer, wys);
-            pdf.save(nazwaPlikuPdf);
+            await zapiszPdf(pdf, nazwaPlikuPdf);
             return;
         } catch (err) {
             console.warn('PDF: metoda jednej strony nie udała się — próbuję fallback.', err);
@@ -228,7 +258,13 @@ window.generujWydrukGrafikuPDF = async function() {
                 html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
             };
-            await window.html2pdf().set(opt).from(pdfContainer).save();
+            const worker = window.html2pdf().set(opt).from(pdfContainer).toPdf();
+            const pdf = await worker.get('pdf');
+            if (pdf && typeof pdf.output === 'function') {
+                await zapiszPdf(pdf, nazwaPlikuPdf);
+            } else {
+                await worker.save();
+            }
             return;
         } catch (err) {
             alert("Błąd podczas zapisywania pliku PDF: " + opisBladu(err));
