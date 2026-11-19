@@ -94,7 +94,9 @@ function zastosujCzcionke(rozmiar) {
 }
 
 /* TRYB PEŁNOEKRANOWY (KIOSK) – domyślnie włączony */
-const KLUCZ_TRYBU_KIOSKU = "sklep_tryb_kiosk";
+// Nowy klucz celowo nie czyta starego "sklep_tryb_kiosk" — tam był automatycznie
+// zapisywany „1", więc wszyscy startowali z włączonym kioskiem.
+const KLUCZ_TRYBU_KIOSKU = "sklep_tryb_kiosk_v2";
 
 function jestTrybemKiosk() {
     return document.body.classList.contains("tryb-kiosk");
@@ -177,11 +179,12 @@ zastosujMotyw(localStorage.getItem("sklep_motyw") || MOTYW_DOMYSLNY);
 zastosujCzcionke(localStorage.getItem("sklep_czcionka") || "normal");
 
 const kioskZapisany = localStorage.getItem(KLUCZ_TRYBU_KIOSKU);
-const kioskDomyslnieWlaczony = kioskZapisany !== "0";
+// Tryb kiosku pozostaje dostępny, ale domyślnie jest wyłączony.
+const kioskDomyslnieWlaczony = kioskZapisany === "1";
 ustawKlaseKiosku(kioskDomyslnieWlaczony);
 ustawBlokadeWstecz(kioskDomyslnieWlaczony);
 if (kioskZapisany === null) {
-    try { localStorage.setItem(KLUCZ_TRYBU_KIOSKU, "1"); } catch (e) { }
+    try { localStorage.setItem(KLUCZ_TRYBU_KIOSKU, "0"); } catch (e) { }
 }
 
 /* ZMIANA HASŁA */
