@@ -76,6 +76,30 @@ jobs:
           } >> android/gradle.properties
           node scripts/configure-signing.js
 
+      - name: Sprawdzenie klucza podpisu
+        if: env.HAS_SIGNING == 'true'
+        env:
+          SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
+          SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
+          SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
+        run: |
+          clean() { printf '%s' "$1" | tr -d '\r\n' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//'; }
+          STORE_PASS=$(clean "$SIGNING_STORE_PASSWORD")
+          KEY_PASS=$(clean "$SIGNING_KEY_PASSWORD")
+          KEY_ALIAS=$(clean "$SIGNING_KEY_ALIAS")
+          if keytool -list -keystore android/app/release.keystore -storetype PKCS12 -storepass "$STORE_PASS" > /dev/null 2>&1; then
+            echo "OK: haslo do magazynu kluczy jest poprawne."
+          else
+            echo "BLAD: haslo SIGNING_STORE_PASSWORD jest niepoprawne."
+            exit 1
+          fi
+          if keytool -exportcert -alias "$KEY_ALIAS" -keystore android/app/release.keystore -storetype PKCS12 -storepass "$STORE_PASS" -keypass "$KEY_PASS" -file /tmp/cert.cer > /dev/null 2>&1; then
+            echo "OK: alias i haslo SIGNING_KEY_PASSWORD sa poprawne."
+          else
+            echo "BLAD: niepoprawny jest SIGNING_KEY_PASSWORD albo SIGNING_KEY_ALIAS (powinien byc: sklepapp)."
+            exit 1
+          fi
+
       - name: Budowa APK (release, podpisany)
         if: env.HAS_SIGNING == 'true'
         run: |
