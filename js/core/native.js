@@ -93,6 +93,16 @@
             try { await b.LocalNotifications.remove([4242]); } catch (e) { }
         },
 
+        zamknij: async function () {
+            const b = bridge();
+            if (jestNatynie() && b && b.App && typeof b.App.exitApp === 'function') {
+                await b.App.exitApp();
+                return;
+            }
+            try { window.close(); } catch (e) { }
+            alert('Zamykanie aplikacji jest dostępne w wersji APK.');
+        },
+
         // Zwraca data URL zdjęcia z natywnego aparatu (aparat.js konwertuje je do File).
         takePicture: async function () {
             const b = bridge();
@@ -105,5 +115,8 @@
             });
             return photo.dataUrl || null;
         }
+    };
+    window.zamknijAplikacje = function () {
+        if (window.NativeApp && typeof window.NativeApp.zamknij === 'function') window.NativeApp.zamknij();
     };
 })();
