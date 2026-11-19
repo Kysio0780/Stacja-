@@ -1,0 +1,14 @@
+{
+  "appId": "pl.sklepapp.stacja",
+  "appName": "System Obsługi Sklepu",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https",
+    "allowNavigation": ["*"]
+  },
+  "plugins": {
+    "PushNotifications": {
+      "presentationOptions": ["badge", "sound", "alert"]
+    }
+  }
+}
