@@ -58,13 +58,17 @@ js/vendor/                  lokalne kopie jsPDF i html2canvas (generowanie PDF)
 3. Nowe moduły ładują dane z Firestore bezpośrednio; zapisy zdjęć przechodzą przez `kompresujObraz()` z `utils.js`
    (max 1500 px, JPEG 0.80, limit ~495 kB na string base64 — dokument Firestore ma limit 1 MiB).
 4. Aparat (`js/modules/aparat.js`) jest współdzielony przez planogramy, wiadomości i sprzątanie — przyjmuje callback z plikiem.
-5. Preferencje (motyw, czcionka) są zapisywane per użytkownik w `preferencje_uzytkownika/{uid}`;
-   `localStorage` służy tylko jako wygląd przed zalogowaniem. Tryb kiosku pozostaje ustawieniem urządzenia (domyślnie włączony; wyłącza się przełącznikiem w ustawieniach konta).
-6. Raporty operacyjne zapisują się w `raporty_operacyjne/{YYYY-MM-DD}`; progi paliw w `system_ustawienia/raporty_paliwa_min`.
+5. Preferencje (motyw, rozmiar i krój czcionki) są zapisywane per użytkownik w `preferencje_uzytkownika/{uid}`;
+   `localStorage` służy tylko jako wygląd przed zalogowaniem. Dostępne kroje: Inter, Roboto, Open Sans, Lato, Montserrat, Poppins.
+   Tryb kiosku i przypomnienia „Zajrzyj do aplikacji" są ustawieniami urządzenia (kiosk domyślnie włączony).
+6. Raporty operacyjne zapisują się w dwóch osobnych dokumentach: `raporty_paliwa/{YYYY-MM-DD}` i
+   `raporty_liczniki/{YYYY-MM-DD}`; stare `raporty_operacyjne` są czytane tylko dla zgodności wstecznej.
+   Progi paliw: `system_ustawienia/raporty_paliwa_min`.
 
 ## Reguły Firestore — czego wymaga aplikacja
 
-- odczyt/zapis własnych dokumentów użytkownika (`preferencje_uzytkownika`, `uzytkownicy`),
+- odczyt/zapis własnych dokumentów użytkownika (`preferencje_uzytkownika`, `uzytkownicy`, pole `fcmToken`),
+- odczyt/zapis `raporty_paliwa` i `raporty_liczniki` (także przez pracowników),
 - odczyt `grafiki`, `sprzedaz`, `potwierdzenia_obecnosci`, `misje` oraz **`raporty_operacyjne`** (statystyki liczą się w przeglądarce),
 - zapis `preferencje_uzytkownika`, `potwierdzenia_obecnosci`, `raporty_operacyjne`, `zdjecia` w kolekcjach modułów,
 - zapis `system_ustawienia` (kategorie liczeń, progi paliw) wyłącznie dla admina.
@@ -115,6 +119,28 @@ Jak przygotować sekrety (jednorazowo):
 3. Plik `release.keystore` jest też w artefakcie tego workflow — **zapisz go w bezpiecznym miejscu**.
    Jeśli go zgubisz, nie zaktualizujesz już aplikacji pod tym samym podpisem.
 4. Uruchom „Build Android APK" — artefakt będzie nazwany `sklep-app-release-apk`.
+
+### Push przy wiadomościach i misjach
+
+Kod wysyłający jest w `functions/index.js` (Cloud Functions, firebase-admin). Funkcje nasłuchują na utworzenie
+dokumentu w `wiadomosci` i `misje`, zbierają `fcmToken` z `uzytkownicy/{uid}` i wysyłają FCM multicast:
+
+```
+firebase deploy --only functions
+```
+
+Wymagany jest plan **Blaze** i uprawnienie do wysyłania z serwera. Tokeny zapisuje aplikacja po zalogowaniu.
+
+**Wariant Spark (bez funkcji):** aplikacja zapisuje się do tematów FCM `wszyscy` i `admini`
+(w `js/core/native.js`). Powiadomienia wysyła się ręcznie z Firebase Console → Cloud Messaging,
+wybierając jeden z tematów. Przycisk **„🔄 Odśwież powiadomienia"** w menu użytkownika ponawia
+rejestrację tokenu i subskrypcje (przydatne po reinstalacji lub zmianie roli). Automatyczne wysyłanie
+przy nowej wiadomości/misji zacznie działać dopiero po przejściu na Blaze i wdrożeniu funkcji.
+
+### Lokalne przypomnienia „Zajrzyj do aplikacji"
+
+W ustawieniach konta można włączyć dwie powtarzalne notyfikacje (domyślnie 09:30 i 13:30, godziny edytowalne).
+Są one ustawieniem urządzenia i nie wymagają serwera. Niezależnie od tego działa przypomnienie o raporcie o 20:00.
 
 ### Pierwszy build
 
