@@ -9,6 +9,9 @@
     <meta name="mobile-web-app-capable" content="yes">
     <title>System Obsługi Sklepu</title>
     <link rel="manifest" href="manifest.json">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Lato:wght@400;700;900&family=Montserrat:wght@400;600;700&family=Open+Sans:wght@400;600;700&family=Poppins:wght@400;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <!-- Biblioteki do generowania PDF zawsze na jednej stronie (lokalnie, bez zależności od CDN). -->
     <script src="js/vendor/jspdf.umd.min.js"></script>
@@ -86,10 +89,38 @@
                         <option value="xlarge">Bardzo duża</option>
                     </select>
 
+                    <label for="wybor-rodzaju-czcionki-dd">Krój tekstu:</label>
+                    <select id="wybor-rodzaju-czcionki-dd" onchange="window.zmienRodzajCzcionki(this.value)">
+                        <option value="inter">Inter</option>
+                        <option value="roboto">Roboto</option>
+                        <option value="opensans">Open Sans</option>
+                        <option value="lato">Lato</option>
+                        <option value="montserrat">Montserrat</option>
+                        <option value="poppins">Poppins</option>
+                    </select>
+
                     <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin-top: 10px;">
                         <input type="checkbox" id="kiosk-toggle-dd" onchange="window.ustawTrybKiosku(this.checked, true)">
                         <span>🖥️ Tryb pełnoekranowy (kiosk)</span>
                     </label>
+
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin-top: 10px;">
+                        <input type="checkbox" id="przypomnienia-zajrzyj-toggle" onchange="window.ustawPrzypomnieniaZajrzyj()">
+                        <span>🔔 „Zajrzyj do aplikacji" (9:30 i 13:30)</span>
+                    </label>
+                    <div id="przypomnienia-zajrzyj-czas" style="margin-top: 6px;">
+                        <div class="flex-row" style="gap:8px;">
+                            <div>
+                                <label for="przypomnienie-czas-1" style="font-weight:normal; margin-bottom:2px;">Godzina 1:</label>
+                                <input type="time" id="przypomnienie-czas-1" value="09:30" onchange="window.ustawPrzypomnieniaZajrzyj()">
+                            </div>
+                            <div>
+                                <label for="przypomnienie-czas-2" style="font-weight:normal; margin-bottom:2px;">Godzina 2:</label>
+                                <input type="time" id="przypomnienie-czas-2" value="13:30" onchange="window.ustawPrzypomnieniaZajrzyj()">
+                            </div>
+                        </div>
+                    </div>
+                    <button onclick="window.odswiezPowiadomienia()" class="btn-info" style="margin: 10px 0 8px 0; width: 100%;">🔄 Odśwież powiadomienia</button>
                     <hr style="margin: 12px 0; border: 0; border-top: 1px solid var(--border-color);">
                     <button onclick="window.otworzModalZmianyHasla(); window.zamknijDropdownMenu();" class="btn-info" style="margin: 0 0 8px 0;">🔑 Zmień hasło</button>
                     <button onclick="window.wyloguj(); window.zamknijDropdownMenu();" class="btn-danger" style="margin: 0;">🚪 Wyloguj się</button>
@@ -1171,8 +1202,9 @@
                 <button class="btn-back" onclick="window.otworzModul('menu')">⬅ Menu</button>
             </div>
 
-            <div class="field-group" style="display: flex; justify-content: flex-end; margin-bottom: 12px;">
-                <button onclick="window.otworzModalRaportu()" class="btn-success" style="margin:0;">📝 Wypełnij raport</button>
+            <div class="field-group" style="display: flex; justify-content: flex-end; gap:8px; flex-wrap:wrap; margin-bottom: 12px;">
+                <button onclick="window.otworzModalRaportu(null, false, 'paliwa')" class="btn-success" style="margin:0;">⛽ Wypełnij raport paliw</button>
+                <button onclick="window.otworzModalRaportu(null, false, 'liczniki')" class="btn-success" style="margin:0;">🔢 Wypełnij raport liczników</button>
             </div>
 
             <div id="raporty-info"></div>
@@ -1211,9 +1243,6 @@
                     </div>
                 </details>
 
-                <h4>Historia raportów</h4>
-                <div id="raporty-historia">Ładowanie historii...</div>
-
                 <details class="field-group" style="margin-top: 18px; border-style: dashed; border-color: var(--danger);">
                     <summary style="cursor: pointer; color: var(--danger); font-weight: 700;">🗑️ Usuwanie danych raportów (kliknij, aby rozwinąć)</summary>
                     <div style="margin-top: 12px;">
@@ -1233,6 +1262,9 @@
                     </div>
                 </details>
             </div>
+
+            <h4>Historia raportów</h4>
+            <div id="raporty-historia">Ładowanie historii...</div>
         </div>
 
         <!-- MODAL RAPORTU OPERACYJNEGO -->
@@ -1259,9 +1291,10 @@
                 </fieldset>
 
                 <div style="margin-top: 18px; display: flex; gap: 8px; flex-wrap: wrap;">
-                    <button onclick="window.zapiszRaport()" id="raport-btn-zapisz" class="btn-success" style="margin:0;">💾 Zapisz raport</button>
+                    <button onclick="window.zapiszRaportPaliw()" id="raport-btn-zapisz-paliwa" class="btn-success" style="margin:0;">💾 Zapisz paliwa</button>
+                    <button onclick="window.zapiszRaportLicznikow()" id="raport-btn-zapisz-liczniki" class="btn-success" style="margin:0;">💾 Zapisz liczniki</button>
                     <button onclick="window.edytujRaportZPodgladu()" id="raport-btn-edytuj" class="btn-info hidden" style="margin:0;">✏️ Edytuj raport</button>
-                    <button onclick="window.usunRaportZPodgladu()" id="raport-btn-usun" class="btn-danger hidden" style="margin:0;">🗑️ Usuń raport</button>
+                    <button onclick="window.usunRaportZPodgladu()" id="raport-btn-usun" class="btn-danger hidden" style="margin:0;">🗑️ Usuń oba raporty z dnia</button>
                     <button onclick="window.zamknijModalRaportu()" class="btn-neutral" style="margin:0;">Zamknij</button>
                 </div>
             </div>
@@ -1323,7 +1356,7 @@
     <script defer src="js/modules/aparat.js"></script>
     <script defer src="js/modules/sprzatanie.js"></script>
     <script defer src="js/modules/liczenie.js"></script>
-    <script defer src="js/modules/raporty.js?v=20261119"></script>
+    <script defer src="js/modules/raporty.js?v=20261120"></script>
     <script defer src="js/modules/sprzedaz.js"></script>
     <script defer src="js/modules/auth.js"></script>
 </body>
