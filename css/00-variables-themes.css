@@ -1,3 +1,10 @@
+        html[data-font="inter"] { --font-family: 'Inter', sans-serif; }
+        html[data-font="roboto"] { --font-family: 'Roboto', sans-serif; }
+        html[data-font="opensans"] { --font-family: 'Open Sans', sans-serif; }
+        html[data-font="lato"] { --font-family: 'Lato', sans-serif; }
+        html[data-font="montserrat"] { --font-family: 'Montserrat', sans-serif; }
+        html[data-font="poppins"] { --font-family: 'Poppins', sans-serif; }
+
         :root {
             /* Paleta bazowa (spójna dla całej aplikacji) */
             --primary: #2563eb;
