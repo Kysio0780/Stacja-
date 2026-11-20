@@ -23,7 +23,13 @@ function prawidlowyMotyw(tryb) {
 /* Preferencje per użytkownik — localStorage służy tylko do natychmiastowego
    wyglądu przed zalogowaniem; po zalogowaniu wygrywa zapis z Firestore. */
 const PREFERENCJE_UZYTKOWNIKA_KOLEKCJA = 'preferencje_uzytkownika';
+const DOMYSLNY_RODZAJ_CZCIONKI = 'inter';
+const RODZAJE_CZCIONEK = ['inter', 'roboto', 'opensans', 'lato', 'montserrat', 'poppins'];
 let ladowaniePreferencji = false;
+
+function prawidlowyRodzajCzcionki(rodzaj) {
+    return RODZAJE_CZCIONEK.includes(rodzaj) ? rodzaj : DOMYSLNY_RODZAJ_CZCIONKI;
+}
 
 function identyfikatorUzytkownikaPreferencji() {
     if (!currentUserData) return "";
@@ -38,6 +44,7 @@ async function zapiszPreferencjeDoFirestore() {
         await setDoc(doc(db, PREFERENCJE_UZYTKOWNIKA_KOLEKCJA, uid), {
             motyw: prawidlowyMotyw(localStorage.getItem("sklep_motyw") || MOTYW_DOMYSLNY),
             czcionka: localStorage.getItem("sklep_czcionka") || "normal",
+            rodzajCzcionki: prawidlowyRodzajCzcionki(localStorage.getItem("sklep_rodzaj_czcionki")),
             updatedAt: new Date().toISOString()
         }, { merge: true });
     } catch (e) {
@@ -60,6 +67,9 @@ window.wczytajPreferencjeUzytkownika = async function() {
             const czcionka = dane.czcionka || "normal";
             localStorage.setItem("sklep_czcionka", czcionka);
             zastosujCzcionke(czcionka);
+            const rodzaj = prawidlowyRodzajCzcionki(dane.rodzajCzcionki);
+            localStorage.setItem("sklep_rodzaj_czcionki", rodzaj);
+            zastosujRodzajCzcionki(rodzaj);
             ladowaniePreferencji = false;
         } else {
             // Pierwsze logowanie — ustawienia dotychczas używane na tym urządzeniu
@@ -97,6 +107,51 @@ function zastosujCzcionke(rozmiar) {
     const selectDD = document.getElementById('wybor-czcionki-dd');
     if (selectDD) selectDD.value = rozmiar || "normal";
 }
+
+window.zmienRodzajCzcionki = (rodzaj) => {
+    const poprawny = prawidlowyRodzajCzcionki(rodzaj);
+    localStorage.setItem("sklep_rodzaj_czcionki", poprawny);
+    zastosujRodzajCzcionki(poprawny);
+    zapiszPreferencjeDoFirestore();
+};
+function zastosujRodzajCzcionki(rodzaj) {
+    const poprawny = prawidlowyRodzajCzcionki(rodzaj);
+    document.documentElement.setAttribute("data-font", poprawny);
+    const selectDD = document.getElementById('wybor-rodzaju-czcionki-dd');
+    if (selectDD) selectDD.value = poprawny;
+}
+
+/* LOKALNE PRZYPOMNIENIE „ZAJRZYJ DO APLIKACJI" (ustawienie urządzenia) */
+const KLUCZ_PRZYP_ZAJRZYJ = 'sklep_przyp_zajrzyj';
+const KLUCZ_PRZYP_ZAJRZYJ_1 = 'sklep_przyp_zajrzyj_1';
+const KLUCZ_PRZYP_ZAJRZYJ_2 = 'sklep_przyp_zajrzyj_2';
+
+function ustawPrzypomnieniaZajrzyjUI() {
+    const wlaczone = localStorage.getItem(KLUCZ_PRZYP_ZAJRZYJ) === '1';
+    const g1 = localStorage.getItem(KLUCZ_PRZYP_ZAJRZYJ_1) || '09:30';
+    const g2 = localStorage.getItem(KLUCZ_PRZYP_ZAJRZYJ_2) || '13:30';
+    const toggle = document.getElementById('przypomnienia-zajrzyj-toggle');
+    const p1 = document.getElementById('przypomnienie-czas-1');
+    const p2 = document.getElementById('przypomnienie-czas-2');
+    if (toggle) toggle.checked = wlaczone;
+    if (p1) p1.value = g1;
+    if (p2) p2.value = g2;
+}
+
+window.ustawPrzypomnieniaZajrzyj = function() {
+    const toggle = document.getElementById('przypomnienia-zajrzyj-toggle');
+    const p1 = document.getElementById('przypomnienie-czas-1');
+    const p2 = document.getElementById('przypomnienie-czas-2');
+    const wlaczone = !!(toggle && toggle.checked);
+    const g1 = (p1?.value) || '09:30';
+    const g2 = (p2?.value) || '13:30';
+    localStorage.setItem(KLUCZ_PRZYP_ZAJRZYJ, wlaczone ? '1' : '0');
+    localStorage.setItem(KLUCZ_PRZYP_ZAJRZYJ_1, g1);
+    localStorage.setItem(KLUCZ_PRZYP_ZAJRZYJ_2, g2);
+    if (window.NativeApp && typeof window.NativeApp.ustawPrzypomnieniaZajrzyj === 'function') {
+        window.NativeApp.ustawPrzypomnieniaZajrzyj(wlaczone, [g1, g2]);
+    }
+};
 
 /* TRYB PEŁNOEKRANOWY (KIOSK) – domyślnie włączony */
 // Kolejny klucz celowo ignoruje poprzednie zapisy (v1/v2), żeby przywrócić
@@ -182,6 +237,8 @@ document.addEventListener("fullscreenchange", () => {
 
 zastosujMotyw(localStorage.getItem("sklep_motyw") || MOTYW_DOMYSLNY);
 zastosujCzcionke(localStorage.getItem("sklep_czcionka") || "normal");
+zastosujRodzajCzcionki(prawidlowyRodzajCzcionki(localStorage.getItem("sklep_rodzaj_czcionki")));
+ustawPrzypomnieniaZajrzyjUI();
 
 const kioskZapisany = localStorage.getItem(KLUCZ_TRYBU_KIOSKU);
 // Tryb kiosku jest domyślnie włączony; wyłączenie zapisuje „0".
