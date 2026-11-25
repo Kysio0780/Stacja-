@@ -3,6 +3,59 @@
 
 /* ==================== LOGOWANIE I AUTORYZACJA ==================== */
 
+let noweLogowanie = false;
+let biometriaOdblokowana = false;
+
+function pokazBlokadeBiometryczna() {
+    const blokada = document.getElementById('blokada-biometryczna');
+    const blad = document.getElementById('biometria-blad');
+    if (blad) { blad.innerText = ''; blad.classList.add('hidden'); }
+    if (blokada) blokada.classList.remove('hidden');
+}
+
+function ukryjBlokadeBiometryczna() {
+    document.getElementById('blokada-biometryczna')?.classList.add('hidden');
+}
+
+window.odblokujBiometria = async function () {
+    const blad = document.getElementById('biometria-blad');
+    const ok = window.NativeApp && typeof window.NativeApp.zweryfikujBiometrie === 'function'
+        ? await window.NativeApp.zweryfikujBiometrie('Odblokuj aplikację')
+        : false;
+    if (ok) {
+        biometriaOdblokowana = true;
+        ukryjBlokadeBiometryczna();
+    } else if (blad) {
+        blad.innerText = 'Weryfikacja nie powiodła się. Spróbuj ponownie.';
+        blad.classList.remove('hidden');
+    }
+};
+
+window.ustawBiometrieUzytkownika = async function (wlaczone) {
+    const zalaczone = !!wlaczony;
+    if (zalaczone && window.NativeApp && typeof window.NativeApp.czyDostepnaBiometria === 'function') {
+        const dostepna = await window.NativeApp.czyDostepnaBiometria();
+        if (!dostepna) {
+            alert('Biometria nie jest dostępna na tym urządzeniu. Najpierw skonfiguruj odcisk palca lub twarz w ustawieniach telefonu.');
+            window.ustawFlageBiometrii?.(false);
+            return;
+        }
+    }
+    if (!currentUserData) return;
+    try {
+        await setDoc(doc(db, 'preferencje_uzytkownika', currentUserData.uid), {
+            biometria: zalaczone,
+            updatedAt: new Date().toISOString()
+        }, { merge: true });
+        window.ustawFlageBiometrii?.(zalaczone);
+        alert(zalaczone
+            ? 'Biometria została włączona. Przy następnym uruchomieniu aplikacja poprosi o odblokowanie.'
+            : 'Biometria została wyłączona.');
+    } catch (e) {
+        alert('Nie udało się zapisać ustawienia biometrii: ' + e.message);
+    }
+};
+
 async function pobierzEmailDoLogowania(login) {
     // Login jest aliasem w Firestore, a właściwy e-mail Firebase Auth pozostaje niezmienny.
     // Dzięki temu zmiana loginu nie wymaga zmiany adresu w Firebase Auth.
@@ -24,6 +77,7 @@ window.zaloguj = async function() {
     const pass = document.getElementById('password-input').value;
     document.getElementById('error-msg').innerText = "";
     if (!login || !pass) return;
+    noweLogowanie = true;
     try {
         const email = await pobierzEmailDoLogowania(login);
         try {
@@ -38,10 +92,18 @@ window.zaloguj = async function() {
                 throw e;
             }
         }
-    } catch (error) { document.getElementById('error-msg').innerText = "Błąd: Niepoprawny login lub hasło."; }
+    } catch (error) {
+        noweLogowanie = false;
+        document.getElementById('error-msg').innerText = "Błąd: Niepoprawny login lub hasło.";
+    }
 };
 
-window.wyloguj = () => { window.location.hash = ""; signOut(auth); };
+window.wyloguj = () => {
+    biometriaOdblokowana = false;
+    ukryjBlokadeBiometryczna();
+    window.location.hash = "";
+    signOut(auth);
+};
 
 onAuthStateChanged(auth, async (user) => {
     if (user) {
@@ -53,7 +115,7 @@ onAuthStateChanged(auth, async (user) => {
             currentUserData = { ...docSnap.data(), uid: user.uid };
             const imieKrotkie = pobierzImieKrotkie(currentUserData.imie);
             document.getElementById('profile-btn-label').innerText = imieKrotkie;
-            if (typeof window.wczytajPreferencjeUzytkownika === 'function') window.wczytajPreferencjeUzytkownika();
+            if (typeof window.wczytajPreferencjeUzytkownika === 'function') await window.wczytajPreferencjeUzytkownika();
             const czyAdmin = currentUserData.rola === 'admin';
             document.getElementById('admin-daily-section').classList.toggle('hidden', !czyAdmin);
             document.getElementById('tile-pracownicy').style.display = czyAdmin ? 'flex' : 'none';
@@ -68,11 +130,24 @@ onAuthStateChanged(auth, async (user) => {
             sprawdzPowiadomieniaWiadomosci(user.uid, currentUserData.imie);
             sprawdzPowiadomieniaPracownicyGlobal();
             sprawdzPowiadomieniaTpsGlobal();
+
+            const wymagaBiometrii = !noweLogowanie && !biometriaOdblokowana
+                && typeof window.pobierzBiometrieUzytkownika === 'function'
+                && window.pobierzBiometrieUzytkownika();
+            noweLogowanie = false;
+            if (wymagaBiometrii && window.NativeApp && typeof window.NativeApp.czyDostepnaBiometria === 'function') {
+                const dostepna = await window.NativeApp.czyDostepnaBiometria();
+                if (dostepna) pokazBlokadeBiometryczna();
+                else biometriaOdblokowana = true;
+            }
+
             window.dispatchEvent(new HashChangeEvent("hashchange"));
         } else {
             currentUserData = null;
             document.getElementById('error-msg').innerText = "To konto nie ma przypisanego profilu pracownika. Skontaktuj się z administratorem.";
             try { await signOut(auth); } catch (e) { console.error(e); }
+            biometriaOdblokowana = false;
+            ukryjBlokadeBiometryczna();
             document.getElementById('login-screen').classList.remove('hidden');
             document.getElementById('app-screen').classList.add('hidden');
             const wskaznikRozmiaru = document.getElementById('header-storage-usage');
@@ -80,6 +155,8 @@ onAuthStateChanged(auth, async (user) => {
         }
     } else {
         currentUserData = null;
+        biometriaOdblokowana = false;
+        ukryjBlokadeBiometryczna();
         document.getElementById('login-screen').classList.remove('hidden');
         document.getElementById('app-screen').classList.add('hidden');
         const wskaznikRozmiaru = document.getElementById('header-storage-usage');
