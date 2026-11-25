@@ -70,12 +70,17 @@
 
         /* Nagłówek aplikacji */
         .app-header-bar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--card-bg);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 20px;
-            padding-bottom: 14px;
+            margin: -8px 0 20px 0;
+            padding: 8px 0 10px 0;
             border-bottom: 1px solid var(--border-color);
+            box-shadow: 0 2px 6px rgba(15, 23, 42, 0.06);
             gap: 10px;
         }
 
