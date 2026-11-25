@@ -104,23 +104,6 @@
                         <span>🖥️ Tryb pełnoekranowy (kiosk)</span>
                     </label>
 
-                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin-top: 10px;">
-                        <input type="checkbox" id="przypomnienia-zajrzyj-toggle" onchange="window.ustawPrzypomnieniaZajrzyj()">
-                        <span>🔔 „Zajrzyj do aplikacji" (9:30 i 13:30)</span>
-                    </label>
-                    <div id="przypomnienia-zajrzyj-czas" style="margin-top: 6px;">
-                        <div class="flex-row" style="gap:8px;">
-                            <div>
-                                <label for="przypomnienie-czas-1" style="font-weight:normal; margin-bottom:2px;">Godzina 1:</label>
-                                <input type="time" id="przypomnienie-czas-1" value="09:30" onchange="window.ustawPrzypomnieniaZajrzyj()">
-                            </div>
-                            <div>
-                                <label for="przypomnienie-czas-2" style="font-weight:normal; margin-bottom:2px;">Godzina 2:</label>
-                                <input type="time" id="przypomnienie-czas-2" value="13:30" onchange="window.ustawPrzypomnieniaZajrzyj()">
-                            </div>
-                        </div>
-                    </div>
-                    <button onclick="window.odswiezPowiadomienia()" class="btn-info" style="margin: 10px 0 8px 0; width: 100%;">🔄 Odśwież powiadomienia</button>
                     <hr style="margin: 12px 0; border: 0; border-top: 1px solid var(--border-color);">
                     <button onclick="window.otworzModalZmianyHasla(); window.zamknijDropdownMenu();" class="btn-info" style="margin: 0 0 8px 0;">🔑 Zmień hasło</button>
                     <button onclick="window.wyloguj(); window.zamknijDropdownMenu();" class="btn-danger" style="margin: 0;">🚪 Wyloguj się</button>
