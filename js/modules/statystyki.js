@@ -119,6 +119,17 @@ function narysujWykresSprzedazy(canvasId, dane, klucz, kolor) {
     });
 }
 
+function ustawDomyslneLinieWykresow() {
+    ['kawa', 'hd', 'sklep'].forEach(klucz => {
+        const srednia = document.getElementById(`stat-wykres-${klucz}-srednia`);
+        const plan68 = document.getElementById(`stat-wykres-${klucz}-plan68`);
+        const plan100 = document.getElementById(`stat-wykres-${klucz}-plan100`);
+        if (srednia) srednia.checked = false;
+        if (plan68) plan68.checked = false;
+        if (plan100) plan100.checked = true;
+    });
+}
+
 function narysujWykresySprzedazyStat() {
     const dane = daneWykresowSprzedazy.slice().sort((a, b) => String(a.data).localeCompare(String(b.data)));
     narysujWykresSprzedazy('stat-wykres-kawa', dane, 'kawa', '#b45309');
@@ -586,7 +597,10 @@ window.przeliczIWygenerujStatystyki = async function() {
         htmlWynik += sekcjaPlany + sekcjaSprzedaz + sekcjaPracownicy + sekcjaDniTygodnia + sekcjaSprzatanie + sekcjaMisje;
 
         box.innerHTML = htmlWynik + `</div>`;
-        if (document.getElementById('chk-stat-sprzedaz-ogolna')?.checked) narysujWykresySprzedazyStat();
+        if (document.getElementById('chk-stat-sprzedaz-ogolna')?.checked) {
+            ustawDomyslneLinieWykresow();
+            narysujWykresySprzedazyStat();
+        }
     } catch (e) {
         box.innerHTML = `<span class='error'>Błąd podczas obliczania statystyk: ${ucieczkaHtml(e.message)}</span>`;
     }
