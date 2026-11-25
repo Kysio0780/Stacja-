@@ -59,6 +59,16 @@
             min-width: 0;
         }
         .stat-wykres-box canvas { display: block; max-width: 100%; }
+        .stat-wykres-opcje {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px 10px;
+            margin-top: 4px;
+            font-size: 0.74em;
+            font-weight: normal;
+        }
+        .stat-wykres-opcje label { display: flex; align-items: center; gap: 4px; cursor: pointer; margin: 0; }
+        .stat-wykres-opcje input { margin: 0; }
 
         /* Tryb pełnoekranowy (kiosk) */
         html.tryb-kiosk, body.tryb-kiosk {
