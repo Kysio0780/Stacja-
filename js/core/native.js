@@ -21,7 +21,6 @@
                 return;
             }
             try { window.close(); } catch (e) { }
-            alert('Zamykanie aplikacji jest dostępne w wersji APK.');
         },
 
         // Zwraca data URL zdjęcia z natywnego aparatu (aparat.js konwertuje je do File).
