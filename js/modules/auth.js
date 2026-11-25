@@ -31,6 +31,11 @@ window.odblokujBiometria = async function () {
     }
 };
 
+document.addEventListener('DOMContentLoaded', () => {
+    const pole = document.getElementById('biometria-dd');
+    if (pole) pole.addEventListener('change', () => window.ustawBiometrieUzytkownika(pole.checked));
+});
+
 function ustawStatusBiometrii(tekst, blad = false) {
     const pole = document.getElementById('biometria-status');
     if (!pole) return;
