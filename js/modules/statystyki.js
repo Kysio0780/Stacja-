@@ -3,6 +3,80 @@
 
 /* ==================== STATYSTYKI I CZYSZCZENIE ==================== */
 
+let daneWykresowSprzedazy = [];
+
+function narysujWykresSprzedazy(canvasId, dane, klucz, kolor) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas || !dane.length) return;
+    const dpr = window.devicePixelRatio || 1;
+    const rodzic = canvas.parentElement;
+    const szer = Math.max(260, (rodzic ? rodzic.clientWidth : 300) - 4);
+    const wys = 180;
+    canvas.width = Math.round(szer * dpr);
+    canvas.height = Math.round(wys * dpr);
+    canvas.style.width = szer + 'px';
+    canvas.style.height = wys + 'px';
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    ctx.scale(dpr, dpr);
+    ctx.clearRect(0, 0, szer, wys);
+
+    const pad = { l: 42, r: 8, t: 10, b: 24 };
+    const plotW = szer - pad.l - pad.r;
+    const plotH = wys - pad.t - pad.b;
+    const maxWartosc = Math.max(1, ...dane.map(d => Number(d[klucz]) || 0));
+
+    ctx.strokeStyle = '#cbd5e1';
+    ctx.fillStyle = '#64748b';
+    ctx.lineWidth = 1;
+    ctx.font = '10px Arial, sans-serif';
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
+    for (let i = 0; i <= 4; i++) {
+        const y = pad.t + plotH - (plotH * i / 4);
+        ctx.beginPath();
+        ctx.moveTo(pad.l, y);
+        ctx.lineTo(szer - pad.r, y);
+        ctx.stroke();
+        ctx.fillText(Math.round(maxWartosc * i / 4).toString(), pad.l - 5, y);
+    }
+
+    const punkty = dane.map((d, idx) => ({
+        x: pad.l + (dane.length === 1 ? plotW / 2 : plotW * idx / (dane.length - 1)),
+        y: pad.t + plotH - plotH * ((Number(d[klucz]) || 0) / maxWartosc),
+        d
+    }));
+
+    ctx.strokeStyle = kolor;
+    ctx.fillStyle = kolor;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    punkty.forEach((p, idx) => { if (idx === 0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y); });
+    ctx.stroke();
+    punkty.forEach(p => {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 2.2, 0, Math.PI * 2);
+        ctx.fill();
+    });
+
+    ctx.fillStyle = '#64748b';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    const krok = Math.max(1, Math.ceil(dane.length / 8));
+    punkty.forEach((p, idx) => {
+        if (idx % krok === 0 || idx === punkty.length - 1) {
+            ctx.fillText(String(p.d.dzien), p.x, wys - pad.b + 5);
+        }
+    });
+}
+
+function narysujWykresySprzedazyStat() {
+    const dane = daneWykresowSprzedazy.slice().sort((a, b) => String(a.data).localeCompare(String(b.data)));
+    narysujWykresSprzedazy('stat-wykres-kawa', dane, 'kawa', '#b45309');
+    narysujWykresSprzedazy('stat-wykres-hd', dane, 'hd', '#dc2626');
+    narysujWykresSprzedazy('stat-wykres-sklep', dane, 'sklep', '#2563eb');
+}
+
 function utworzMapePracownikowStat(lista) {
     const poId = new Map();
     const poNazwie = new Map();
@@ -140,11 +214,17 @@ window.przeliczIWygenerujStatystyki = async function() {
         if (document.getElementById('chk-stat-sprzedaz-ogolna').checked) {
             let sKawaW = 0, sHdW = 0, sSklepW = 0, sumaLaczna = 0;
             let najlepszyDzien = null, najgorszyDzien = null;
+            daneWykresowSprzedazy = [];
 
             przefiltrowaneRaporty.forEach(r => {
                 const kawa = Number(r.kawa?.wartosc) || 0;
                 const hd = Number(r.hd?.wartosc) || 0;
                 const sklep = Number(r.sklep?.wartosc) || 0;
+                daneWykresowSprzedazy.push({
+                    data: r.data,
+                    dzien: Number(String(r.data).split('-')[2]) || 0,
+                    kawa, hd, sklep
+                });
                 const sumaDnia = kawa + hd + sklep;
                 const sprzedawcyDnia = opisOsobRaportu(r);
 
@@ -165,6 +245,11 @@ window.przeliczIWygenerujStatystyki = async function() {
                     <tr><td><strong>🌭 HD</strong></td><td>${sHdW.toFixed(2)} zł | Śr: ${(sHdW/dniLiczba).toFixed(2)} zł/dzień</td></tr>
                     <tr><td><strong>🛒 Sklep</strong></td><td>${sSklepW.toFixed(2)} zł | Śr: ${(sSklepW/dniLiczba).toFixed(2)} zł/dzień</td></tr>
                 </table></div>
+                <div class="stat-wykresy">
+                    <div class="stat-wykres-box"><h5 style="margin:6px 0 2px 0;">☕ Kawa</h5><canvas id="stat-wykres-kawa"></canvas></div>
+                    <div class="stat-wykres-box"><h5 style="margin:6px 0 2px 0;">🌭 Hot-Dog</h5><canvas id="stat-wykres-hd"></canvas></div>
+                    <div class="stat-wykres-box"><h5 style="margin:6px 0 2px 0;">🛒 Sklep</h5><canvas id="stat-wykres-sklep"></canvas></div>
+                </div>
                 ${najlepszyDzien ? `<p style="margin:6px 0;" class="val-green">🌟 Najlepszy dzień: <strong>${ucieczkaHtml(formatujDateDoWyswietlenia(najlepszyDzien.data))}</strong> (${najlepszyDzien.suma.toFixed(2)} zł) — ${ucieczkaHtml(najlepszyDzien.sprzedawcy)}</p>` : ''}
                 ${najgorszyDzien ? `<p style="margin:0;" class="val-red">🔻 Najgorszy dzień: <strong>${ucieczkaHtml(formatujDateDoWyswietlenia(najgorszyDzien.data))}</strong> (${najgorszyDzien.suma.toFixed(2)} zł) — ${ucieczkaHtml(najgorszyDzien.sprzedawcy)}</p>` : ''}
             </div>`;
@@ -420,6 +505,7 @@ window.przeliczIWygenerujStatystyki = async function() {
         htmlWynik += sekcjaPlany + sekcjaSprzedaz + sekcjaPracownicy + sekcjaDniTygodnia + sekcjaSprzatanie + sekcjaMisje;
 
         box.innerHTML = htmlWynik + `</div>`;
+        if (document.getElementById('chk-stat-sprzedaz-ogolna')?.checked) narysujWykresySprzedazyStat();
     } catch (e) {
         box.innerHTML = `<span class='error'>Błąd podczas obliczania statystyk: ${ucieczkaHtml(e.message)}</span>`;
     }
