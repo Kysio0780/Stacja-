@@ -31,10 +31,18 @@ window.odblokujBiometria = async function () {
     }
 };
 
-document.addEventListener('DOMContentLoaded', () => {
+function bindPrzelacznikaBiometrii() {
     const pole = document.getElementById('biometria-dd');
-    if (pole) pole.addEventListener('change', () => window.ustawBiometrieUzytkownika(pole.checked));
-});
+    if (!pole || pole.dataset.bound === '1') return;
+    pole.dataset.bound = '1';
+    pole.addEventListener('click', () => {
+        setTimeout(() => window.ustawBiometrieUzytkownika(pole.checked), 0);
+    });
+    const status = document.getElementById('biometria-status');
+    if (status && !status.innerText) status.innerText = 'Moduł biometrii załadowany.';
+}
+bindPrzelacznikaBiometrii();
+document.addEventListener('DOMContentLoaded', bindPrzelacznikaBiometrii);
 
 function ustawStatusBiometrii(tekst, blad = false) {
     const pole = document.getElementById('biometria-status');
@@ -45,7 +53,8 @@ function ustawStatusBiometrii(tekst, blad = false) {
     pole.style.margin = '4px 0 0 0';
 }
 
-window.ustawBiometrieUzytkownika = async function (wlaczone) {
+window.ustawBiometrieUzytkownika = async function (wlaczony) {
+    ustawStatusBiometrii('Reakcja na przełącznik…');
     const zalaczone = !!wlaczony;
     const wAPK = window.NativeApp && typeof window.NativeApp.isNative === 'function' && window.NativeApp.isNative();
 
