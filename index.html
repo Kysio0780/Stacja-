@@ -615,6 +615,7 @@
                         <button onclick="window.zapiszGrafikInteraktywny(false)" class="btn-info btn-sm">💾 Zapisz roboczy</button>
                         <button id="btn-publikacja-grafiku" onclick="window.przelaczPublikacjeGrafiku()" class="btn-success btn-sm">📢 Opublikuj dla pracowników</button>
                         <button onclick="window.otworzModalDrukuGrafiku()" class="btn-neutral btn-sm">🖨️ Drukuj / PDF</button>
+                        <button onclick="window.otworzModalDrukuGrafiku('godziny')" class="btn-info btn-sm">📄 Export PDF (godziny)</button>
                     </div>
                 </div>
 
@@ -771,16 +772,23 @@
         <!-- MODAL DRUKU / PDF LISTY OBECNOŚCI -->
         <div id="modal-grafik-druk" class="modal-overlay hidden">
             <div class="modal-content" style="max-width: 480px;">
-                <h4>📥 Generuj PDF Listy Obecności</h4>
-                <p class="text-muted">Wybierz pracowników, którzy mają znaleźć się w pliku PDF (z kolumnami Godziny, OD, DO, Podpis). Domyślnie pominięto Umowy Zlecenie.</p>
-                
+                <h4 id="modal-grafik-druk-tytul">📥 Generuj PDF Listy Obecności</h4>
+                <p id="modal-grafik-druk-opis" class="text-muted">Wybierz pracowników, którzy mają znaleźć się w pliku PDF (z kolumnami Godziny, OD, DO, Podpis). Domyślnie pominięto Umowy Zlecenie.</p>
+
                 <div class="field-group">
                     <label>Pracownicy do pliku PDF:</label>
                     <div id="druk-pracownicy-lista" style="max-height: 220px; overflow-y: auto; background: var(--card-bg); padding: 10px; border: 1px solid var(--border-color); border-radius: var(--radius-sm);"></div>
                 </div>
 
+                <div id="druk-statystyki-box" class="field-group hidden">
+                    <label style="display:flex; align-items:center; gap:8px; cursor:pointer; margin:0;">
+                        <input type="checkbox" id="druk-statystyki-chk">
+                        <span>📊 Dołącz podsumowanie statystyk na końcu</span>
+                    </label>
+                </div>
+
                 <div class="flex-row" style="margin-top: 14px;">
-                    <button onclick="window.generujWydrukGrafikuPDF()" class="btn-success" style="margin:0;">📥 Pobierz PDF</button>
+                    <button onclick="window.generujWydrukGrafikuZModalu()" class="btn-success" style="margin:0;">📥 Pobierz PDF</button>
                     <button onclick="window.zamknijModalDrukuGrafiku()" class="btn-neutral" style="margin:0;">Anuluj</button>
                 </div>
             </div>
