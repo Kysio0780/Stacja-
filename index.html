@@ -37,10 +37,6 @@
         <input type="text" id="login-input" placeholder="Wpisz login" onkeydown="if(event.key==='Enter') window.zaloguj()">
         <label for="password-input">Hasło</label>
         <input type="password" id="password-input" placeholder="Wpisz hasło" onkeydown="if(event.key==='Enter') window.zaloguj()">
-        <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-weight:normal; margin-top:8px;">
-            <input type="checkbox" id="zapamietaj-mnie" onchange="window.zalogujUstawZapamietanie(this.checked)">
-            <span>Zapamiętaj mnie na tym urządzeniu</span>
-        </label>
         <button onclick="window.zaloguj()" style="margin-top: 8px;">Zaloguj się</button>
         <p id="error-msg" class="error" style="text-align: center;"></p>
     </div>
@@ -108,12 +104,6 @@
                         <input type="checkbox" id="kiosk-toggle-dd" onchange="window.ustawTrybKiosku(this.checked, true)">
                         <span>🖥️ Tryb pełnoekranowy (kiosk)</span>
                     </label>
-
-                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin-top: 10px;">
-                        <input type="checkbox" id="zapamietaj-haslo-dd" onchange="window.ustawZapamietanieHaslaUzytkownika(this.checked)">
-                        <span>💾 Zapamiętaj moje hasło na tym urządzeniu</span>
-                    </label>
-                    <p class="text-muted" style="font-size:0.78em; margin:4px 0 0 0;">Ustawienie jest indywidualne dla każdego użytkownika.</p>
 
                     <hr style="margin: 12px 0; border: 0; border-top: 1px solid var(--border-color);">
                     <button onclick="window.otworzModalZmianyHasla(); window.zamknijDropdownMenu();" class="btn-info" style="margin: 0;">🔑 Zmień hasło</button>
@@ -1371,7 +1361,7 @@
     <script defer src="js/modules/premia.js"></script>
     <script defer src="js/modules/pracownicy.js"></script>
     <script defer src="js/modules/wiadomosci.js"></script>
-    <script defer src="js/modules/statystyki.js"></script>
+    <script defer src="js/modules/statystyki.js?v=20261125b"></script>
     <script defer src="js/modules/misje.js"></script>
     <script defer src="js/modules/planogramy.js"></script>
     <script defer src="js/modules/aparat.js"></script>
