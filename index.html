@@ -1203,12 +1203,18 @@
                             <option value="current-month">Bieżący miesiąc</option>
                             <option value="previous-month">Poprzedni miesiąc</option>
                             <option value="current-quarter">Bieżący kwartał</option>
-                            <option value="custom">Własny (data graniczna)</option>
+                            <option value="custom">Własny (od–do)</option>
                         </select>
                     </div>
-                    <div id="raporty-stat-custom-box" class="hidden">
-                        <label for="raporty-stat-custom-date">Data graniczna:</label>
-                        <input type="date" id="raporty-stat-custom-date" onchange="window.zaladujRaporty()" style="margin-bottom:0;">
+                    <div id="raporty-stat-custom-box" class="hidden flex-row flex-row-mobile-col" style="gap:8px;">
+                        <div>
+                            <label for="raporty-stat-date-from" style="margin-bottom:2px;">Data od:</label>
+                            <input type="date" id="raporty-stat-date-from" onchange="window.zaladujRaporty()" style="margin-bottom:0;">
+                        </div>
+                        <div>
+                            <label for="raporty-stat-date-to" style="margin-bottom:2px;">Data do:</label>
+                            <input type="date" id="raporty-stat-date-to" onchange="window.zaladujRaporty()" style="margin-bottom:0;">
+                        </div>
                     </div>
                 </div>
                 <div id="raporty-statystyki">Ładowanie statystyk...</div>
@@ -1341,7 +1347,7 @@
     <script defer src="js/modules/aparat.js"></script>
     <script defer src="js/modules/sprzatanie.js"></script>
     <script defer src="js/modules/liczenie.js"></script>
-    <script defer src="js/modules/raporty.js?v=20261120"></script>
+    <script defer src="js/modules/raporty.js?v=20261125"></script>
     <script defer src="js/modules/sprzedaz.js"></script>
     <script defer src="js/modules/auth.js"></script>
 </body>
