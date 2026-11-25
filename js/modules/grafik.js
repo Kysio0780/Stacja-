@@ -476,8 +476,10 @@ function renderujGrafikInteraktywny() {
     }
 
     // Legenda nie wyświetla się automatycznie — jej widoczność steruje przycisk.
-    if (btnLegenda) btnLegenda.classList.remove('hidden');
-    if (btnLegendaPracownik && !czyAdmin) btnLegendaPracownik.classList.remove('hidden');
+    // Pracownik ma przycisk legendy w górnym pasku, administrator w swoim panelu —
+    // nie pokazujemy oba naraz.
+    if (btnLegenda) btnLegenda.classList.toggle('hidden', !czyAdmin);
+    if (btnLegendaPracownik) btnLegendaPracownik.classList.toggle('hidden', !!czyAdmin);
     legendaBar.classList.toggle('hidden', !grafikLegendaOtwarta);
 
     const miesiacStr = aktualnyGrafikStan.miesiac;
