@@ -295,8 +295,8 @@ window.przeliczIWygenerujStatystyki = async function() {
 
             const dniLiczba = przefiltrowaneRaporty.length || 1;
             const opcjeWykresu = (klucz) => `<div class="stat-wykres-opcje">
-                <label><input type="checkbox" id="stat-wykres-${klucz}-srednia" checked onchange="window.narysujWykresySprzedazyStat()"> średnia</label>
-                <label><input type="checkbox" id="stat-wykres-${klucz}-plan68" checked onchange="window.narysujWykresySprzedazyStat()"> 68% planu</label>
+                <label><input type="checkbox" id="stat-wykres-${klucz}-srednia" onchange="window.narysujWykresySprzedazyStat()"> średnia</label>
+                <label><input type="checkbox" id="stat-wykres-${klucz}-plan68" onchange="window.narysujWykresySprzedazyStat()"> 68% planu</label>
                 <label><input type="checkbox" id="stat-wykres-${klucz}-plan100" checked onchange="window.narysujWykresySprzedazyStat()"> 100% planu</label>
             </div>`;
             sekcjaSprzedaz = `<div class="field-group" style="border-left:4px solid var(--primary);">
