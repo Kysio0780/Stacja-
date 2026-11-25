@@ -31,36 +31,59 @@ window.odblokujBiometria = async function () {
     }
 };
 
+function ustawStatusBiometrii(tekst, blad = false) {
+    const pole = document.getElementById('biometria-status');
+    if (!pole) return;
+    pole.innerText = tekst || '';
+    pole.className = blad ? 'error' : 'text-muted';
+    pole.style.fontSize = '0.78em';
+    pole.style.margin = '4px 0 0 0';
+}
+
 window.ustawBiometrieUzytkownika = async function (wlaczone) {
     const zalaczone = !!wlaczony;
     const wAPK = window.NativeApp && typeof window.NativeApp.isNative === 'function' && window.NativeApp.isNative();
-    if (zalaczone && !wAPK) {
-        alert('Odblokowanie biometrią jest dostępne w aplikacji APK. W przeglądarce tej opcji nie można włączyć.');
-        window.ustawFlageBiometrii?.(false);
+
+    if (!zalaczone) {
+        if (!currentUserData) return;
+        try {
+            await setDoc(doc(db, 'preferencje_uzytkownika', currentUserData.uid), {
+                biometria: false, updatedAt: new Date().toISOString()
+            }, { merge: true });
+            window.ustawFlageBiometrii?.(false);
+            ustawStatusBiometrii('Biometria wyłączona.');
+        } catch (e) { ustawStatusBiometrii('Błąd zapisu: ' + e.message, true); }
         return;
     }
-    // Potwierdzenie faktycznym odciskiem/twarzą jest lepszym testem niż isAvailable(),
-    // które w części wersji pluginu zwraca fałszywe „brak biometrii".
-    if (zalaczone && window.NativeApp && typeof window.NativeApp.zweryfikujBiometrie === 'function') {
-        const potwierdzone = await window.NativeApp.zweryfikujBiometrie('Potwierdź włączenie biometrii');
-        if (!potwierdzone) {
-            alert('Nie udało się potwierdzić biometrii. Sprawdź odcisk palca / twarz w ustawieniach telefonu.');
-            window.ustawFlageBiometrii?.(false);
-            return;
-        }
+
+    if (!wAPK) {
+        window.ustawFlageBiometrii?.(false);
+        ustawStatusBiometrii('Dostępne tylko w APK — tu nie można włączyć biometrii.', true);
+        return;
+    }
+    if (!window.NativeApp || typeof window.NativeApp.zweryfikujBiometrie !== 'function') {
+        window.ustawFlageBiometrii?.(false);
+        ustawStatusBiometrii('Plugin biometrii nie jest dostępny w tej wersji APK.', true);
+        return;
+    }
+
+    ustawStatusBiometrii('Oczekiwanie na weryfikację…');
+    const potwierdzone = await window.NativeApp.zweryfikujBiometrie('Potwierdź włączenie biometrii');
+    if (!potwierdzone) {
+        window.ustawFlageBiometrii?.(false);
+        ustawStatusBiometrii('Weryfikacja nie powiodła się. Sprawdź biometrię w telefonie.', true);
+        return;
     }
     if (!currentUserData) return;
     try {
         await setDoc(doc(db, 'preferencje_uzytkownika', currentUserData.uid), {
-            biometria: zalaczone,
-            updatedAt: new Date().toISOString()
+            biometria: true, updatedAt: new Date().toISOString()
         }, { merge: true });
-        window.ustawFlageBiometrii?.(zalaczone);
-        alert(zalaczone
-            ? 'Biometria została włączona. Przy następnym uruchomieniu aplikacja poprosi o odblokowanie.'
-            : 'Biometria została wyłączona.');
+        window.ustawFlageBiometrii?.(true);
+        ustawStatusBiometrii('Włączone. Kolejne uruchomienie APK poprosi o odblokowanie.');
     } catch (e) {
-        alert('Nie udało się zapisać ustawienia biometrii: ' + e.message);
+        window.ustawFlageBiometrii?.(false);
+        ustawStatusBiometrii('Błąd zapisu: ' + e.message, true);
     }
 };
 
