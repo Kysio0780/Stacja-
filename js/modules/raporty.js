@@ -229,10 +229,12 @@ window.otworzModalRaportu = async function(data = null, tylkoPodglad = false, se
     renderujWierszePaliw();
     renderujWierszeLicznikow();
 
+    const trybSekcji = sekcja === 'liczniki' ? 'liczniki' : (sekcja === 'paliwa' ? 'paliwa' : 'oba');
+    const opisSekcji = trybSekcji === 'oba' ? '' : (trybSekcji === 'paliwa' ? ' — Paliwa' : ' — Liczniki');
     document.getElementById('raport-data').value = dataRaportu;
     document.getElementById('modal-raport-tytul').innerText = tylkoPodglad
         ? `📄 Podgląd raportów z dnia ${formatujDateDoWyswietlenia(dataRaportu)}`
-        : `📝 Raporty operacyjne — ${formatujDateDoWyswietlenia(dataRaportu)}`;
+        : `📝 Raporty operacyjne${opisSekcji} — ${formatujDateDoWyswietlenia(dataRaportu)}`;
 
     const info = document.getElementById('raport-tryb-info');
     info.innerText = tylkoPodglad ? 'Tryb podglądu — dane są tylko do odczytu.' : '';
@@ -265,16 +267,16 @@ window.otworzModalRaportu = async function(data = null, tylkoPodglad = false, se
 
     const modal = document.getElementById('modal-raport');
     modal.querySelectorAll('input').forEach(i => { i.disabled = tylkoPodglad; });
-    document.getElementById('raport-btn-zapisz-paliwa').classList.toggle('hidden', jestPodgladem());
-    document.getElementById('raport-btn-zapisz-liczniki').classList.toggle('hidden', jestPodgladem());
+
+    // W trybie wypełniania pokazujemy tylko wybraną sekcję.
+    document.getElementById('raport-sekcja-paliwa').classList.toggle('hidden', trybSekcji === 'liczniki');
+    document.getElementById('raport-sekcja-liczniki').classList.toggle('hidden', trybSekcji === 'paliwa');
+    document.getElementById('raport-btn-zapisz-paliwa').classList.toggle('hidden', jestPodgladem() || trybSekcji === 'liczniki');
+    document.getElementById('raport-btn-zapisz-liczniki').classList.toggle('hidden', jestPodgladem() || trybSekcji === 'paliwa');
+
     const moznaZarzadzac = tylkoPodglad && czyAdminRaportow();
     document.getElementById('raport-btn-edytuj').classList.toggle('hidden', !moznaZarzadzac);
     document.getElementById('raport-btn-usun').classList.toggle('hidden', !moznaZarzadzac);
-
-    ['raport-sekcja-paliwa', 'raport-sekcja-liczniki'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.style.boxShadow = id.includes(sekcja) ? '0 0 0 2px var(--primary-soft)' : '';
-    });
     modal.classList.remove('hidden');
 };
 
@@ -374,13 +376,26 @@ window.odswiezZakresStatystykRaportow = function() {
     window.zaladujRaporty();
 };
 
-function dataGranicznaStatystyk() {
-    const wybor = document.getElementById('raporty-stat-zakres')?.value || 'current-month';
+function zakresStatystyk() {
     const dzis = new Date();
-    if (wybor === 'custom') return document.getElementById('raporty-stat-custom-date')?.value || formatujDateLokalna(dzis);
-    if (wybor === 'previous-month') return formatujDateLokalna(new Date(dzis.getFullYear(), dzis.getMonth() - 1, 1));
-    if (wybor === 'current-quarter') return formatujDateLokalna(new Date(dzis.getFullYear(), Math.floor(dzis.getMonth() / 3) * 3, 1));
-    return formatujDateLokalna(new Date(dzis.getFullYear(), dzis.getMonth(), 1));
+    const dzisStr = formatujDateLokalna(dzis);
+    const pierwszyMiesiac = formatujDateLokalna(new Date(dzis.getFullYear(), dzis.getMonth(), 1));
+    const wybor = document.getElementById('raporty-stat-zakres')?.value || 'current-month';
+    if (wybor === 'custom') {
+        const od = document.getElementById('raporty-stat-date-from')?.value || pierwszyMiesiac;
+        const doDaty = document.getElementById('raporty-stat-date-to')?.value || dzisStr;
+        return { od: od <= doDaty ? od : doDaty, do: od <= doDaty ? doDaty : od };
+    }
+    if (wybor === 'previous-month') {
+        const start = new Date(dzis.getFullYear(), dzis.getMonth() - 1, 1);
+        const koniec = new Date(dzis.getFullYear(), dzis.getMonth(), 0);
+        return { od: formatujDateLokalna(start), do: formatujDateLokalna(koniec) };
+    }
+    if (wybor === 'current-quarter') {
+        const start = new Date(dzis.getFullYear(), Math.floor(dzis.getMonth() / 3) * 3, 1);
+        return { od: formatujDateLokalna(start), do: dzisStr };
+    }
+    return { od: pierwszyMiesiac, do: dzisStr };
 }
 
 function statystykiLicznikow(wiersze) {
@@ -444,13 +459,12 @@ window.zaladujRaporty = async function() {
 
     try {
         const wiersze = await pobierzWszystkieRaporty();
-        const granica = dataGranicznaStatystyk();
-        const dzisStr = dzisiejszaDataRaportu();
-        const doStatystyk = wiersze.filter(r => r.id >= granica && r.id <= dzisStr && r.liczniki);
+        const zakres = zakresStatystyk();
+        const doStatystyk = wiersze.filter(r => r.id >= zakres.od && r.id <= zakres.do && r.liczniki);
         const stats = statystykiLicznikow(doStatystyk);
         const opis = document.getElementById('raporty-stat-zakres')?.selectedOptions?.[0]?.text || '';
         const statContainer = document.getElementById('raporty-statystyki');
-        if (statContainer) statContainer.innerHTML = `<p class="text-muted">Zakres: ${ucieczkaHtml(opis)} (od ${ucieczkaHtml(formatujDateDoWyswietlenia(granica))})</p>
+        if (statContainer) statContainer.innerHTML = `<p class="text-muted">Zakres: ${ucieczkaHtml(opis)} (od ${ucieczkaHtml(formatujDateDoWyswietlenia(zakres.od))} do ${ucieczkaHtml(formatujDateDoWyswietlenia(zakres.do))})</p>
             <div class="table-responsive"><table class="standard-table">
                 <tr><th>Licznik</th><th>Liczba raportów</th><th>Min</th><th>Max</th><th>Total</th></tr>
                 ${stats.map(s => `<tr><td style="text-align:left;">${ucieczkaHtml(s.etykieta)}</td><td>${s.liczba}</td><td>${s.min}</td><td>${s.max}</td><td><strong>${s.suma}</strong></td></tr>`).join('')}
