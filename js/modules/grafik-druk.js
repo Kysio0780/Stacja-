@@ -355,9 +355,9 @@ window.generujWydrukGrafikuPDFGodziny = async function() {
 
     let thead1 = `<tr><th rowspan="2">Dzień</th>`;
     let thead2 = `<tr>`;
-    emps.forEach((emp, idx) => {
+    emps.forEach((emp) => {
         thead1 += `<th colspan="2" style="border-left:4px solid #000;">${ucieczkaHtml(emp.imie)}</th>`;
-        thead2 += `<th style="border-left:${idx === 0 ? '4px solid #000' : '1px solid #444'};">R</th><th>Z</th>`;
+        thead2 += `<th style="border-left:4px solid #000;">R</th><th>Z</th>`;
     });
     thead1 += `</tr>`;
     thead2 += `</tr>`;
@@ -366,10 +366,10 @@ window.generujWydrukGrafikuPDFGodziny = async function() {
     for (let d = 1; d <= dniWMiesiacu; d++) {
         const bg = holidays[String(d)] ? 'background:#fef08a;' : '';
         tbody += `<tr class="dzien" style="${bg}"><td style="font-weight:bold;">${d}</td>`;
-        emps.forEach((emp, idx) => {
+        emps.forEach((emp) => {
             const r = formatGodzinyDoWydruku(entries[`${emp.id}_${d}_rano`] || {});
             const z = formatGodzinyDoWydruku(entries[`${emp.id}_${d}_zamkniecie`] || {});
-            tbody += `<td style="border-left:${idx === 0 ? '4px solid #000' : '1px solid #444'};">${r}</td><td>${z}</td>`;
+            tbody += `<td style="border-left:4px solid #000;">${r}</td><td>${z}</td>`;
         });
         tbody += `</tr>`;
     }
