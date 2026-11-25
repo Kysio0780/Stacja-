@@ -71,7 +71,6 @@ window.addEventListener("hashchange", () => {
         document.getElementById('modul-pracownicy').classList.remove('hidden');
         window.zaladujlistePracownikow();
     } else if (hash === "#statystyki") {
-        if (!(currentUserData && currentUserData.rola === 'admin')) { window.location.hash = "#menu"; return; }
         document.getElementById('modul-statystyki').classList.remove('hidden');
     } else if (hash === "#liczenie") {
         document.getElementById('modul-liczenie').classList.remove('hidden');
