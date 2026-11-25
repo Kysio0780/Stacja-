@@ -12,9 +12,12 @@ let grafikLegendaOtwarta = false; // legenda jest domyślnie zwinięta
 window.toggleGrafikLegenda = function() {
     grafikLegendaOtwarta = !grafikLegendaOtwarta;
     const legenda = document.getElementById('grafik-legenda-bar');
-    const btn = document.getElementById('btn-grafik-legenda');
+    const opis = grafikLegendaOtwarta ? '🙈 Ukryj legendę' : '🔎 Legenda';
+    ['btn-grafik-legenda', 'btn-grafik-legenda-pracownik'].forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) btn.innerText = opis;
+    });
     if (legenda) legenda.classList.toggle('hidden', !grafikLegendaOtwarta);
-    if (btn) btn.innerText = grafikLegendaOtwarta ? '🙈 Ukryj legendę' : '🔎 Legenda';
 };
 
 const DNI_TYG_KROTKIE = ['Nd', 'Pn', 'Wt', 'Śr', 'Cz', 'Pt', 'Sb'];
@@ -435,8 +438,11 @@ function renderujGrafikInteraktywny() {
     const walidacjaBox = document.getElementById('grafik-walidacja-box');
     const legendaBar = document.getElementById('grafik-legenda-bar');
     const btnLegenda = document.getElementById('btn-grafik-legenda');
+    const btnLegendaPracownik = document.getElementById('btn-grafik-legenda-pracownik');
+    const opisLegenda = grafikLegendaOtwarta ? '🙈 Ukryj legendę' : '🔎 Legenda';
 
-    if (btnLegenda) btnLegenda.innerText = grafikLegendaOtwarta ? '🙈 Ukryj legendę' : '🔎 Legenda';
+    if (btnLegenda) btnLegenda.innerText = opisLegenda;
+    if (btnLegendaPracownik) btnLegendaPracownik.innerText = opisLegenda;
 
     if (czyAdmin) {
         const btnPublikacja = document.getElementById('btn-publikacja-grafiku');
@@ -460,6 +466,7 @@ function renderujGrafikInteraktywny() {
         walidacjaBox.classList.add('hidden');
         legendaBar.classList.add('hidden');
         if (btnLegenda) btnLegenda.classList.add('hidden');
+        if (btnLegendaPracownik) btnLegendaPracownik.classList.add('hidden');
         wrapper.innerHTML = `
             <div class="field-group" style="text-align:center; padding: 28px 16px; border-left: 4px solid var(--warning);">
                 <h4 style="color: var(--warning); margin-bottom: 8px;">⏳ Grafik w trakcie przygotowania</h4>
@@ -470,6 +477,7 @@ function renderujGrafikInteraktywny() {
 
     // Legenda nie wyświetla się automatycznie — jej widoczność steruje przycisk.
     if (btnLegenda) btnLegenda.classList.remove('hidden');
+    if (btnLegendaPracownik && !czyAdmin) btnLegendaPracownik.classList.remove('hidden');
     legendaBar.classList.toggle('hidden', !grafikLegendaOtwarta);
 
     const miesiacStr = aktualnyGrafikStan.miesiac;
