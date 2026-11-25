@@ -14,6 +14,30 @@
     window.NativeApp = {
         isNative: jestNatynie,
 
+        czyDostepnaBiometria: async function () {
+            const b = bridge();
+            if (!jestNatynie() || !b || !b.NativeBiometric || typeof b.NativeBiometric.isAvailable !== 'function') return false;
+            try {
+                const wynik = await b.NativeBiometric.isAvailable();
+                if (typeof wynik === 'boolean') return wynik;
+                return !!(wynik && (wynik.isAvailable || wynik.available || wynik.biometryType));
+            } catch (e) { return false; }
+        },
+
+        zweryfikujBiometrie: async function (powod = 'Odblokuj aplikację') {
+            const b = bridge();
+            if (!jestNatynie() || !b || !b.NativeBiometric || typeof b.NativeBiometric.verifyIdentity !== 'function') return true;
+            try {
+                await b.NativeBiometric.verifyIdentity({
+                    reason: powod,
+                    title: 'SklepApp',
+                    subtitle: 'Weryfikacja biometryczna',
+                    description: powod
+                });
+                return true;
+            } catch (e) { return false; }
+        },
+
         zamknij: async function () {
             const b = bridge();
             if (jestNatynie() && b && b.App && typeof b.App.exitApp === 'function') {
