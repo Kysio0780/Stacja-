@@ -60,14 +60,14 @@ js/vendor/                  lokalne kopie jsPDF i html2canvas (generowanie PDF)
 4. Aparat (`js/modules/aparat.js`) jest współdzielony przez planogramy, wiadomości i sprzątanie — przyjmuje callback z plikiem.
 5. Preferencje (motyw, rozmiar i krój czcionki) są zapisywane per użytkownik w `preferencje_uzytkownika/{uid}`;
    `localStorage` służy tylko jako wygląd przed zalogowaniem. Dostępne kroje: Inter, Roboto, Open Sans, Lato, Montserrat, Poppins.
-   Tryb kiosku i przypomnienia „Zajrzyj do aplikacji" są ustawieniami urządzenia (kiosk domyślnie włączony).
+   Tryb kiosku jest ustawieniem urządzenia (domyślnie włączony).
 6. Raporty operacyjne zapisują się w dwóch osobnych dokumentach: `raporty_paliwa/{YYYY-MM-DD}` i
    `raporty_liczniki/{YYYY-MM-DD}`; stare `raporty_operacyjne` są czytane tylko dla zgodności wstecznej.
    Progi paliw: `system_ustawienia/raporty_paliwa_min`.
 
 ## Reguły Firestore — czego wymaga aplikacja
 
-- odczyt/zapis własnych dokumentów użytkownika (`preferencje_uzytkownika`, `uzytkownicy`, pole `fcmToken`),
+- odczyt/zapis własnych dokumentów użytkownika (`preferencje_uzytkownika`, `uzytkownicy`),
 - odczyt/zapis `raporty_paliwa` i `raporty_liczniki` (także przez pracowników),
 - odczyt `grafiki`, `sprzedaz`, `potwierdzenia_obecnosci`, `misje` oraz **`raporty_operacyjne`** (statystyki liczą się w przeglądarce),
 - zapis `preferencje_uzytkownika`, `potwierdzenia_obecnosci`, `raporty_operacyjne`, `zdjecia` w kolekcjach modułów,
@@ -83,24 +83,15 @@ i bez paska przeglądarki (wnętrze to systemowy WebView, nie przeglądarka inte
 - `capacitor.config.json` — identyfikator `pl.sklepapp.stacja`, `webDir: www`,
 - `scripts/prepare-web.js` — kopiuje `index.html`, `css/`, `js/`, ikony do `www/` i buduje
   `js/vendor/capacitor-native.js` (bundle pluginów, żeby nie wprowadzać bundlera do całej aplikacji),
-- `js/native-entry.js` — importy pluginów `@capacitor/core`, `app`, `camera`, `filesystem`, `share`, `local-notifications`, `push-notifications`,
-- `js/core/native.js` — nakładka działająca tylko w APK: rejestracja FCM, zapis tokenu w
-  `uzytkownicy/{uid}.fcmToken`, codzienne przypomnienie o raporcie (20:00), natywny aparat,
-  zapis/udostępnianie PDF oraz zamykanie aplikacji przyciskiem ✕ w nagłówku,
+- `js/native-entry.js` — importy pluginów `@capacitor/core`, `app`, `camera`, `filesystem`, `share`,
+- `js/core/native.js` — nakładka działająca tylko w APK: natywny aparat, zapis/udostępnianie PDF
+  oraz zamykanie aplikacji przyciskiem ✕ w nagłówku,
 - `assets/icon.png` i `assets/splash.png` — źródła natywnej ikony i ekranu startowego (1024×1024 i 2732×2732,
   przygotowane z `icon-512.png`). Pliki `icon-192.png` / `icon-512.png` w katalogu głównym są tylko dla PWA —
   system Android ich nie używa. W workflow je generuje `@capacitor/assets` do `android/app/src/main/res/`.
 - `.github/workflows/build-apk.yml` — buduje APK w chmurze po każdym pushu na `main` albo ręcznie
   (zakładka Actions → „Build Android APK" → „Run workflow"). Gotowy plik jest w artefakcie
   `sklep-app-debug-apk`.
-
-### Powiadomienia
-
-- **Lokalne:** codzienne przypomnienie o wypełnieniu raportu operacyjnego (można zmienić / wyłączyć
-  przez `NativeApp.ustawCodziennePrzypomnienie()` / `wylaczPrzypomnienie()`).
-- **Push (FCM):** po zalogowaniu aplikacja prosi o uprawnienia, rejestruje się w Firebase Cloud Messaging
-  i zapisuje token przy użytkowniku. Do *wysyłania* pushów (np. nowa wiadomość czy misja) potrzebne
-  są jeszcze Cloud Functions/serwer z uprawnieniem do FCM.
 
 ### Podpisany APK release (zalecane)
 
@@ -119,28 +110,6 @@ Jak przygotować sekrety (jednorazowo):
 3. Plik `release.keystore` jest też w artefakcie tego workflow — **zapisz go w bezpiecznym miejscu**.
    Jeśli go zgubisz, nie zaktualizujesz już aplikacji pod tym samym podpisem.
 4. Uruchom „Build Android APK" — artefakt będzie nazwany `sklep-app-release-apk`.
-
-### Push przy wiadomościach i misjach
-
-Kod wysyłający jest w `functions/index.js` (Cloud Functions, firebase-admin). Funkcje nasłuchują na utworzenie
-dokumentu w `wiadomosci` i `misje`, zbierają `fcmToken` z `uzytkownicy/{uid}` i wysyłają FCM multicast:
-
-```
-firebase deploy --only functions
-```
-
-Wymagany jest plan **Blaze** i uprawnienie do wysyłania z serwera. Tokeny zapisuje aplikacja po zalogowaniu.
-
-**Wariant Spark (bez funkcji):** aplikacja zapisuje się do tematów FCM `wszyscy` i `admini`
-(w `js/core/native.js`). Powiadomienia wysyła się ręcznie z Firebase Console → Cloud Messaging,
-wybierając jeden z tematów. Przycisk **„🔄 Odśwież powiadomienia"** w menu użytkownika ponawia
-rejestrację tokenu i subskrypcje (przydatne po reinstalacji lub zmianie roli). Automatyczne wysyłanie
-przy nowej wiadomości/misji zacznie działać dopiero po przejściu na Blaze i wdrożeniu funkcji.
-
-### Lokalne przypomnienia „Zajrzyj do aplikacji"
-
-W ustawieniach konta można włączyć dwie powtarzalne notyfikacje (domyślnie 09:30 i 13:30, godziny edytowalne).
-Są one ustawieniem urządzenia i nie wymagają serwera. Niezależnie od tego działa przypomnienie o raporcie o 20:00.
 
 ### Pierwszy build
 
