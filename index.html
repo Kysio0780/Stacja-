@@ -638,12 +638,13 @@
             </div>
 
             <!-- Pasek akcji dla pracownika (gdy grafik opublikowany) -->
-            <div id="pracownik-grafik-toolbar" class="hidden" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
+            <div id="pracownik-grafik-toolbar" class="hidden" style="display:flex; flex-direction:column; align-items:stretch; gap:10px; margin-bottom:10px;">
                 <span class="text-muted">Widok aktualnego grafiku pracy.</span>
-                <div class="flex-row" style="gap:6px; flex-wrap:wrap;">
-                    <button onclick="window.otworzModalObecnosciGrafiku()" class="btn-success btn-sm">✅ Potwierdź obecność</button>
-                    <button onclick="window.otworzModalDrukuGrafiku()" class="btn-neutral btn-sm">🖨️ Drukuj / PDF</button>
+                <div class="flex-row" style="gap:8px; flex-wrap:wrap;">
+                    <button id="btn-grafik-legenda-pracownik" onclick="window.toggleGrafikLegenda()" class="btn-neutral btn-sm hidden" style="margin:0; flex:1;">🔎 Legenda</button>
+                    <button onclick="window.otworzModalDrukuGrafiku()" class="btn-neutral btn-sm" style="margin:0; flex:1;">🖨️ Drukuj / PDF</button>
                 </div>
+                <button onclick="window.otworzModalObecnosciGrafiku()" class="btn-success" style="margin:0; width:100%; min-height:48px; font-size:1.05em; font-weight:700;">✅ Potwierdź obecność</button>
             </div>
 
             <!-- Alerty walidacji obsady -->
