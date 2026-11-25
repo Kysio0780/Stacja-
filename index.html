@@ -106,7 +106,7 @@
                     </label>
 
                     <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin-top: 10px;">
-                        <input type="checkbox" id="biometria-dd" onchange="window.ustawBiometrieUzytkownika(this.checked)">
+                        <input type="checkbox" id="biometria-dd">
                         <span>🔒 Odblokuj aplikację biometrią</span>
                     </label>
                     <p class="text-muted" style="font-size:0.78em; margin:4px 0 0 0;">Dostępne w APK, gdy telefon ma skonfigurowany odcisk palca lub twarz.</p>
@@ -1367,13 +1367,13 @@
     <script defer src="js/core/state.js"></script>
     <!-- Most do natywnych pluginów Capacitora — w zwykłej przeglądarce plik nie istnieje i jest ignorowany. -->
     <script defer src="js/vendor/capacitor-native.js"></script>
-    <script defer src="js/core/native.js"></script>
+    <script defer src="js/core/native.js?v=20261125c"></script>
 
     <script defer src="js/core/utils.js"></script>
     <script defer src="js/core/storage-stats.js"></script>
     <script defer src="js/core/ui.js"></script>
     <script defer src="js/core/zoom.js"></script>
-    <script defer src="js/core/settings.js"></script>
+    <script defer src="js/core/settings.js?v=20261125c"></script>
     <script defer src="js/core/router.js"></script>
     <script defer src="js/modules/grafik.js"></script>
     <script defer src="js/modules/grafik-druk.js"></script>
@@ -1390,6 +1390,6 @@
     <script defer src="js/modules/liczenie.js"></script>
     <script defer src="js/modules/raporty.js?v=20261125"></script>
     <script defer src="js/modules/sprzedaz.js"></script>
-    <script defer src="js/modules/auth.js"></script>
+    <script defer src="js/modules/auth.js?v=20261125c"></script>
 </body>
 </html>
