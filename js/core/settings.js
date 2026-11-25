@@ -33,6 +33,13 @@ window.ustawFlageBiometrii = function (wlaczone) {
     biometriaUzytkownika = !!wlaczone;
     const pole = document.getElementById('biometria-dd');
     if (pole) pole.checked = biometriaUzytkownika;
+    const status = document.getElementById('biometria-status');
+    if (status) {
+        status.innerText = biometriaUzytkownika ? 'Włączone — przy starcie APK wymagane odblokowanie.' : '';
+        status.className = 'text-muted';
+        status.style.fontSize = '0.78em';
+        status.style.margin = '4px 0 0 0';
+    }
 };
 
 function prawidlowyRodzajCzcionki(rodzaj) {
