@@ -52,15 +52,17 @@ function stylTabeliPdf() {
     `;
 }
 
-/* Modal Drukowania / Bezpośredniego Pobierania PDF Listy Obecności */
-let trybDrukuGrafiku = 'pelny';
+/* Modal Drukowania / Bezpośredniego Pobierania PDF — dwa rodzaje wydruku. */
+function pobierzTrybDruku() {
+    const radio = document.querySelector('input[name="druk-tryb"]:checked');
+    return radio && radio.value === 'godziny' ? 'godziny' : 'pelny';
+}
 
-window.otworzModalDrukuGrafiku = function(tryb = 'pelny') {
-    trybDrukuGrafiku = tryb === 'godziny' ? 'godziny' : 'pelny';
-    const tylkoGodziny = trybDrukuGrafiku === 'godziny';
+window.ustawTrybModaluDruku = function() {
+    const tylkoGodziny = pobierzTrybDruku() === 'godziny';
     const listaDiv = document.getElementById('druk-pracownicy-lista');
     const emps = aktualnyGrafikStan?.employees || [];
-    if (emps.length === 0) return alert("Brak pracowników w grafiku do wydruku.");
+    if (!listaDiv) return;
 
     listaDiv.innerHTML = emps.map(emp => {
         const isUZ = emp.umowa === 'Zlecenie';
@@ -72,23 +74,31 @@ window.otworzModalDrukuGrafiku = function(tryb = 'pelny') {
     }).join('');
 
     const tytul = document.getElementById('modal-grafik-druk-tytul');
-    if (tytul) tytul.innerText = tylkoGodziny ? '📄 Eksport PDF — same godziny' : '📥 Generuj PDF Listy Obecności';
+    if (tytul) tytul.innerText = tylkoGodziny ? '📄 Grafik godzinowy — wybierz pracowników' : '📋 Lista obecności — wybierz pracowników';
     const opis = document.getElementById('modal-grafik-druk-opis');
     if (opis) opis.innerText = tylkoGodziny
-        ? 'Wybierz pracowników — domyślnie zaznaczeni są wszyscy. Wydruk pionowy A4, jedna strona, bez OD/DO, podpisów i statystyk.'
-        : 'Wybierz pracowników do pliku PDF (Godziny, OD, DO, Podpis). Domyślnie pominięto Umowy Zlecenie.';
+        ? 'Wydruk pionowy A4, jedna strona, tylko godziny R/Z — bez OD, DO, podpisów i statystyk. Domyślnie zaznaczeni są wszyscy.'
+        : 'Wydruk z kolumnami Godziny, OD, DO i Podpis. Domyślnie pominięto Umowy Zlecenie.';
     document.getElementById('druk-statystyki-box')?.classList.toggle('hidden', tylkoGodziny);
     const chkStat = document.getElementById('druk-statystyki-chk');
     if (chkStat && !tylkoGodziny) chkStat.checked = false;
+};
 
+window.otworzModalDrukuGrafiku = function() {
+    const emps = aktualnyGrafikStan?.employees || [];
+    if (emps.length === 0) return alert("Brak pracowników w grafiku do wydruku.");
+    const radioPelny = document.querySelector('input[name="druk-tryb"][value="pelny"]');
+    if (radioPelny) radioPelny.checked = true;
+    window.ustawTrybModaluDruku();
     document.getElementById('modal-grafik-druk').classList.remove('hidden');
 };
 
 window.zamknijModalDrukuGrafiku = () => document.getElementById('modal-grafik-druk').classList.add('hidden');
 
 window.generujWydrukGrafikuZModalu = async function() {
+    const tryb = pobierzTrybDruku();
     window.zamknijModalDrukuGrafiku();
-    if (trybDrukuGrafiku === 'godziny') await window.generujWydrukGrafikuPDFGodziny();
+    if (tryb === 'godziny') await window.generujWydrukGrafikuPDFGodziny();
     else await window.generujWydrukGrafikuPDF();
 };
 
@@ -136,8 +146,8 @@ window.generujWydrukGrafikuPDF = async function() {
     let thead1 = `<tr><th rowspan="2">Dzień</th>`;
     let thead2 = `<tr>`;
     wybraneEmps.forEach(emp => {
-        thead1 += `<th colspan="5" style="border-left:2px solid #000;">${ucieczkaHtml(emp.imie)}</th>`;
-        thead2 += `<th colspan="2" style="border-left:2px solid #000;">Godziny</th><th>OD</th><th>DO</th><th>Podpis</th>`;
+        thead1 += `<th colspan="5" style="border-left:4px solid #000;">${ucieczkaHtml(emp.imie)}</th>`;
+        thead2 += `<th colspan="2" style="border-left:4px solid #000;">Godziny</th><th>OD</th><th>DO</th><th>Podpis</th>`;
     });
     thead1 += `</tr>`;
     thead2 += `</tr>`;
@@ -172,7 +182,7 @@ window.generujWydrukGrafikuPDF = async function() {
             }
 
             tbody += `
-                <td style="border-left:2px solid #000;">${rVal}</td>
+                <td style="border-left:4px solid #000;">${rVal}</td>
                 <td>${zVal}</td>
                 <td>${odVal}</td>
                 <td>${doVal}</td>
@@ -194,7 +204,7 @@ window.generujWydrukGrafikuPDF = async function() {
         summaryMetrics.forEach(metric => {
             tbody += `<tr class="podsumowanie" style="background:#f1f5f9; font-weight:bold;"><td>${metric.label}</td>`;
             wybraneEmps.forEach(emp => {
-                tbody += `<td colspan="2" style="border-left:2px solid #000;">${metric.fn(emp)}</td><td colspan="3"></td>`;
+                tbody += `<td colspan="2" style="border-left:4px solid #000;">${metric.fn(emp)}</td><td colspan="3"></td>`;
             });
             tbody += `</tr>`;
         });
@@ -346,8 +356,8 @@ window.generujWydrukGrafikuPDFGodziny = async function() {
     let thead1 = `<tr><th rowspan="2">Dzień</th>`;
     let thead2 = `<tr>`;
     emps.forEach((emp, idx) => {
-        thead1 += `<th colspan="2" style="border-left:2px solid #000;">${ucieczkaHtml(emp.imie)}</th>`;
-        thead2 += `<th style="border-left:${idx === 0 ? '2px solid #000' : '1px solid #444'};">R</th><th>Z</th>`;
+        thead1 += `<th colspan="2" style="border-left:4px solid #000;">${ucieczkaHtml(emp.imie)}</th>`;
+        thead2 += `<th style="border-left:${idx === 0 ? '4px solid #000' : '1px solid #444'};">R</th><th>Z</th>`;
     });
     thead1 += `</tr>`;
     thead2 += `</tr>`;
@@ -359,7 +369,7 @@ window.generujWydrukGrafikuPDFGodziny = async function() {
         emps.forEach((emp, idx) => {
             const r = formatGodzinyDoWydruku(entries[`${emp.id}_${d}_rano`] || {});
             const z = formatGodzinyDoWydruku(entries[`${emp.id}_${d}_zamkniecie`] || {});
-            tbody += `<td style="border-left:${idx === 0 ? '2px solid #000' : '1px solid #444'};">${r}</td><td>${z}</td>`;
+            tbody += `<td style="border-left:${idx === 0 ? '4px solid #000' : '1px solid #444'};">${r}</td><td>${z}</td>`;
         });
         tbody += `</tr>`;
     }
