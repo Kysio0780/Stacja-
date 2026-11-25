@@ -45,6 +45,7 @@ async function zapiszPreferencjeDoFirestore() {
             motyw: prawidlowyMotyw(localStorage.getItem("sklep_motyw") || MOTYW_DOMYSLNY),
             czcionka: localStorage.getItem("sklep_czcionka") || "normal",
             rodzajCzcionki: prawidlowyRodzajCzcionki(localStorage.getItem("sklep_rodzaj_czcionki")),
+            zapamietajHaslo: typeof window.pobierzZapamietanieHasla === 'function' ? window.pobierzZapamietanieHasla() : false,
             updatedAt: new Date().toISOString()
         }, { merge: true });
     } catch (e) {
@@ -70,6 +71,12 @@ window.wczytajPreferencjeUzytkownika = async function() {
             const rodzaj = prawidlowyRodzajCzcionki(dane.rodzajCzcionki);
             localStorage.setItem("sklep_rodzaj_czcionki", rodzaj);
             zastosujRodzajCzcionki(rodzaj);
+            if (typeof window.ustawFlageZapamietaniaHasla === 'function') {
+                window.ustawFlageZapamietaniaHasla(!!dane.zapamietajHaslo);
+            }
+            if (typeof window.zapiszDaneLogowaniaJesliWymagane === 'function') {
+                window.zapiszDaneLogowaniaJesliWymagane();
+            }
             ladowaniePreferencji = false;
         } else {
             // Pierwsze logowanie — ustawienia dotychczas używane na tym urządzeniu
