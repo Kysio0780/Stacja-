@@ -3,12 +3,24 @@
 // plik jest nieaktywny — aplikacja działa dokładnie tak samo jak dotąd.
 
 (function () {
-    const bridge = () => window.NativeBridge || null;
+    const bridge = () => {
+        if (window.NativeBridge) return window.NativeBridge;
+        const kap = window.Capacitor;
+        if (!kap) return null;
+        return {
+            Capacitor: kap,
+            NativeBiometric: kap.Plugins ? kap.Plugins.NativeBiometric : null,
+            App: kap.Plugins ? kap.Plugins.App : null,
+            Camera: kap.Plugins ? kap.Plugins.Camera : null,
+            Filesystem: kap.Plugins ? kap.Plugins.Filesystem : null,
+            Share: kap.Plugins ? kap.Plugins.Share : null
+        };
+    };
 
     function jestNatynie() {
         const b = bridge();
-        return !!(b && b.Capacitor && typeof b.Capacitor.isNativePlatform === 'function'
-            && b.Capacitor.isNativePlatform());
+        const kap = (b && b.Capacitor) || window.Capacitor;
+        return !!(kap && typeof kap.isNativePlatform === 'function' && kap.isNativePlatform());
     }
 
     window.NativeApp = {
