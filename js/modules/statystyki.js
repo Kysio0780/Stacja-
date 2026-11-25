@@ -4,6 +4,40 @@
 /* ==================== STATYSTYKI I CZYSZCZENIE ==================== */
 
 let daneWykresowSprzedazy = [];
+let planyDzienneStat = { kawa: 0, hd: 0, sklep: 0 };
+
+// Kolor średniej: zielona dla najlepszej, czerwona dla najgorszej w zestawieniu.
+function klasaSredniejExtremum(wartosci, wartosc) {
+    if (!wartosci.length) return 'text-muted';
+    const min = Math.min(...wartosci);
+    const max = Math.max(...wartosci);
+    if (min === max) return 'text-muted';
+    if (wartosc === max) return 'val-green';
+    if (wartosc === min) return 'val-red';
+    return 'text-muted';
+}
+
+function czyLiniaWidoczna(klucz, typ) {
+    const pole = document.getElementById(`stat-wykres-${klucz}-${typ}`);
+    return !pole || pole.checked;
+}
+
+function narysujLinieReferencyjna(ctx, y, kolor, przerywana, etykieta, pad, szer) {
+    ctx.save();
+    ctx.setLineDash(przerywana ? [5, 4] : []);
+    ctx.strokeStyle = kolor;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(pad.l, y);
+    ctx.lineTo(szer - pad.r, y);
+    ctx.stroke();
+    ctx.restore();
+    ctx.fillStyle = kolor;
+    ctx.font = '9px Arial, sans-serif';
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'bottom';
+    ctx.fillText(etykieta, szer - pad.r, y - 2);
+}
 
 function narysujWykresSprzedazy(canvasId, dane, klucz, kolor) {
     const canvas = document.getElementById(canvasId);
@@ -24,7 +58,12 @@ function narysujWykresSprzedazy(canvasId, dane, klucz, kolor) {
     const pad = { l: 42, r: 8, t: 10, b: 24 };
     const plotW = szer - pad.l - pad.r;
     const plotH = wys - pad.t - pad.b;
-    const maxWartosc = Math.max(1, ...dane.map(d => Number(d[klucz]) || 0));
+    const wartosci = dane.map(d => Number(d[klucz]) || 0);
+    const srednia = wartosci.reduce((a, b) => a + b, 0) / wartosci.length;
+    const plan100 = Number(planyDzienneStat[klucz]) || 0;
+    const plan68 = plan100 * 0.68;
+    const maxWartosc = Math.max(1, ...wartosci, srednia, plan100 * 1.05);
+    const yDla = (wartosc) => pad.t + plotH - plotH * (wartosc / maxWartosc);
 
     ctx.strokeStyle = '#cbd5e1';
     ctx.fillStyle = '#64748b';
@@ -41,9 +80,19 @@ function narysujWykresSprzedazy(canvasId, dane, klucz, kolor) {
         ctx.fillText(Math.round(maxWartosc * i / 4).toString(), pad.l - 5, y);
     }
 
+    if (czyLiniaWidoczna(klucz, 'srednia')) {
+        narysujLinieReferencyjna(ctx, yDla(srednia), '#94a3b8', false, `średnia ${srednia.toFixed(2)}`, pad, szer);
+    }
+    if (plan100 > 0 && czyLiniaWidoczna(klucz, 'plan68')) {
+        narysujLinieReferencyjna(ctx, yDla(plan68), '#16a34a', true, `68% planu ${plan68.toFixed(2)}`, pad, szer);
+    }
+    if (plan100 > 0 && czyLiniaWidoczna(klucz, 'plan100')) {
+        narysujLinieReferencyjna(ctx, yDla(plan100), '#16a34a', false, `100% planu ${plan100.toFixed(2)}`, pad, szer);
+    }
+
     const punkty = dane.map((d, idx) => ({
         x: pad.l + (dane.length === 1 ? plotW / 2 : plotW * idx / (dane.length - 1)),
-        y: pad.t + plotH - plotH * ((Number(d[klucz]) || 0) / maxWartosc),
+        y: yDla(Number(d[klucz]) || 0),
         d
     }));
 
@@ -76,6 +125,7 @@ function narysujWykresySprzedazyStat() {
     narysujWykresSprzedazy('stat-wykres-hd', dane, 'hd', '#dc2626');
     narysujWykresSprzedazy('stat-wykres-sklep', dane, 'sklep', '#2563eb');
 }
+window.narysujWykresySprzedazyStat = narysujWykresySprzedazyStat;
 
 function utworzMapePracownikowStat(lista) {
     const poId = new Map();
@@ -181,11 +231,20 @@ window.przeliczIWygenerujStatystyki = async function() {
     const doZnacznik = doData.getTime();
 
     try {
-        const [raportySnap, pracownicyLista] = await Promise.all([
+        const miesiacBiezacy = `${rok}-${String(miesiac + 1).padStart(2, '0')}`;
+        const dniWMiesiacuBiezacym = new Date(rok, miesiac + 1, 0).getDate();
+        const [raportySnap, pracownicyLista, planSnap] = await Promise.all([
             getDocs(collection(db, "sprzedaz")),
-            pobierzListePracownikow()
+            pobierzListePracownikow(),
+            getDoc(doc(db, "plany_miesieczne", miesiacBiezacy)).catch(() => null)
         ]);
         const mapaPracownikow = utworzMapePracownikowStat(pracownicyLista);
+        const planBiezacy = planSnap && planSnap.exists() ? planSnap.data() : {};
+        planyDzienneStat = {
+            kawa: (Number(planBiezacy.kawa) || 0) / dniWMiesiacuBiezacym,
+            hd: (Number(planBiezacy.hd) || 0) / dniWMiesiacuBiezacym,
+            sklep: (Number(planBiezacy.sklep) || 0) / dniWMiesiacuBiezacym
+        };
 
         const przefiltrowaneRaporty = [];
         raportySnap.forEach(d => {
@@ -235,6 +294,11 @@ window.przeliczIWygenerujStatystyki = async function() {
             });
 
             const dniLiczba = przefiltrowaneRaporty.length || 1;
+            const opcjeWykresu = (klucz) => `<div class="stat-wykres-opcje">
+                <label><input type="checkbox" id="stat-wykres-${klucz}-srednia" checked onchange="window.narysujWykresySprzedazyStat()"> średnia</label>
+                <label><input type="checkbox" id="stat-wykres-${klucz}-plan68" checked onchange="window.narysujWykresySprzedazyStat()"> 68% planu</label>
+                <label><input type="checkbox" id="stat-wykres-${klucz}-plan100" checked onchange="window.narysujWykresySprzedazyStat()"> 100% planu</label>
+            </div>`;
             sekcjaSprzedaz = `<div class="field-group" style="border-left:4px solid var(--primary);">
                 <h4>📊 Sprzedaż Ogólna i Kategoriowa</h4>
                 <div class="table-responsive"><table class="standard-table" style="text-align: left;">
@@ -246,9 +310,9 @@ window.przeliczIWygenerujStatystyki = async function() {
                     <tr><td><strong>🛒 Sklep</strong></td><td>${sSklepW.toFixed(2)} zł | Śr: ${(sSklepW/dniLiczba).toFixed(2)} zł/dzień</td></tr>
                 </table></div>
                 <div class="stat-wykresy">
-                    <div class="stat-wykres-box"><h5 style="margin:6px 0 2px 0;">☕ Kawa</h5><canvas id="stat-wykres-kawa"></canvas></div>
-                    <div class="stat-wykres-box"><h5 style="margin:6px 0 2px 0;">🌭 Hot-Dog</h5><canvas id="stat-wykres-hd"></canvas></div>
-                    <div class="stat-wykres-box"><h5 style="margin:6px 0 2px 0;">🛒 Sklep</h5><canvas id="stat-wykres-sklep"></canvas></div>
+                    <div class="stat-wykres-box"><h5 style="margin:6px 0 2px 0;">☕ Kawa</h5><canvas id="stat-wykres-kawa"></canvas>${opcjeWykresu('kawa')}</div>
+                    <div class="stat-wykres-box"><h5 style="margin:6px 0 2px 0;">🌭 Hot-Dog</h5><canvas id="stat-wykres-hd"></canvas>${opcjeWykresu('hd')}</div>
+                    <div class="stat-wykres-box"><h5 style="margin:6px 0 2px 0;">🛒 Sklep</h5><canvas id="stat-wykres-sklep"></canvas>${opcjeWykresu('sklep')}</div>
                 </div>
                 ${najlepszyDzien ? `<p style="margin:6px 0;" class="val-green">🌟 Najlepszy dzień: <strong>${ucieczkaHtml(formatujDateDoWyswietlenia(najlepszyDzien.data))}</strong> (${najlepszyDzien.suma.toFixed(2)} zł) — ${ucieczkaHtml(najlepszyDzien.sprzedawcy)}</p>` : ''}
                 ${najgorszyDzien ? `<p style="margin:0;" class="val-red">🔻 Najgorszy dzień: <strong>${ucieczkaHtml(formatujDateDoWyswietlenia(najgorszyDzien.data))}</strong> (${najgorszyDzien.suma.toFixed(2)} zł) — ${ucieczkaHtml(najgorszyDzien.sprzedawcy)}</p>` : ''}
@@ -275,17 +339,26 @@ window.przeliczIWygenerujStatystyki = async function() {
                 }
             });
 
+            const sredniePracownikow = { kawa: [], hd: [], sklep: [] };
+            Object.values(pracownicyWyniki).forEach(pw => {
+                const liczbaZmian = Math.max(1, pw.dni);
+                ['kawa', 'hd', 'sklep'].forEach(k => sredniePracownikow[k].push(pw[k] / liczbaZmian));
+            });
+
             const pRows = Object.keys(pracownicyWyniki)
                 .sort((a, b) => pracownicyWyniki[b].suma - pracownicyWyniki[a].suma)
                 .map(idOsoby => {
                     const pw = pracownicyWyniki[idOsoby];
                     const liczbaZmian = Math.max(1, pw.dni);
+                    const kolorSredniej = (klucz) => klasaSredniejExtremum(
+                        sredniePracownikow[klucz], pw[klucz] / liczbaZmian
+                    );
                     return `<tr>
                         <td><strong>${ucieczkaHtml(nazwaPracownikaStat(idOsoby, mapaPracownikow))}</strong></td>
                         <td>${pw.dni}</td>
-                        <td>${pw.kawa.toFixed(2)} <span class="text-muted">(${(pw.kawa / liczbaZmian).toFixed(2)}/zm.)</span></td>
-                        <td>${pw.hd.toFixed(2)} <span class="text-muted">(${(pw.hd / liczbaZmian).toFixed(2)}/zm.)</span></td>
-                        <td>${pw.sklep.toFixed(2)} <span class="text-muted">(${(pw.sklep / liczbaZmian).toFixed(2)}/zm.)</span></td>
+                        <td>${pw.kawa.toFixed(2)} <span class="${kolorSredniej('kawa')}">(${(pw.kawa / liczbaZmian).toFixed(2)}/zm.)</span></td>
+                        <td>${pw.hd.toFixed(2)} <span class="${kolorSredniej('hd')}">(${(pw.hd / liczbaZmian).toFixed(2)}/zm.)</span></td>
+                        <td>${pw.sklep.toFixed(2)} <span class="${kolorSredniej('sklep')}">(${(pw.sklep / liczbaZmian).toFixed(2)}/zm.)</span></td>
                         <td><strong>${pw.suma.toFixed(2)}</strong> <span class="text-muted">(${(pw.suma / liczbaZmian).toFixed(2)}/zm.)</span></td>
                     </tr>`;
                 }).join('');
@@ -293,7 +366,7 @@ window.przeliczIWygenerujStatystyki = async function() {
             sekcjaPracownicy = `<div class="field-group" style="border-left:4px solid var(--success);">
                 <h4>👥 Sprzedaż na pracowników (Proporcjonalnie)</h4>
                 ${pRows ? `<div class="table-responsive"><table class="standard-table"><tr><th>Pracownik</th><th>Dni</th><th>Kawa</th><th>HD</th><th>Sklep</th><th>Suma</th></tr>${pRows}</table></div>` : '<p class="text-muted">Brak danych sprzedażowych.</p>'}
-                <p class="text-muted" style="font-size:0.82em; margin:6px 0 0 0;">W nawiasie średnia na zmianę (wartość / liczba dni z raportem).</p>
+                <p class="text-muted" style="font-size:0.82em; margin:6px 0 0 0;">W nawiasie średnia na zmianę (wartość / liczba dni z raportem). <span class="val-green">Zielona</span> — najlepsza średnia w kategorii, <span class="val-red">czerwona</span> — najgorsza.</p>
             </div>`;
         }
 
@@ -454,15 +527,23 @@ window.przeliczIWygenerujStatystyki = async function() {
                 stat.sklep += sklep;
             });
             const sredniaZ = (suma, liczba) => liczba > 0 ? (suma / liczba).toFixed(2) : '0.00';
+            const srednieDni = { kawa: [], hd: [], sklep: [] };
+            dniStat.forEach(s => {
+                if (!s.liczba) return;
+                ['kawa', 'hd', 'sklep'].forEach(k => srednieDni[k].push(s[k] / s.liczba));
+            });
             const dniRows = nazwyDni.map((nazwa, idx) => {
                 const s = dniStat[idx];
+                const kolorSredniej = (klucz) => s.liczba
+                    ? klasaSredniejExtremum(srednieDni[klucz], s[klucz] / s.liczba)
+                    : 'text-muted';
                 return `<tr>
                     <td><strong>${nazwa}</strong></td>
                     <td>${s.suma.toFixed(2)}</td>
                     <td>${sredniaZ(s.suma, s.liczba)}</td>
-                    <td>${s.kawa.toFixed(2)} <span class="text-muted">(${sredniaZ(s.kawa, s.liczba)})</span></td>
-                    <td>${s.hd.toFixed(2)} <span class="text-muted">(${sredniaZ(s.hd, s.liczba)})</span></td>
-                    <td>${s.sklep.toFixed(2)} <span class="text-muted">(${sredniaZ(s.sklep, s.liczba)})</span></td>
+                    <td>${s.kawa.toFixed(2)} <span class="${kolorSredniej('kawa')}">(${sredniaZ(s.kawa, s.liczba)})</span></td>
+                    <td>${s.hd.toFixed(2)} <span class="${kolorSredniej('hd')}">(${sredniaZ(s.hd, s.liczba)})</span></td>
+                    <td>${s.sklep.toFixed(2)} <span class="${kolorSredniej('sklep')}">(${sredniaZ(s.sklep, s.liczba)})</span></td>
                 </tr>`;
             }).join('');
             sekcjaDniTygodnia = `<div class="field-group" style="border-left:4px solid var(--primary);">
@@ -471,7 +552,7 @@ window.przeliczIWygenerujStatystyki = async function() {
                     <tr><th>Dzień</th><th>Suma</th><th>Średnia</th><th>Kawa</th><th>HD</th><th>Sklep</th></tr>
                     ${dniRows}
                 </table></div>
-                <p class="text-muted" style="font-size:0.82em; margin:6px 0 0 0;">W nawiasie średnia sprzedaż w danym dniu tygodnia.</p>
+                <p class="text-muted" style="font-size:0.82em; margin:6px 0 0 0;">W nawiasie średnia sprzedaż w danym dniu tygodnia. <span class="val-green">Zielona</span> — najlepsza średnia w kategorii, <span class="val-red">czerwona</span> — najgorsza.</p>
             </div>`;
         }
 
