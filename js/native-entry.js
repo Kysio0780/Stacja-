@@ -6,6 +6,7 @@ import { App } from '@capacitor/app';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { Share } from '@capacitor/share';
+import { NativeBiometric } from '@capgo/capacitor-native-biometric';
 
 window.NativeBridge = {
     Capacitor,
@@ -15,5 +16,6 @@ window.NativeBridge = {
     CameraSource,
     Filesystem,
     Directory,
-    Share
+    Share,
+    NativeBiometric
 };
