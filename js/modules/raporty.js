@@ -64,7 +64,7 @@ async function pobierzWszystkieRaporty() {
     paliwaSnap.forEach(d => {
         const r = d.data() || {};
         const w = wiersz(d.id);
-        w.paliwa = r;
+        w.paliwa = r.paliwa || r;
         w.osoba = r.osoba || w.osoba;
         w.osobaId = r.osobaId || w.osobaId;
         w.updatedAt = r.updatedAt || w.updatedAt;
@@ -72,7 +72,7 @@ async function pobierzWszystkieRaporty() {
     licznikiSnap.forEach(d => {
         const r = d.data() || {};
         const w = wiersz(d.id);
-        w.liczniki = r;
+        w.liczniki = r.liczniki || r;
         w.osoba = r.osoba || w.osoba;
         w.osobaId = r.osobaId || w.osobaId;
         w.updatedAt = r.updatedAt || w.updatedAt;
@@ -246,8 +246,8 @@ window.otworzModalRaportu = async function(data = null, tylkoPodglad = false, se
             pobierzDokument(RAPORTY_LICZNIKI_KOLEKCJA, dataRaportu),
             pobierzDokument(RAPORTY_STARE_KOLEKCJA, dataRaportu)
         ]);
-        const p = pDoc || (stary && stary.paliwa) || {};
-        const l = lDoc || (stary && stary.liczniki) || {};
+        const p = (pDoc && (pDoc.paliwa || pDoc)) || (stary && stary.paliwa) || {};
+        const l = (lDoc && (lDoc.liczniki || lDoc)) || (stary && stary.liczniki) || {};
 
         const stareStanOk = !!p.stanOk;
         RAPORTY_PALIWA.forEach(x => {
