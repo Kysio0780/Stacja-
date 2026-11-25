@@ -44,6 +44,22 @@
         .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
         .flex-row { display: flex; gap: 10px; align-items: center; }
 
+        /* Wykresy dziennej sprzedaży w statystykach */
+        .stat-wykresy {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 10px;
+            margin: 12px 0;
+        }
+        .stat-wykres-box {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 6px 8px;
+            min-width: 0;
+        }
+        .stat-wykres-box canvas { display: block; max-width: 100%; }
+
         /* Tryb pełnoekranowy (kiosk) */
         html.tryb-kiosk, body.tryb-kiosk {
             /* Blokuje pull-to-refresh i „wyciąganie" paska narzędzi gestem. */
