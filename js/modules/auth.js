@@ -31,6 +31,34 @@ window.odblokujBiometria = async function () {
     }
 };
 
+let sluchaczeAplikacjiZarejestrowani = false;
+
+function rejestrujSluchaczeAplikacji() {
+    if (sluchaczeAplikacjiZarejestrowani) return;
+    const b = window.NativeBridge;
+    if (!b || !b.App || typeof b.App.addListener !== 'function') return;
+    sluchaczeAplikacjiZarejestrowani = true;
+
+    // Wyjście na pulpit telefonu powoduje ponowne żądanie biometrii po powrocie.
+    b.App.addListener('appStateChange', (stan) => {
+        if (!stan || !stan.isActive) {
+            biometriaOdblokowana = false;
+            return;
+        }
+        if (!currentUserData) return;
+        const wymaga = typeof window.pobierzBiometrieUzytkownika === 'function'
+            && window.pobierzBiometrieUzytkownika();
+        if (wymaga && !biometriaOdblokowana) pokazBlokadeBiometryczna();
+    });
+
+    // Przycisk wstecz Androida zachowuje się jak Esc w aplikacji.
+    b.App.addListener('backButton', () => {
+        window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    });
+}
+rejestrujSluchaczeAplikacji();
+document.addEventListener('DOMContentLoaded', rejestrujSluchaczeAplikacji);
+
 function bindPrzelacznikaBiometrii() {
     const pole = document.getElementById('biometria-dd');
     if (!pole || pole.dataset.bound === '1') return;
@@ -38,23 +66,11 @@ function bindPrzelacznikaBiometrii() {
     pole.addEventListener('click', () => {
         setTimeout(() => window.ustawBiometrieUzytkownika(pole.checked), 0);
     });
-    const status = document.getElementById('biometria-status');
-    if (status && !status.innerText) status.innerText = 'Moduł biometrii załadowany.';
 }
 bindPrzelacznikaBiometrii();
 document.addEventListener('DOMContentLoaded', bindPrzelacznikaBiometrii);
 
-function ustawStatusBiometrii(tekst, blad = false) {
-    const pole = document.getElementById('biometria-status');
-    if (!pole) return;
-    pole.innerText = tekst || '';
-    pole.className = blad ? 'error' : 'text-muted';
-    pole.style.fontSize = '0.78em';
-    pole.style.margin = '4px 0 0 0';
-}
-
 window.ustawBiometrieUzytkownika = async function (wlaczony) {
-    ustawStatusBiometrii('Reakcja na przełącznik…');
     const zalaczone = !!wlaczony;
     const wAPK = window.NativeApp && typeof window.NativeApp.isNative === 'function' && window.NativeApp.isNative();
 
@@ -65,27 +81,25 @@ window.ustawBiometrieUzytkownika = async function (wlaczony) {
                 biometria: false, updatedAt: new Date().toISOString()
             }, { merge: true });
             window.ustawFlageBiometrii?.(false);
-            ustawStatusBiometrii('Biometria wyłączona.');
-        } catch (e) { ustawStatusBiometrii('Błąd zapisu: ' + e.message, true); }
+        } catch (e) { alert('Błąd zapisu: ' + e.message); }
         return;
     }
 
     if (!wAPK) {
         window.ustawFlageBiometrii?.(false);
-        ustawStatusBiometrii('Dostępne tylko w APK — tu nie można włączyć biometrii.', true);
+        alert('Odblokowanie biometrią jest dostępne tylko w aplikacji APK.');
         return;
     }
     if (!window.NativeApp || typeof window.NativeApp.zweryfikujBiometrie !== 'function') {
         window.ustawFlageBiometrii?.(false);
-        ustawStatusBiometrii('Plugin biometrii nie jest dostępny w tej wersji APK.', true);
+        alert('Plugin biometrii nie jest dostępny w tej wersji APK.');
         return;
     }
 
-    ustawStatusBiometrii('Oczekiwanie na weryfikację…');
     const potwierdzone = await window.NativeApp.zweryfikujBiometrie('Potwierdź włączenie biometrii');
     if (!potwierdzone) {
         window.ustawFlageBiometrii?.(false);
-        ustawStatusBiometrii('Weryfikacja nie powiodła się. Sprawdź biometrię w telefonie.', true);
+        alert('Nie udało się potwierdzić biometrii. Sprawdź odcisk palca lub twarz w ustawieniach telefonu.');
         return;
     }
     if (!currentUserData) return;
@@ -94,10 +108,10 @@ window.ustawBiometrieUzytkownika = async function (wlaczony) {
             biometria: true, updatedAt: new Date().toISOString()
         }, { merge: true });
         window.ustawFlageBiometrii?.(true);
-        ustawStatusBiometrii('Włączone. Kolejne uruchomienie APK poprosi o odblokowanie.');
+        alert('Biometria włączona. Kolejne uruchomienie APK poprosi o odblokowanie.');
     } catch (e) {
         window.ustawFlageBiometrii?.(false);
-        ustawStatusBiometrii('Błąd zapisu: ' + e.message, true);
+        alert('Błąd zapisu: ' + e.message);
     }
 };
 
