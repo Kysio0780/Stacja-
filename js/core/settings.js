@@ -26,6 +26,14 @@ const PREFERENCJE_UZYTKOWNIKA_KOLEKCJA = 'preferencje_uzytkownika';
 const DOMYSLNY_RODZAJ_CZCIONKI = 'inter';
 const RODZAJE_CZCIONEK = ['inter', 'roboto', 'opensans', 'lato', 'montserrat', 'poppins'];
 let ladowaniePreferencji = false;
+let biometriaUzytkownika = false;
+
+window.pobierzBiometrieUzytkownika = function () { return !!biometriaUzytkownika; };
+window.ustawFlageBiometrii = function (wlaczone) {
+    biometriaUzytkownika = !!wlaczone;
+    const pole = document.getElementById('biometria-dd');
+    if (pole) pole.checked = biometriaUzytkownika;
+};
 
 function prawidlowyRodzajCzcionki(rodzaj) {
     return RODZAJE_CZCIONEK.includes(rodzaj) ? rodzaj : DOMYSLNY_RODZAJ_CZCIONKI;
@@ -45,6 +53,7 @@ async function zapiszPreferencjeDoFirestore() {
             motyw: prawidlowyMotyw(localStorage.getItem("sklep_motyw") || MOTYW_DOMYSLNY),
             czcionka: localStorage.getItem("sklep_czcionka") || "normal",
             rodzajCzcionki: prawidlowyRodzajCzcionki(localStorage.getItem("sklep_rodzaj_czcionki")),
+            biometria: window.pobierzBiometrieUzytkownika ? window.pobierzBiometrieUzytkownika() : false,
             updatedAt: new Date().toISOString()
         }, { merge: true });
     } catch (e) {
@@ -70,6 +79,7 @@ window.wczytajPreferencjeUzytkownika = async function() {
             const rodzaj = prawidlowyRodzajCzcionki(dane.rodzajCzcionki);
             localStorage.setItem("sklep_rodzaj_czcionki", rodzaj);
             zastosujRodzajCzcionki(rodzaj);
+            if (typeof window.ustawFlageBiometrii === 'function') window.ustawFlageBiometrii(!!dane.biometria);
             ladowaniePreferencji = false;
         } else {
             // Pierwsze logowanie — ustawienia dotychczas używane na tym urządzeniu
