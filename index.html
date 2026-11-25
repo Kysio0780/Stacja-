@@ -193,8 +193,8 @@
                 <input type="date" id="tps-nowy-data">
                 
                 <div class="flex-row" style="margin-top: 8px;">
-                    <button onclick="window.zapiszNowyTps()" class="btn-success" style="margin: 0;">Zapisz towar</button>
                     <button onclick="window.toggleFormularzDodajTps(false)" class="btn-neutral" style="margin: 0;">Anuluj</button>
+                    <button onclick="window.zapiszNowyTps()" class="btn-success" style="margin: 0 0 0 auto;">Zapisz towar</button>
                 </div>
             </div>
 
@@ -406,8 +406,8 @@
                 </div>
 
                 <div class="flex-row" style="margin-top: 15px;">
-                    <button onclick="window.wyslijWiadomosc()" class="btn-success" style="margin:0;">📤 Wyślij</button>
                     <button onclick="window.zamknijModalNowejWiadomosci()" class="btn-neutral" style="margin:0;">Anuluj</button>
+                    <button onclick="window.wyslijWiadomosc()" class="btn-success" style="margin:0 0 0 auto;">📤 Wyślij</button>
                 </div>
             </div>
         </div>
@@ -732,8 +732,8 @@
                 </div>
 
                 <div class="flex-row" style="margin-top: 14px;">
-                    <button onclick="window.zastosujEdycjeKomorkiGrafiku()" class="btn-success" style="margin:0;">✔ Zastosuj</button>
                     <button onclick="window.zamknijModalKomorkiGrafiku()" class="btn-neutral" style="margin:0;">Anuluj</button>
+                    <button onclick="window.zastosujEdycjeKomorkiGrafiku()" class="btn-success" style="margin:0 0 0 auto;">✔ Zastosuj</button>
                 </div>
             </div>
         </div>
@@ -762,8 +762,8 @@
                 </div>
 
                 <div class="flex-row" style="margin-top: 14px;">
-                    <button onclick="window.zatwierdzObecnoscPracownikaGrafiku()" class="btn-success" style="margin:0;">✔ Zatwierdź</button>
                     <button onclick="window.zamknijModalObecnosciGrafiku()" class="btn-neutral" style="margin:0;">Anuluj</button>
+                    <button onclick="window.zatwierdzObecnoscPracownikaGrafiku()" class="btn-success" style="margin:0 0 0 auto;">✔ Zatwierdź</button>
                 </div>
             </div>
         </div>
@@ -801,8 +801,8 @@
                 </div>
 
                 <div class="flex-row" style="margin-top: 14px;">
-                    <button onclick="window.generujWydrukGrafikuZModalu()" class="btn-success" style="margin:0;">📥 Pobierz PDF</button>
                     <button onclick="window.zamknijModalDrukuGrafiku()" class="btn-neutral" style="margin:0;">Anuluj</button>
+                    <button onclick="window.generujWydrukGrafikuZModalu()" class="btn-success" style="margin:0 0 0 auto;">📥 Pobierz PDF</button>
                 </div>
             </div>
         </div>
@@ -858,10 +858,10 @@
                     <canvas id="aparat-canvas" class="hidden" style="width: 100%; display: block;"></canvas>
                 </div>
                 <div style="margin-top: 14px; display: flex; gap: 8px; flex-wrap: wrap;">
-                    <button id="aparat-btn-zrob" onclick="window.zrobZdjecieAparatem()" class="btn-success" style="margin:0;">📸 Zrób zdjęcie</button>
-                    <button id="aparat-btn-zatwierdz" onclick="window.zatwierdzZdjecieAparatem()" class="btn-success hidden" style="margin:0;">✔️ Zatwierdź</button>
-                    <button id="aparat-btn-nowe" onclick="window.zrobNoweZdjecieAparatem()" class="btn-info hidden" style="margin:0;">🔄 Zrób nowe</button>
                     <button id="aparat-btn-anuluj" onclick="window.zamknijAparat()" class="btn-neutral" style="margin:0;">✖️ Anuluj</button>
+                    <button id="aparat-btn-zrob" onclick="window.zrobZdjecieAparatem()" class="btn-success" style="margin:0 0 0 auto;">📸 Zrób zdjęcie</button>
+                    <button id="aparat-btn-zatwierdz" onclick="window.zatwierdzZdjecieAparatem()" class="btn-success hidden" style="margin:0 0 0 auto;">✔️ Zatwierdź</button>
+                    <button id="aparat-btn-nowe" onclick="window.zrobNoweZdjecieAparatem()" class="btn-info hidden" style="margin:0 0 0 auto;">🔄 Zrób nowe</button>
                 </div>
             </div>
         </div>
@@ -950,11 +950,11 @@
                 <label>Powtórz nowe hasło:</label>
                 <input type="password" id="nowe-haslo-2" placeholder="Wpisz ponownie nowe hasło">
                 
-                <button onclick="window.zmienWlasneHasloPotwierdz()" class="btn-success" style="margin-top: 8px;">Zapisz nowe hasło</button>
-                <p id="haslo-msg" class="error" style="text-align: center;"></p>
+                <p id="haslo-msg" class="error" style="text-align: center; margin-top: 8px;"></p>
 
-                <div style="margin-top: 12px;">
+                <div class="flex-row" style="margin-top: 12px;">
                     <button onclick="window.zamknijModalZmianyHasla()" class="btn-neutral" style="margin:0;">Anuluj</button>
+                    <button onclick="window.zmienWlasneHasloPotwierdz()" class="btn-success" style="margin:0 0 0 auto;">Zapisz nowe hasło</button>
                 </div>
             </div>
         </div>
@@ -1127,8 +1127,8 @@
                 
                 <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 16px;">
                     <div class="flex-row">
-                        <button onclick="window.zapiszEdycjePracownika()" class="btn-success" style="margin:0;">Zapisz zmiany</button>
                         <button onclick="window.zamknijEdycjePracownika()" class="btn-neutral" style="margin:0;">Anuluj</button>
+                        <button onclick="window.zapiszEdycjePracownika()" class="btn-success" style="margin:0 0 0 auto;">Zapisz zmiany</button>
                     </div>
                     <button onclick="window.usunPracownikaZModala()" class="btn-danger" style="margin:0;">🗑️ Usuń pracownika z systemu</button>
                 </div>
