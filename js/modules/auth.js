@@ -33,10 +33,18 @@ window.odblokujBiometria = async function () {
 
 window.ustawBiometrieUzytkownika = async function (wlaczone) {
     const zalaczone = !!wlaczony;
-    if (zalaczone && window.NativeApp && typeof window.NativeApp.czyDostepnaBiometria === 'function') {
-        const dostepna = await window.NativeApp.czyDostepnaBiometria();
-        if (!dostepna) {
-            alert('Biometria nie jest dostępna na tym urządzeniu. Najpierw skonfiguruj odcisk palca lub twarz w ustawieniach telefonu.');
+    const wAPK = window.NativeApp && typeof window.NativeApp.isNative === 'function' && window.NativeApp.isNative();
+    if (zalaczone && !wAPK) {
+        alert('Odblokowanie biometrią jest dostępne w aplikacji APK. W przeglądarce tej opcji nie można włączyć.');
+        window.ustawFlageBiometrii?.(false);
+        return;
+    }
+    // Potwierdzenie faktycznym odciskiem/twarzą jest lepszym testem niż isAvailable(),
+    // które w części wersji pluginu zwraca fałszywe „brak biometrii".
+    if (zalaczone && window.NativeApp && typeof window.NativeApp.zweryfikujBiometrie === 'function') {
+        const potwierdzone = await window.NativeApp.zweryfikujBiometrie('Potwierdź włączenie biometrii');
+        if (!potwierdzone) {
+            alert('Nie udało się potwierdzić biometrii. Sprawdź odcisk palca / twarz w ustawieniach telefonu.');
             window.ustawFlageBiometrii?.(false);
             return;
         }
@@ -131,15 +139,12 @@ onAuthStateChanged(auth, async (user) => {
             sprawdzPowiadomieniaPracownicyGlobal();
             sprawdzPowiadomieniaTpsGlobal();
 
-            const wymagaBiometrii = !noweLogowanie && !biometriaOdblokowana
+            const wAPK = window.NativeApp && typeof window.NativeApp.isNative === 'function' && window.NativeApp.isNative();
+            const wymagaBiometrii = !noweLogowanie && !biometriaOdblokowana && wAPK
                 && typeof window.pobierzBiometrieUzytkownika === 'function'
                 && window.pobierzBiometrieUzytkownika();
             noweLogowanie = false;
-            if (wymagaBiometrii && window.NativeApp && typeof window.NativeApp.czyDostepnaBiometria === 'function') {
-                const dostepna = await window.NativeApp.czyDostepnaBiometria();
-                if (dostepna) pokazBlokadeBiometryczna();
-                else biometriaOdblokowana = true;
-            }
+            if (wymagaBiometrii) pokazBlokadeBiometryczna();
 
             window.dispatchEvent(new HashChangeEvent("hashchange"));
         } else {
