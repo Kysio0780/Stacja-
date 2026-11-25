@@ -56,7 +56,8 @@ onAuthStateChanged(auth, async (user) => {
             const czyAdmin = currentUserData.rola === 'admin';
             document.getElementById('admin-daily-section').classList.toggle('hidden', !czyAdmin);
             document.getElementById('tile-pracownicy').style.display = czyAdmin ? 'flex' : 'none';
-            document.getElementById('tile-statystyki').style.display = czyAdmin ? 'flex' : 'none';
+            // Statystyki są dostępne dla wszystkich zalogowanych użytkowników.
+            document.getElementById('tile-statystyki').style.display = 'flex';
             document.getElementById('tile-finanse').style.display = czyAdmin ? 'flex' : 'none';
             if (typeof window.inicjalizujWskaznikMagazynu === 'function') window.inicjalizujWskaznikMagazynu();
             if (typeof window.sprawdzObecnoscGrafikuGlobal === 'function') window.sprawdzObecnoscGrafikuGlobal();
