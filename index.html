@@ -615,7 +615,6 @@
                         <button onclick="window.zapiszGrafikInteraktywny(false)" class="btn-info btn-sm">💾 Zapisz roboczy</button>
                         <button id="btn-publikacja-grafiku" onclick="window.przelaczPublikacjeGrafiku()" class="btn-success btn-sm">📢 Opublikuj dla pracowników</button>
                         <button onclick="window.otworzModalDrukuGrafiku()" class="btn-neutral btn-sm">🖨️ Drukuj / PDF</button>
-                        <button onclick="window.otworzModalDrukuGrafiku('godziny')" class="btn-info btn-sm">📄 Export PDF (godziny)</button>
                     </div>
                 </div>
 
@@ -774,6 +773,20 @@
             <div class="modal-content" style="max-width: 480px;">
                 <h4 id="modal-grafik-druk-tytul">📥 Generuj PDF Listy Obecności</h4>
                 <p id="modal-grafik-druk-opis" class="text-muted">Wybierz pracowników, którzy mają znaleźć się w pliku PDF (z kolumnami Godziny, OD, DO, Podpis). Domyślnie pominięto Umowy Zlecenie.</p>
+
+                <div class="field-group">
+                    <label style="font-weight:700;">Rodzaj wydruku:</label>
+                    <div style="display:flex; gap:18px; flex-wrap:wrap;">
+                        <label style="display:flex; align-items:center; gap:7px; cursor:pointer; font-weight:normal; margin:0;">
+                            <input type="radio" name="druk-tryb" value="pelny" checked onchange="window.ustawTrybModaluDruku()">
+                            <span>📋 Lista obecności</span>
+                        </label>
+                        <label style="display:flex; align-items:center; gap:7px; cursor:pointer; font-weight:normal; margin:0;">
+                            <input type="radio" name="druk-tryb" value="godziny" onchange="window.ustawTrybModaluDruku()">
+                            <span>📄 Grafik godzinowy</span>
+                        </label>
+                    </div>
+                </div>
 
                 <div class="field-group">
                     <label>Pracownicy do pliku PDF:</label>
