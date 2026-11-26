@@ -136,22 +136,25 @@
         /* Finanse */
         .finanse-okresy {
             display: flex;
-            flex-wrap: wrap;
+            flex-wrap: nowrap;
             align-items: flex-end;
-            gap: 10px 12px;
+            gap: 8px;
             margin: 10px 0;
+            overflow-x: auto;
         }
-        .finanse-okres-pole { display: flex; flex-direction: column; gap: 4px; }
+        .finanse-okres-pole { display: flex; flex: 0 0 auto; flex-direction: column; gap: 4px; }
         .finanse-okres-pole label { margin: 0; font-size: 0.8em; color: var(--text-muted); }
         .finanse-okresy .finanse-okres-select {
             height: 38px;
-            width: 142px;
-            padding: 6px 8px;
+            width: 118px;
+            padding: 6px;
             margin: 0;
             box-sizing: border-box;
+            font-size: 0.9em;
         }
-        .finanse-okres-oddo { display: flex; gap: 6px; }
-        .finanse-okres-oddo .finanse-okres-select { width: 112px; }
+        .finanse-okresy select[id$="-rok"] { width: 72px; }
+        .finanse-okres-oddo { display: flex; gap: 4px; }
+        .finanse-okres-oddo .finanse-okres-select { width: 84px; }
 
         .finanse-tabs {
             display: flex;
