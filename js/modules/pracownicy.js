@@ -54,8 +54,37 @@ async function sprawdzPowiadomieniaPracownicyGlobal() {
 /* ==================== MODUŁ WIADOMOŚCI ==================== */
 window.toggleEtatPole = (prefix) => {
     const umowa = document.getElementById(`${prefix}-p-umowa`).value;
-    document.getElementById(`${prefix}-etat-box`).style.display = (umowa === 'Zlecenie') ? 'none' : 'block';
+    document.getElementById(`${prefix}-etat-box`).style.display = (umowa === 'UoP') ? 'block' : 'none';
+    if (typeof window.toggleDaneUmowy === 'function') window.toggleDaneUmowy(prefix);
 };
+
+// Dla UoP pokazuje wynagrodzenie podstawowe, dla zlecenia stawkę godzinową.
+// Zaznaczenie „na czas nieokreślony" wyłącza pole daty zakończenia umowy.
+window.toggleDaneUmowy = (prefix) => {
+    const rodzaj = document.getElementById(`${prefix}-p-umowa`)?.value;
+    const jestZlecenie = rodzaj === 'Zlecenie';
+    document.getElementById(`${prefix}-dane-umowy-box`)?.classList.toggle('hidden', !rodzaj);
+    document.getElementById(`${prefix}-uop-box`)?.classList.toggle('hidden', jestZlecenie || !rodzaj);
+    document.getElementById(`${prefix}-uz-box`)?.classList.toggle('hidden', !jestZlecenie);
+    const bezterminu = document.getElementById(`${prefix}-p-umowa-bezterminu`)?.checked;
+    const poleDaty = document.getElementById(`${prefix}-p-umowa-do`);
+    if (poleDaty) poleDaty.disabled = !!bezterminu;
+};
+
+function daneUmowyZFormularza(prefix) {
+    const id = (nazwa) => `${prefix}-p-${nazwa}`;
+    const bezterminu = !!document.getElementById(id('umowa-bezterminu'))?.checked;
+    const data = document.getElementById(id('umowa-do'))?.value || '';
+    const rodzaj = document.getElementById(id('umowa'))?.value;
+    const kwota = (nazwa) => Math.max(0, Number(document.getElementById(id(nazwa))?.value) || 0);
+    return {
+        umowaDo: bezterminu ? null : (data || null),
+        umowaBezterminu: bezterminu,
+        wynagrodzeniePodstawowe: rodzaj === 'UoP' ? kwota('wynagrodzenie') : 0,
+        stawkaGodzinowa: rodzaj === 'Zlecenie' ? kwota('stawka') : 0,
+        umowaAktywna: !!document.getElementById(id('umowa-aktywna'))?.checked
+    };
+}
 
 window.checkEtatCustom = (prefix) => {
     const etatVal = document.getElementById(`${prefix}-p-etat`).value;
@@ -71,10 +100,21 @@ window.zaladujlistePracownikow = async function() {
         let html = `<div class="table-responsive"><table class="standard-table"><tr><th style="text-align:left;">Pracownik</th><th>Umowa / Etat</th><th>🩺 Badania</th><th>🦠 Sanepid</th><th>🛡️ BHP</th></tr>`;
         snap.forEach(docSnap => {
             const p = docSnap.data(), id = docSnap.id;
-            const umowaTxt = p.umowa === 'Zlecenie' ? 'Zlecenie' : `UoP (${p.etat || '1/1'})`;
+            const jestZlecenie = p.umowa === 'Zlecenie';
+            const umowaTxt = !p.umowa ? 'Brak umowy (admin)'
+                : jestZlecenie ? 'Zlecenie' : `UoP (${p.etat || '1/1'})`;
+            const okresTxt = p.umowaBezterminu ? 'na czas nieokreślony'
+                : (p.umowaDo ? `do ${ucieczkaHtml(formatujDateDoWyswietlenia(p.umowaDo))}` : '');
+            const kwotaTxt = jestZlecenie
+                ? (p.stawkaGodzinowa ? `${Number(p.stawkaGodzinowa).toFixed(2)} zł/h` : '')
+                : (p.wynagrodzeniePodstawowe ? `${Number(p.wynagrodzeniePodstawowe).toFixed(2)} zł` : '');
+            const aktywna = p.umowaAktywna !== false;
+            const szczegoly = [okresTxt, kwotaTxt,
+                `<span class="badge ${aktywna ? 'badge-done' : 'badge-danger'}">${aktywna ? 'aktywna' : 'nieaktywna'}</span>`
+            ].filter(Boolean).join('<br>');
             html += `<tr class="cleaning-row" onclick="window.otworzEdycjePracownikaPoId('${ucieczkaJs(id)}')">
                 <td style="text-align:left;"><strong>${ucieczkaHtml(p.imie || 'Brak imienia')}</strong><br><span class="text-muted" style="font-size:0.8em;">${ucieczkaHtml(p.login || 'brak loginu')} (${p.rola === 'admin' ? 'Admin' : 'Pracownik'})</span></td>
-                <td>${ucieczkaHtml(umowaTxt)}</td>
+                <td>${ucieczkaHtml(umowaTxt)}<br><span class="text-muted" style="font-size:0.8em;">${szczegoly}</span></td>
                 <td>${formatujDateZIkona(p.badania)}</td>
                 <td>${formatujDateZIkona(p.sanepid)}</td>
                 <td>${formatujDateZIkona(p.bhp)}</td>
@@ -92,8 +132,14 @@ window.otworzEdycjePracownikaPoId = async function(id) {
         const p = snap.data();
         window.otworzEdycjePracownika(
             id, p.uid || id, p.imie || '', p.login || '', p.rola || 'pracownik',
-            p.umowa || 'UoP', p.etat || '1/1', p.badania || '', p.sanepid || '', p.bhp || ''
+            p.umowa === undefined ? 'UoP' : p.umowa, p.etat || '1/1', p.badania || '', p.sanepid || '', p.bhp || ''
         );
+        document.getElementById('edit-p-umowa-do').value = p.umowaDo || '';
+        document.getElementById('edit-p-umowa-bezterminu').checked = !!p.umowaBezterminu;
+        document.getElementById('edit-p-wynagrodzenie').value = p.wynagrodzeniePodstawowe || '';
+        document.getElementById('edit-p-stawka').value = p.stawkaGodzinowa || '';
+        document.getElementById('edit-p-umowa-aktywna').checked = p.umowaAktywna !== false;
+        window.toggleDaneUmowy('edit');
     } catch (e) { alert("Błąd pobierania danych pracownika: " + e.message); }
 };
 
@@ -160,6 +206,7 @@ window.zapiszEdycjePracownika = async function() {
             login,
             rola: document.getElementById('edit-p-rola').value,
             umowa, etat,
+            ...daneUmowyZFormularza('edit'),
             badania: document.getElementById('edit-p-badania').value,
             sanepid: document.getElementById('edit-p-sanepid').value,
             bhp: document.getElementById('edit-p-bhp').value
@@ -239,10 +286,15 @@ window.dodajPracownika = async function() {
         await setDoc(doc(db, "uzytkownicy", utworzonyUzytkownik.uid), {
             uid: utworzonyUzytkownik.uid,
             authEmail: `${login}@sp580.pl`,
-            imie, login, rola, umowa, etat, badania, sanepid, bhp
+            imie, login, rola, umowa, etat,
+            ...daneUmowyZFormularza('new'),
+            badania, sanepid, bhp
         });
         alert(`Dodano pracownika: ${imie}`);
-        ['new-p-imie', 'new-p-login', 'new-p-haslo', 'new-p-badania', 'new-p-sanepid', 'new-p-bhp', 'new-p-etat-custom'].forEach(id => document.getElementById(id).value = "");
+        ['new-p-imie', 'new-p-login', 'new-p-haslo', 'new-p-badania', 'new-p-sanepid', 'new-p-bhp', 'new-p-etat-custom', 'new-p-umowa-do', 'new-p-wynagrodzenie', 'new-p-stawka'].forEach(id => document.getElementById(id).value = "");
+        document.getElementById('new-p-umowa-bezterminu').checked = false;
+        document.getElementById('new-p-umowa-aktywna').checked = true;
+        window.toggleDaneUmowy('new');
         window.zaladujlistePracownikow();
     } catch (error) {
         // Cofamy utworzone konto Auth, jeśli zapis profilu w Firestore się nie udał.
