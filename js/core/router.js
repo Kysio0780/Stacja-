@@ -84,6 +84,7 @@ window.addEventListener("hashchange", () => {
     } else if (hash === "#finanse") {
         if (!(currentUserData && currentUserData.rola === 'admin')) { window.location.hash = "#menu"; return; }
         document.getElementById('modul-finanse').classList.remove('hidden');
+        window.przelaczTabFinanse('prognoza');
     } else if (hash === "#dzien") {
         document.getElementById('modul-sprzedaz').classList.remove('hidden');
         document.getElementById('view-monthly').classList.add('hidden');
