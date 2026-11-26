@@ -51,7 +51,7 @@ js/vendor/                  lokalne kopie jsPDF i html2canvas (generowanie PDF)
 | Misje | Zadania dla pracowników (można przypisać wielu naraz) | wszyscy (tworzenie tylko admin) |
 | Marketing | Akcje promocyjne i wydarzenia sprzedażowe z opisem i opcjonalnym zdjęciem | wszyscy (dodawanie, edycja i usuwanie tylko admin) |
 | Finanse | Prognoza premii ze sprzedaży, rozliczenie wynagrodzeń (UOP/UZ, premie P1/P2) i analiza budżetu | tylko admin |
-| Pracownicy | Dane pracowników: typ umowy (UoP / Zlecenie / brak — admin), data końca lub czas nieokreślony, wynagrodzenie podstawowe lub stawka godzinowa i flaga umowy aktywnej | tylko admin |
+| Pracownicy | Dane pracowników: typ umowy (UoP / Zlecenie / brak — admin), data końca lub czas nieokreślony, wynagrodzenie podstawowe lub stawka godzinowa, login Akademia orłów i numer Vitay | tylko admin |
 | Statystyki | Raporty statystyczne | tylko admin |
 
 ## Zasady kodu
@@ -75,6 +75,8 @@ js/vendor/                  lokalne kopie jsPDF i html2canvas (generowanie PDF)
    z `plany_miesieczne` i `sprzedaz`; premia = (prognoza − próg) × stawka dla kategorii Kawa/HD/Sklep.
    Wszystkie trzy zakładki domyślnie pokazują bieżący miesiąc; dostępne są też kwartał, rok i własny zakres od–do.
    Parametry naliczania premii (w tym prowizja podstawowa firmy) są w zwijanym panelu.
+   Pola Podstawa (UoP) oraz Stawka i Il. godzin (UZ) są wstępnie wypełniane z danych pracownika
+   (`wynagrodzeniePodstawowe`, `stawkaGodzinowa`) i grafiku (`grafiki/{rok}-{MM}.entries`) — administrator może je edytować.
 
 ## Reguły Firestore — czego wymaga aplikacja
 
