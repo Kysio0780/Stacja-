@@ -81,8 +81,7 @@ function daneUmowyZFormularza(prefix) {
         umowaDo: bezterminu ? null : (data || null),
         umowaBezterminu: bezterminu,
         wynagrodzeniePodstawowe: rodzaj === 'UoP' ? kwota('wynagrodzenie') : 0,
-        stawkaGodzinowa: rodzaj === 'Zlecenie' ? kwota('stawka') : 0,
-        umowaAktywna: !!document.getElementById(id('umowa-aktywna'))?.checked
+        stawkaGodzinowa: rodzaj === 'Zlecenie' ? kwota('stawka') : 0
     };
 }
 
@@ -97,7 +96,7 @@ window.zaladujlistePracownikow = async function() {
     container.innerHTML = "Pobieranie listy...";
     try {
         const snap = await getDocs(collection(db, "uzytkownicy"));
-        let html = `<div class="table-responsive"><table class="standard-table"><tr><th style="text-align:left;">Pracownik</th><th>Umowa / Etat</th><th>🩺 Badania</th><th>🦠 Sanepid</th><th>🛡️ BHP</th></tr>`;
+        let html = `<div class="table-responsive"><table class="standard-table"><tr><th style="text-align:left;">Pracownik</th><th>Umowa / Etat</th><th>Login Akademia orłów</th><th>Numer Vitay</th><th>🩺 Badania</th><th>🦠 Sanepid</th><th>🛡️ BHP</th></tr>`;
         snap.forEach(docSnap => {
             const p = docSnap.data(), id = docSnap.id;
             const jestZlecenie = p.umowa === 'Zlecenie';
@@ -108,13 +107,12 @@ window.zaladujlistePracownikow = async function() {
             const kwotaTxt = jestZlecenie
                 ? (p.stawkaGodzinowa ? `${Number(p.stawkaGodzinowa).toFixed(2)} zł/h` : '')
                 : (p.wynagrodzeniePodstawowe ? `${Number(p.wynagrodzeniePodstawowe).toFixed(2)} zł` : '');
-            const aktywna = p.umowaAktywna !== false;
-            const szczegoly = [okresTxt, kwotaTxt,
-                `<span class="badge ${aktywna ? 'badge-done' : 'badge-danger'}">${aktywna ? 'aktywna' : 'nieaktywna'}</span>`
-            ].filter(Boolean).join('<br>');
+            const szczegoly = [okresTxt, kwotaTxt].filter(Boolean).join('<br>');
             html += `<tr class="cleaning-row" onclick="window.otworzEdycjePracownikaPoId('${ucieczkaJs(id)}')">
                 <td style="text-align:left;"><strong>${ucieczkaHtml(p.imie || 'Brak imienia')}</strong><br><span class="text-muted" style="font-size:0.8em;">${ucieczkaHtml(p.login || 'brak loginu')} (${p.rola === 'admin' ? 'Admin' : 'Pracownik'})</span></td>
                 <td>${ucieczkaHtml(umowaTxt)}<br><span class="text-muted" style="font-size:0.8em;">${szczegoly}</span></td>
+                <td>${ucieczkaHtml(p.loginOrly || '-')}</td>
+                <td>${ucieczkaHtml(p.numerVitay || '-')}</td>
                 <td>${formatujDateZIkona(p.badania)}</td>
                 <td>${formatujDateZIkona(p.sanepid)}</td>
                 <td>${formatujDateZIkona(p.bhp)}</td>
@@ -138,7 +136,8 @@ window.otworzEdycjePracownikaPoId = async function(id) {
         document.getElementById('edit-p-umowa-bezterminu').checked = !!p.umowaBezterminu;
         document.getElementById('edit-p-wynagrodzenie').value = p.wynagrodzeniePodstawowe || '';
         document.getElementById('edit-p-stawka').value = p.stawkaGodzinowa || '';
-        document.getElementById('edit-p-umowa-aktywna').checked = p.umowaAktywna !== false;
+        document.getElementById('edit-p-login-orly').value = p.loginOrly || '';
+        document.getElementById('edit-p-vitay').value = p.numerVitay || '';
         window.toggleDaneUmowy('edit');
     } catch (e) { alert("Błąd pobierania danych pracownika: " + e.message); }
 };
@@ -207,6 +206,8 @@ window.zapiszEdycjePracownika = async function() {
             rola: document.getElementById('edit-p-rola').value,
             umowa, etat,
             ...daneUmowyZFormularza('edit'),
+            loginOrly: document.getElementById('edit-p-login-orly').value.trim(),
+            numerVitay: document.getElementById('edit-p-vitay').value.trim(),
             badania: document.getElementById('edit-p-badania').value,
             sanepid: document.getElementById('edit-p-sanepid').value,
             bhp: document.getElementById('edit-p-bhp').value
@@ -288,12 +289,13 @@ window.dodajPracownika = async function() {
             authEmail: `${login}@sp580.pl`,
             imie, login, rola, umowa, etat,
             ...daneUmowyZFormularza('new'),
+            loginOrly: document.getElementById('new-p-login-orly').value.trim(),
+            numerVitay: document.getElementById('new-p-vitay').value.trim(),
             badania, sanepid, bhp
         });
         alert(`Dodano pracownika: ${imie}`);
-        ['new-p-imie', 'new-p-login', 'new-p-haslo', 'new-p-badania', 'new-p-sanepid', 'new-p-bhp', 'new-p-etat-custom', 'new-p-umowa-do', 'new-p-wynagrodzenie', 'new-p-stawka'].forEach(id => document.getElementById(id).value = "");
+        ['new-p-imie', 'new-p-login', 'new-p-haslo', 'new-p-badania', 'new-p-sanepid', 'new-p-bhp', 'new-p-etat-custom', 'new-p-umowa-do', 'new-p-wynagrodzenie', 'new-p-stawka', 'new-p-login-orly', 'new-p-vitay'].forEach(id => document.getElementById(id).value = "");
         document.getElementById('new-p-umowa-bezterminu').checked = false;
-        document.getElementById('new-p-umowa-aktywna').checked = true;
         window.toggleDaneUmowy('new');
         window.zaladujlistePracownikow();
     } catch (error) {
