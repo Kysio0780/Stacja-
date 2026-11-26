@@ -87,7 +87,18 @@ const FIN_MIESIACE_NAZWY = ['styczeń', 'luty', 'marzec', 'kwiecień', 'maj', 'c
     'lipiec', 'sierpień', 'wrzesień', 'październik', 'listopad', 'grudzień'];
 
 function finHtmlOpcjiMiesiecy() {
-    return FIN_MIESIACE_NAZWY.map((n, i) => `<option value="${i + 1}">${i + 1} — ${n}</option>`).join('');
+    return FIN_MIESIACE_NAZWY.map((n, i) => `<option value="${i + 1}">${n}</option>`).join('');
+}
+
+function finHtmlOpcjiKwartalow() {
+    return [1, 2, 3, 4].map(i => `<option value="${i}">${i}</option>`).join('');
+}
+
+function finHtmlOpcjiLat() {
+    const teraz = new Date().getFullYear();
+    let html = '';
+    for (let r = teraz - 5; r <= teraz + 2; r++) html += `<option value="${r}">${r}</option>`;
+    return html;
 }
 
 // Wspólny wybór zakresu: miesiąc, kwartał, rok albo własny przedział od–do.
@@ -128,34 +139,38 @@ window.zmienOkresFinanse = () => finZmienOkresWidoku('finanse', window.zaladujFi
 window.zmienOkresFinanseRozliczenie = () => finZmienOkresWidoku('finanse-roz', window.zaladujFinanseRozliczenie);
 window.zmienOkresFinanseBudzet = () => finZmienOkresWidoku('finanse-bud', window.zaladujFinanseBudzet);
 
-// Wbudowuje kontrolki okresu w zakładkach Rozliczenie i Budżet.
+// Wspólny układ: rodzaj okresu -> wartość okresu -> rok. Wszystkie pola tej samej wysokości.
 function finWbudujKontrolkiOkresu(prefix, zmienHandler, reloadHandler) {
     const kontener = document.getElementById(`${prefix}-okresy`);
     if (!kontener) return;
-    const opcje = finHtmlOpcjiMiesiecy();
+    const opcjeM = finHtmlOpcjiMiesiecy();
     kontener.innerHTML = `
-        <label for="${prefix}-okres" style="margin:0;">Okres:</label>
-        <select id="${prefix}-okres" style="width:125px; margin:0;" onchange="window.${zmienHandler}()">
-            <option value="miesiac">Miesiąc</option><option value="kwartal">Kwartał</option>
-            <option value="rok">Rok</option><option value="oddo">Od–Do</option>
-        </select>
-        <span id="${prefix}-okres-miesiac-wrap">
-            <label for="${prefix}-okres-miesiac" style="margin:0;">Miesiąc:</label>
-            <select id="${prefix}-okres-miesiac" style="width:130px; margin:0;" onchange="window.${reloadHandler}()">${opcje}</select>
-        </span>
-        <span id="${prefix}-okres-kwartal-wrap" class="hidden">
-            <label for="${prefix}-okres-kwartal" style="margin:0;">Kwartał:</label>
-            <select id="${prefix}-okres-kwartal" style="width:150px; margin:0;" onchange="window.${reloadHandler}()">
-                <option value="1">I (1–3)</option><option value="2">II (4–6)</option>
-                <option value="3">III (7–9)</option><option value="4">IV (10–12)</option>
+        <div class="finanse-okres-pole">
+            <label for="${prefix}-okres">Okres:</label>
+            <select id="${prefix}-okres" class="finanse-okres-select" onchange="window.${zmienHandler}()">
+                <option value="miesiac">Miesiąc</option><option value="kwartal">Kwartał</option>
+                <option value="rok">Rok</option><option value="oddo">Od–Do</option>
             </select>
-        </span>
-        <span id="${prefix}-okres-oddo-wrap" class="hidden">
-            <label for="${prefix}-okres-od" style="margin:0;">Od:</label>
-            <select id="${prefix}-okres-od" style="width:130px; margin:0;" onchange="window.${reloadHandler}()">${opcje}</select>
-            <label for="${prefix}-okres-do" style="margin:0;">Do:</label>
-            <select id="${prefix}-okres-do" style="width:130px; margin:0;" onchange="window.${reloadHandler}()">${opcje}</select>
-        </span>`;
+        </div>
+        <div class="finanse-okres-pole" id="${prefix}-okres-miesiac-wrap">
+            <label for="${prefix}-okres-miesiac">Miesiąc:</label>
+            <select id="${prefix}-okres-miesiac" class="finanse-okres-select" onchange="window.${reloadHandler}()">${opcjeM}</select>
+        </div>
+        <div class="finanse-okres-pole hidden" id="${prefix}-okres-kwartal-wrap">
+            <label for="${prefix}-okres-kwartal">Kwartał:</label>
+            <select id="${prefix}-okres-kwartal" class="finanse-okres-select" onchange="window.${reloadHandler}()">${finHtmlOpcjiKwartalow()}</select>
+        </div>
+        <div class="finanse-okres-pole hidden" id="${prefix}-okres-oddo-wrap">
+            <label>Od – Do:</label>
+            <div class="finanse-okres-oddo">
+                <select id="${prefix}-okres-od" class="finanse-okres-select" onchange="window.${reloadHandler}()">${opcjeM}</select>
+                <select id="${prefix}-okres-do" class="finanse-okres-select" onchange="window.${reloadHandler}()">${opcjeM}</select>
+            </div>
+        </div>
+        <div class="finanse-okres-pole">
+            <label for="${prefix}-rok">Rok:</label>
+            <select id="${prefix}-rok" class="finanse-okres-select" onchange="window.${reloadHandler}()">${finHtmlOpcjiLat()}</select>
+        </div>`;
 }
 
 /* ---------- dane prognozy ---------- */
@@ -651,20 +666,21 @@ window.przelaczTabFinanse = function(tab) {
 
 document.addEventListener('DOMContentLoaded', () => {
     const teraz = new Date();
-    const rok = String(teraz.getFullYear());
-    ['finanse-rok', 'finanse-roz-rok', 'finanse-bud-rok'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el && !el.value) el.value = rok;
-    });
-    finWbudujKontrolkiOkresu('finanse-roz', 'zmienOkresFinanseRozliczenie', 'zaladujFinanseRozliczenie');
-    finWbudujKontrolkiOkresu('finanse-bud', 'zmienOkresFinanseBudzet', 'zaladujFinanseBudzet');
-
     const miesiacBiezacy = teraz.getMonth() + 1;
+    const rokBiezacy = teraz.getFullYear();
+
+    [
+        ['finanse', 'zmienOkresFinanse', 'zaladujFinansePrognoza'],
+        ['finanse-roz', 'zmienOkresFinanseRozliczenie', 'zaladujFinanseRozliczenie'],
+        ['finanse-bud', 'zmienOkresFinanseBudzet', 'zaladujFinanseBudzet']
+    ].forEach(([prefix, zmien, reload]) => finWbudujKontrolkiOkresu(prefix, zmien, reload));
+
     const ustaw = (id, wartosc) => { const el = document.getElementById(id); if (el) el.value = String(wartosc); };
     ['finanse', 'finanse-roz', 'finanse-bud'].forEach(prefix => {
         ustaw(`${prefix}-okres-miesiac`, miesiacBiezacy);
         ustaw(`${prefix}-okres-kwartal`, Math.ceil(miesiacBiezacy / 3));
         ustaw(`${prefix}-okres-od`, 1);
         ustaw(`${prefix}-okres-do`, miesiacBiezacy);
+        ustaw(`${prefix}-rok`, rokBiezacy);
     });
 });
