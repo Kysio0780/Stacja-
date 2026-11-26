@@ -67,9 +67,13 @@ js/vendor/                  lokalne kopie jsPDF i html2canvas (generowanie PDF)
    Progi paliw: `system_ustawienia/raporty_paliwa_min`.
 7. Moduł Finanse (`js/modules/finanse.js`) prowadzi dane w trzech kolekcjach:
    `finanse_prognoza/{rok}` (parametry prognozy, nadpisania planu/wykonania i dane za rok poprzedni),
-   `finanse_rozliczenie/{rok}-{MM}` (podstawa, P1/P2, godziny UZ, stawka, wypłacona i premie sklep/SV)
+   `finanse_rozliczenie/{rok}-{MM}` (dane wg typu umowy z `uzytkownicy.umowa`: UoP — podstawa,
+   P1/P2; UZ — stawka i liczba godzin, P1/P2; tabela „Wynagrodzenia suma" liczy UoP z kosztami
+   pracodawcy 20,48%, UZ, Total i Bilans = Total - (prowizja podstawowa + premia z prognozy))
    oraz `finanse_budzet/{rok}-{MM}` (przychód i koszty). Plan i wykonanie są domyślnie pobierane
    z `plany_miesieczne` i `sprzedaz`; premia = (prognoza − próg) × stawka dla kategorii Kawa/HD/Sklep.
+   Wszystkie trzy zakładki domyślnie pokazują bieżący miesiąc; dostępne są też kwartał, rok i własny zakres od–do.
+   Parametry naliczania premii (w tym prowizja podstawowa firmy) są w zwijanym panelu.
 
 ## Reguły Firestore — czego wymaga aplikacja
 
