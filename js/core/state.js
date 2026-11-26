@@ -3,7 +3,7 @@
 
 let currentUserData = null;
 let aktualneDaneSprzatania = {};
-let aktualnyTabWiadomosci = "odebrane";
+let aktualnyTabWiadomosci = "wszystkie";
 let aktualniePodgladanaWiadomosc = null;
 let listaTowarowTps = [];
 
