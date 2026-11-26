@@ -175,4 +175,13 @@
         }
         .finanse-param-box label { margin: 0; font-size: 0.8em; color: var(--text-muted); }
         .finanse-param-box input { margin: 0; }
+        .finanse-collapsible > summary {
+            cursor: pointer;
+            font-weight: 700;
+            list-style: none;
+        }
+        .finanse-collapsible > summary::-webkit-details-marker { display: none; }
+        .finanse-collapsible > summary::before { content: '▸ '; }
+        .finanse-collapsible[open] > summary::before { content: '▾ '; }
+        .finanse-param-content { padding-top: 10px; }
 
