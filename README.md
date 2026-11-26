@@ -50,7 +50,8 @@ js/vendor/                  lokalne kopie jsPDF i html2canvas (generowanie PDF)
 | Wiadomości | Wewnętrzna poczta z załącznikami i aparatem | wszyscy |
 | Misje | Zadania dla pracowników (można przypisać wielu naraz) | wszyscy (tworzenie tylko admin) |
 | Marketing | Akcje promocyjne i wydarzenia sprzedażowe z opisem i opcjonalnym zdjęciem | wszyscy (dodawanie, edycja i usuwanie tylko admin) |
-| Pracownicy, Statystyki, Finanse | Zarządzanie pracownikami, raporty statystyczne i czyszczenie danych | tylko admin |
+| Finanse | Prognoza premii ze sprzedaży, rozliczenie wynagrodzeń (UOP/UZ, premie P1/P2) i analiza budżetu | tylko admin |
+| Pracownicy, Statystyki | Zarządzanie pracownikami i raporty statystyczne | tylko admin |
 
 ## Zasady kodu
 
@@ -64,12 +65,18 @@ js/vendor/                  lokalne kopie jsPDF i html2canvas (generowanie PDF)
 6. Raporty operacyjne zapisują się w dwóch osobnych dokumentach: `raporty_paliwa/{YYYY-MM-DD}` i
    `raporty_liczniki/{YYYY-MM-DD}`; stare `raporty_operacyjne` są czytane tylko dla zgodności wstecznej.
    Progi paliw: `system_ustawienia/raporty_paliwa_min`.
+7. Moduł Finanse (`js/modules/finanse.js`) prowadzi dane w trzech kolekcjach:
+   `finanse_prognoza/{rok}` (parametry prognozy, nadpisania planu/wykonania i dane za rok poprzedni),
+   `finanse_rozliczenie/{rok}-{MM}` (podstawa, P1/P2, godziny UZ, stawka, wypłacona i premie sklep/SV)
+   oraz `finanse_budzet/{rok}-{MM}` (przychód i koszty). Plan i wykonanie są domyślnie pobierane
+   z `plany_miesieczne` i `sprzedaz`; premia = (prognoza − próg) × stawka dla kategorii Kawa/HD/Sklep.
 
 ## Reguły Firestore — czego wymaga aplikacja
 
 - odczyt/zapis własnych dokumentów użytkownika (`preferencje_uzytkownika`, `uzytkownicy`),
 - odczyt/zapis `raporty_paliwa` i `raporty_liczniki` (także przez pracowników),
 - odczyt kolekcji `marketing` dla wszystkich, zapis tylko dla admina,
+- odczyt i zapis kolekcji `finanse_prognoza`, `finanse_rozliczenie`, `finanse_budzet` wyłącznie dla admina,
 - odczyt `grafiki`, `sprzedaz`, `potwierdzenia_obecnosci`, `misje` oraz **`raporty_operacyjne`** (statystyki liczą się w przeglądarce),
 - zapis `preferencje_uzytkownika`, `potwierdzenia_obecnosci`, `raporty_operacyjne`, `zdjecia` w kolekcjach modułów,
 - zapis `system_ustawienia` (kategorie liczeń, progi paliw) wyłącznie dla admina.
