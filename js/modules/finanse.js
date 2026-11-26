@@ -39,7 +39,7 @@ let finansePrognozaCache = {};
 /* ---------- pomocnicze ---------- */
 
 function finLiczba(wartosc) {
-    const n = Number(wartosc);
+    const n = Number(String(wartosc === null || wartosc === undefined ? '' : wartosc).replace(',', '.'));
     return isFinite(n) ? n : 0;
 }
 
@@ -81,6 +81,13 @@ function finPobierzRok(id) {
 
 function finKlasaWartosci(wartosc) {
     return wartosc >= 0 ? 'val-green' : 'val-red';
+}
+
+// Pole bez wartości pozostaje puste (zamiast 0,00), żeby od razu wpisać nową kwotę.
+function finWartoscPola(wartosc) {
+    if (wartosc === null || wartosc === undefined || wartosc === '') return '';
+    const liczba = Number(wartosc);
+    return isFinite(liczba) && liczba !== 0 ? liczba.toFixed(2) : '';
 }
 
 const FIN_MIESIACE_NAZWY = ['styczeń', 'luty', 'marzec', 'kwiecień', 'maj', 'czerwiec',
@@ -264,7 +271,7 @@ window.zaladujFinansePrognoza = async function() {
             <p class="text-muted" style="margin:0 0 8px 0;">Premia jest naliczana od nadwyżki prognozy ponad próg. Zmiany zapisują się automatycznie.</p>
             <div class="finanse-param-box" style="margin-bottom:10px;">
                 <label for="finanse-prowizja-podstawowa">Prowizja podstawowa firmy z działalności (miesięcznie):</label>
-                <input type="number" step="0.01" id="finanse-prowizja-podstawowa" value="${finLiczba(dane.parametry.prowizjaPodstawowa).toFixed(2)}"
+                <input type="text" inputmode="decimal" onfocus="this.select()" step="0.01" id="finanse-prowizja-podstawowa" value="${finWartoscPola(dane.parametry.prowizjaPodstawowa)}"
                     onchange="window.zapiszFinanseProwizjePodstawowa(this.value)">
             </div>
             <div class="grid-3">`;
@@ -273,10 +280,10 @@ window.zaladujFinansePrognoza = async function() {
             html += `<div class="finanse-param-box">
                 <strong>${kat.nazwa}</strong>
                 <label>Próg realizacji (%)</label>
-                <input type="number" step="0.1" min="0" max="200" value="${(p.prog * 100).toFixed(1)}"
+                <input type="text" inputmode="decimal" onfocus="this.select()" step="0.1" min="0" max="200" value="${(p.prog * 100).toFixed(1)}"
                     onchange="window.zapiszFinanseParametr('${kat.key}','prog',this.value)">
                 <label>Stawka premii (%)</label>
-                <input type="number" step="0.1" min="0" max="100" value="${(p.stawka * 100).toFixed(1)}"
+                <input type="text" inputmode="decimal" onfocus="this.select()" step="0.1" min="0" max="100" value="${(p.stawka * 100).toFixed(1)}"
                     onchange="window.zapiszFinanseParametr('${kat.key}','stawka',this.value)">
             </div>`;
         }
@@ -304,9 +311,9 @@ window.zaladujFinansePrognoza = async function() {
                 podsumowanie.premiaMiesiac += o.premiaMiesiac;
                 podsumowanie.premiaDoDnia += o.premiaDoDnia;
                 const edytowalne = `
-                    <td><input type="number" step="0.01" class="compact-input" value="${w.plan.toFixed(2)}"
+                    <td><input type="text" inputmode="decimal" onfocus="this.select()" step="0.01" class="compact-input" value="${finWartoscPola(w.plan)}"
                         onchange="window.zapiszFinansePrognoza('${kat.key}',${m},'plan',this.value)"></td>
-                    <td><input type="number" step="0.01" class="compact-input" value="${w.wykonanie.toFixed(2)}"
+                    <td><input type="text" inputmode="decimal" onfocus="this.select()" step="0.01" class="compact-input" value="${finWartoscPola(w.wykonanie)}"
                         onchange="window.zapiszFinansePrognoza('${kat.key}',${m},'wykonanie',this.value)"></td>`;
                 html += `<tr>
                     <td><strong>${m}</strong></td><td>${o.dni}</td><td>${o.dzien}</td>
@@ -314,7 +321,7 @@ window.zaladujFinansePrognoza = async function() {
                     <td class="${o.prognoza >= 1 ? 'val-green' : 'val-red'}">${finProcent(o.prognoza * 100)}</td>
                     <td>${finKwota(o.premiaMiesiac)}</td>
                     <td><strong>${finKwota(o.premiaDoDnia)}</strong></td>
-                    <td><input type="number" step="0.01" class="compact-input" value="${w.rokPoprzedni.toFixed(2)}"
+                    <td><input type="text" inputmode="decimal" onfocus="this.select()" step="0.01" class="compact-input" value="${finWartoscPola(w.rokPoprzedni)}"
                         onchange="window.zapiszFinansePrognoza('${kat.key}',${m},'rokPoprzedni',this.value)"></td>
                     <td>${w.rokPoprzedni > 0 ? finProcent(w.plan / w.rokPoprzedni * 100) : '—'}</td>
                     <td>${w.rokPoprzedni > 0 ? finProcent(o.wykVs * 100) : '—'}</td>
@@ -483,7 +490,7 @@ window.zaladujFinanseRozliczenie = async function() {
                 return suma + o.premiaDoDnia;
             }, 0);
             const inputPole = (pid, nazwa, wartosc) => `
-                <td><input type="number" step="0.01" class="compact-input" value="${Number(wartosc || 0).toFixed(2)}"
+                <td><input type="text" inputmode="decimal" onfocus="this.select()" step="0.01" class="compact-input" value="${finWartoscPola(wartosc)}"
                     onchange="window.zapiszFinanseRozliczenie(${miesiac},'${pid}','${nazwa}',this.value)"></td>`;
 
             html += `<h4 style="margin:18px 0 4px 0;">Miesiąc ${miesiac} / ${rok} — pula premii ${finKwota(premiaPrognozy)} zł</h4>`;
@@ -617,9 +624,9 @@ window.zaladujFinanseBudzet = async function() {
             zostajeRocznie += zostaje;
             html += `<tr>
                 <td><strong>${m}</strong></td>
-                <td><input type="number" step="0.01" class="compact-input" value="${przychod.toFixed(2)}"
+                <td><input type="text" inputmode="decimal" onfocus="this.select()" step="0.01" class="compact-input" value="${finWartoscPola(przychod)}"
                     onchange="window.zapiszFinanseBudzet(${m},'przychod',this.value)"></td>
-                ${FIN_KOSZTY.map(k => `<td><input type="number" step="0.01" class="compact-input" value="${finLiczba(koszty[k.key]).toFixed(2)}"
+                ${FIN_KOSZTY.map(k => `<td><input type="text" inputmode="decimal" onfocus="this.select()" step="0.01" class="compact-input" value="${finWartoscPola(koszty[k.key])}"
                     onchange="window.zapiszFinanseBudzet(${m},'${k.key}',this.value)"></td>`).join('')}
                 <td>${finKwota(kosztyMiesiac)}</td>
                 <td class="${finKlasaWartosci(zostaje)}"><strong>${finKwota(zostaje)}</strong></td>
