@@ -36,6 +36,63 @@
         .msg-item.unread { border-left-color: var(--danger); background: var(--preview-bg); font-weight: 600; }
         .msg-item.important { border-left-color: var(--warning); }
 
+        /* Widok czatu w wiadomościach */
+        .czat-panel { max-width: 680px; height: min(82vh, 760px); display: flex; flex-direction: column; }
+        .czat-wiadomosci {
+            flex: 1;
+            min-height: 200px;
+            overflow-y: auto;
+            background: var(--preview-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .czat-wiadomosc { display: flex; flex-direction: column; max-width: 78%; }
+        .czat-wiadomosc.out { align-self: flex-end; align-items: flex-end; }
+        .czat-wiadomosc.in { align-self: flex-start; align-items: flex-start; }
+        .czat-bubble {
+            padding: 8px 11px;
+            border-radius: 14px;
+            line-height: 1.4;
+            word-break: break-word;
+            box-shadow: var(--shadow-sm);
+        }
+        .czat-wiadomosc.out .czat-bubble { background: var(--primary); color: #ffffff; border-bottom-right-radius: 4px; }
+        .czat-wiadomosc.in .czat-bubble { background: var(--card-bg); color: var(--text-color); border-bottom-left-radius: 4px; }
+        .czat-czas { font-size: 0.7em; color: var(--text-muted); margin-top: 2px; }
+        .czat-forma { display: flex; gap: 8px; margin-top: 10px; align-items: flex-end; }
+        .czat-pole {
+            flex: 1;
+            min-height: 74px;
+            max-height: 180px;
+            resize: vertical;
+            margin: 0;
+            line-height: 1.4;
+        }
+        .czat-wyslij {
+            flex: 0 0 46px;
+            width: 46px;
+            height: 46px;
+            padding: 0;
+            margin: 0 0 2px 0;
+            border-radius: 50%;
+            font-size: 20px;
+            line-height: 1;
+        }
+        .czat-dodaj {
+            flex: 0 0 46px;
+            width: 46px;
+            height: 46px;
+            padding: 0;
+            margin: 0 0 2px 0;
+            border-radius: 50%;
+            font-size: 24px;
+            line-height: 1;
+        }
+
         /* TPSy */
         .tps-row-discounted td { background-color: var(--success-soft) !important; }
 
@@ -70,22 +127,9 @@
         .stat-wykres-opcje label { display: flex; align-items: center; gap: 4px; cursor: pointer; margin: 0; }
         .stat-wykres-opcje input { margin: 0; }
 
-        /* Tryb pełnoekranowy (kiosk) */
-        html.tryb-kiosk, body.tryb-kiosk {
-            /* Blokuje pull-to-refresh i „wyciąganie" paska narzędzi gestem. */
-            overscroll-behavior: none;
-            overscroll-behavior-x: none;
-            overscroll-behavior-y: none;
-        }
         /* Raporty operacyjne */
         .raport-sekcja.raport-ok { border-color: var(--success) !important; background: var(--success-soft); }
         .raport-sekcja.raport-blad { border-color: var(--danger) !important; background: var(--danger-soft); }
         .raport-wiersz.raport-ok { background: var(--success-soft) !important; }
         .raport-wiersz.raport-blad { background: var(--danger-soft) !important; }
 
-        body.tryb-kiosk #app-screen {
-            padding-top: max(8px, env(safe-area-inset-top));
-            padding-left: max(8px, env(safe-area-inset-left));
-            padding-right: max(8px, env(safe-area-inset-right));
-            padding-bottom: max(8px, env(safe-area-inset-bottom));
-        }
