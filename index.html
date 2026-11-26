@@ -25,7 +25,7 @@
     <link rel="stylesheet" href="css/06-grafik.css">
     <link rel="stylesheet" href="css/07-components.css">
     <link rel="stylesheet" href="css/08-modals-zoom-gallery.css">
-    <link rel="stylesheet" href="css/09-modules-misc.css?v=20261126m">
+    <link rel="stylesheet" href="css/09-modules-misc.css?v=20261126p">
     <link rel="stylesheet" href="css/10-responsive.css">
 </head>
 <body>
@@ -1070,17 +1070,24 @@
         <div id="modal-info-app" class="modal-overlay hidden" style="z-index: 1500;">
             <div class="modal-content" style="max-width: 520px;">
                 <h4>ℹ️ Instrukcja obsługi aplikacji</h4>
-                <p class="text-muted">Witamy w systemie obsługi sklepu. Podsumowanie głównych modułów:</p>
+                <p class="text-muted">Witamy w systemie obsługi sklepu. Podsumowanie dostępnych modułów:</p>
                 <ul style="font-size: 0.92em; line-height: 1.6; padding-left: 20px;">
-                    <li><strong>📊 Sprzedaż:</strong> Wprowadzanie raportów dziennych oraz analiza planów.</li>
-                    <li><strong>💰 Premia:</strong> Podgląd naliczonych premii, warunków oraz premii dodatkowych.</li>
-                    <li><strong>🧹 Sprzątanie:</strong> Weryfikacja czystości, dat ważności i zgodności z planogramem.</li>
-                    <li><strong>📋 Planogramy:</strong> Podgląd ułożenia towaru na strefach i półkach.</li>
-                    <li><strong>🎯 Misje:</strong> Indywidualne zadania przypisywane przez kierownika.</li>
-                    <li><strong>💬 Wiadomości:</strong> Wewnętrzna poczta z obsługą priorytetów i załączników.</li>
-                    <li><strong>⏳ TPSy:</strong> Kontrola kończących się terminów przydatności do spożycia.</li>
-                    <li><strong>📅 Grafik:</strong> Interaktywny grafik miesięczny, bilans godzin, urlopy i wydruk listy obecności.</li>
+                    <li><strong>📊 Sprzedaż:</strong> Raporty dzienne (Kawa, HD, Sklep) i plany miesięczne.</li>
+                    <li><strong>💰 Premia:</strong> Kalkulator premii, warunki i premie dodatkowe.</li>
+                    <li><strong>💹 Finanse <em>(tylko admin)</em>:</strong> prognoza premii ze sprzedaży, rozliczenie wynagrodzeń wg typu umowy i analiza budżetu. Okres wybierasz jako miesiąc, kwartał, rok lub własny zakres od–do.</li>
+                    <li><strong>👥 Pracownicy <em>(tylko admin)</em>:</strong> badania, sanepid, BHP oraz dane umowy — UoP lub Zlecenie (można też zostawić brak umowy), data końca albo czas nieokreślony, wynagrodzenie podstawowe / stawka godzinowa, login Akademia orłów i numer Vitay.</li>
+                    <li><strong>📣 Marketing:</strong> Akcje promocyjne i wydarzenia z opisem i opcjonalnym zdjęciem. Wpisy dodaje, edytuje i usuwa administrator.</li>
+                    <li><strong>💬 Wiadomości:</strong> Wewnętrzna poczta z wątkami, priorytetami i załącznikami.</li>
+                    <li><strong>🎯 Misje:</strong> Zadania dla pracowników przypisywane przez kierownika.</li>
+                    <li><strong>⏳ TPSy:</strong> Kontrola terminów przydatności do spożycia.</li>
+                    <li><strong>🧹 Sprzątanie:</strong> Czystość, daty ważności i zgodność z planogramem.</li>
+                    <li><strong>📋 Planogramy:</strong> Zdjęcia ułożenia towaru na półkach.</li>
+                    <li><strong>🧮 Liczenie:</strong> Stany faktyczne i historia liczeń.</li>
+                    <li><strong>⛽ Raporty:</strong> Paliwo i liczniki.</li>
+                    <li><strong>📅 Grafik:</strong> Grafik miesięczny, bilans godzin, urlopy i wydruk obecności.</li>
+                    <li><strong>📈 Statystyki <em>(tylko admin)</em>:</strong> Wykresy i zestawienia sprzedaży.</li>
                 </ul>
+                <p class="text-muted" style="margin:10px 0 0 0; font-size:0.85em;">Dostęp do aplikacji można dodatkowo zabezpieczyć odciskiem palca lub twarzą (blokada biometryczna).</p>
                 <div style="margin-top: 18px;">
                     <button onclick="window.zamknijModalInfo()" class="btn-neutral" style="margin:0;">Rozumiem</button>
                 </div>
@@ -1161,10 +1168,17 @@
                                 <label>Stawka godzinowa:</label>
                                 <input type="number" step="0.01" min="0" id="new-p-stawka" placeholder="np. 30" style="margin-bottom:0;">
                             </div>
-                            <label class="flex-row" style="margin:8px 0 0 0; font-size:0.85em;">
-                                <input type="checkbox" id="new-p-umowa-aktywna" checked style="margin:0;">
-                                Umowa aktywna
-                            </label>
+                        </div>
+                    </div>
+
+                    <div class="field-group grid-2" style="background: var(--preview-bg); margin-top: 8px;">
+                        <div>
+                            <label>Login Akademia orłów:</label>
+                            <input type="text" id="new-p-login-orly" style="margin-bottom:0;">
+                        </div>
+                        <div>
+                            <label>Numer Vitay:</label>
+                            <input type="text" id="new-p-vitay" style="margin-bottom:0;">
                         </div>
                     </div>
 
@@ -1262,10 +1276,17 @@
                             <label>Stawka godzinowa:</label>
                             <input type="number" step="0.01" min="0" id="edit-p-stawka" style="margin-bottom:0;">
                         </div>
-                        <label class="flex-row" style="margin:8px 0 0 0; font-size:0.85em;">
-                            <input type="checkbox" id="edit-p-umowa-aktywna" checked style="margin:0;">
-                            Umowa aktywna
-                        </label>
+                    </div>
+                </div>
+
+                <div class="field-group grid-2" style="background: var(--preview-bg);">
+                    <div>
+                        <label>Login Akademia orłów:</label>
+                        <input type="text" id="edit-p-login-orly" style="margin-bottom:0;">
+                    </div>
+                    <div>
+                        <label>Numer Vitay:</label>
+                        <input type="text" id="edit-p-vitay" style="margin-bottom:0;">
                     </div>
                 </div>
 
@@ -1536,10 +1557,10 @@
     <script defer src="js/modules/grafik-obecnosc.js"></script>
     <script defer src="js/modules/tps.js"></script>
     <script defer src="js/modules/premia.js"></script>
-    <script defer src="js/modules/pracownicy.js?v=20261126o"></script>
+    <script defer src="js/modules/pracownicy.js?v=20261126q"></script>
     <script defer src="js/modules/wiadomosci.js?v=20261126j"></script>
     <script defer src="js/modules/marketing.js?v=20261126b"></script>
-    <script defer src="js/modules/finanse.js?v=20261126m"></script>
+    <script defer src="js/modules/finanse.js?v=20261126q"></script>
     <script defer src="js/modules/statystyki.js?v=20261125b"></script>
     <script defer src="js/modules/misje.js"></script>
     <script defer src="js/modules/planogramy.js"></script>
