@@ -252,14 +252,15 @@ window.zaladujWiadomosci = async function() {
 };
 
 window.otworzCzat = async function(klucz, tytul) {
+    const czyAdmin = currentUserData && currentUserData.rola === 'admin';
     aktualnyCzatPartner = { klucz: String(klucz || ''), imie: tytul || 'Rozmowa', uczestnicy: [] };
     document.getElementById('czat-tytul').innerText = `💬 ${aktualnyCzatPartner.imie}`;
     window.zamknijMenuZalacznikaCzatu();
+    document.getElementById('czat-usun')?.classList.toggle('hidden', !czyAdmin);
     document.getElementById('modal-czat').classList.remove('hidden');
 
     const mojId = currentUserData ? (currentUserData.uid || currentUserData.id) : "";
     const mojeImie = currentUserData ? currentUserData.imie : "";
-    const czyAdmin = currentUserData && currentUserData.rola === 'admin';
     try {
         const snap = await getDocs(collection(db, "wiadomosci"));
         const wiadomosci = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(w => {
@@ -324,6 +325,21 @@ window.zamknijCzat = function() {
     window.zamknijMenuZalacznikaCzatu();
     document.getElementById('modal-czat').classList.add('hidden');
     window.zaladujWiadomosci();
+};
+
+window.usunCzat = async function() {
+    if (!(currentUserData && currentUserData.rola === 'admin')) return;
+    const klucz = aktualnyCzatPartner?.klucz;
+    if (!klucz) return;
+    if (!confirm(`Usunąć cały czat „${aktualnyCzatPartner.imie}"? Tej operacji nie da się cofnąć.`)) return;
+    try {
+        const snap = await getDocs(collection(db, 'wiadomosci'));
+        const doUsuniecia = snap.docs.filter(d => idWatku({ id: d.id, ...d.data() }) === klucz);
+        await Promise.all(doUsuniecia.map(d => deleteDoc(doc(db, 'wiadomosci', d.id))));
+        if (typeof window.odswiezRozmiarZdjecJesliAdmin === 'function') window.odswiezRozmiarZdjecJesliAdmin();
+        alert(`Usunięto ${doUsuniecia.length} wiadomości z czatu.`);
+        window.zamknijCzat();
+    } catch (e) { alert('Błąd usuwania czatu: ' + e.message); }
 };
 
 window.otworzMenuZalacznikaCzatu = function() {
