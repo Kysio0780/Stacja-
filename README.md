@@ -28,7 +28,7 @@ js/core/utils.js            formatowanie dat, ucieczka HTML/JS, kompresja zdję�
 js/core/ui.js               modale, dropdown, obsługa Esc / prawego przycisku
 js/core/zoom.js             podgląd i zoom zdjęć (osobna warstwa nad modalami)
 js/core/router.js           routing po hashu (#menu, #grafik, #raporty, ...)
-js/core/settings.js         motywy, rozmiar czcionki, tryb kiosku, hasło, preferencje per użytkownik
+js/core/settings.js         motywy, czcionka, hasło, preferencje per użytkownik
 js/core/storage-stats.js    licznik rozmiaru zdjęć w Firestore (widoczny dla admina)
 js/modules/*.js             jeden plik na moduł
 js/modules/auth.js          logowanie — zawsze ładowany jako OSTATNI (uruchamia aplikację)
@@ -49,6 +49,7 @@ js/vendor/                  lokalne kopie jsPDF i html2canvas (generowanie PDF)
 | Grafik | Tabela grafiku, potwierdzanie obecności, podgląd i wydruk PDF listy obecności | wszyscy (edycja tylko admin) |
 | Wiadomości | Wewnętrzna poczta z załącznikami i aparatem | wszyscy |
 | Misje | Zadania dla pracowników (można przypisać wielu naraz) | wszyscy (tworzenie tylko admin) |
+| Marketing | Akcje promocyjne i wydarzenia sprzedażowe z opisem i opcjonalnym zdjęciem | wszyscy (dodawanie, edycja i usuwanie tylko admin) |
 | Pracownicy, Statystyki, Finanse | Zarządzanie pracownikami, raporty statystyczne i czyszczenie danych | tylko admin |
 
 ## Zasady kodu
@@ -60,7 +61,6 @@ js/vendor/                  lokalne kopie jsPDF i html2canvas (generowanie PDF)
 4. Aparat (`js/modules/aparat.js`) jest współdzielony przez planogramy, wiadomości i sprzątanie — przyjmuje callback z plikiem.
 5. Preferencje (motyw, rozmiar i krój czcionki) są zapisywane per użytkownik w `preferencje_uzytkownika/{uid}`;
    `localStorage` służy tylko jako wygląd przed zalogowaniem. Dostępne kroje: Inter, Roboto, Open Sans, Lato, Montserrat, Poppins.
-   Tryb kiosku jest ustawieniem urządzenia (domyślnie włączony).
 6. Raporty operacyjne zapisują się w dwóch osobnych dokumentach: `raporty_paliwa/{YYYY-MM-DD}` i
    `raporty_liczniki/{YYYY-MM-DD}`; stare `raporty_operacyjne` są czytane tylko dla zgodności wstecznej.
    Progi paliw: `system_ustawienia/raporty_paliwa_min`.
@@ -69,6 +69,7 @@ js/vendor/                  lokalne kopie jsPDF i html2canvas (generowanie PDF)
 
 - odczyt/zapis własnych dokumentów użytkownika (`preferencje_uzytkownika`, `uzytkownicy`),
 - odczyt/zapis `raporty_paliwa` i `raporty_liczniki` (także przez pracowników),
+- odczyt kolekcji `marketing` dla wszystkich, zapis tylko dla admina,
 - odczyt `grafiki`, `sprzedaz`, `potwierdzenia_obecnosci`, `misje` oraz **`raporty_operacyjne`** (statystyki liczą się w przeglądarce),
 - zapis `preferencje_uzytkownika`, `potwierdzenia_obecnosci`, `raporty_operacyjne`, `zdjecia` w kolekcjach modułów,
 - zapis `system_ustawienia` (kategorie liczeń, progi paliw) wyłącznie dla admina.
