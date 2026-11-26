@@ -4,6 +4,7 @@
 const MARKETING_KOLEKCJA = 'marketing';
 let wybraneZdjecieMarketing = null;
 let marketingEdycjaZdjecieIstnieje = false;
+let marketingPodgladId = null;
 
 function czyAdminMarketingu() {
     return !!(currentUserData && currentUserData.rola === 'admin');
@@ -27,8 +28,7 @@ function pokazPodgladZdjeciaMarketing(base64) {
 window.zaladujMarketing = async function() {
     const kontener = document.getElementById('marketing-lista-container');
     if (!kontener) return;
-    const admin = czyAdminMarketingu();
-    document.getElementById('marketing-admin-panel')?.classList.toggle('hidden', !admin);
+    document.getElementById('marketing-admin-panel')?.classList.toggle('hidden', !czyAdminMarketingu());
     kontener.innerHTML = 'Ładowanie wpisów...';
 
     try {
@@ -46,16 +46,17 @@ window.zaladujMarketing = async function() {
         }
 
         kontener.innerHTML = `<div class="table-responsive"><table class="standard-table">
-            <tr><th>Nazwa</th><th>Obowiązuje od</th><th>Obowiązuje do</th>${admin ? '<th style="width:100px;">Akcja</th>' : ''}</tr>
+            <tr><th>Nazwa</th><th>Obowiązuje od</th><th>Obowiązuje do</th><th style="width:80px;">Zdjęcie</th></tr>
             ${wpisy.map(w => {
-                const akcje = admin ? `
-                    <button type="button" onclick="event.stopPropagation(); window.otworzModalMarketing('${ucieczkaHtml(ucieczkaJs(w.id))}')" class="btn-info btn-sm" style="margin:0 3px 0 0;" title="Edytuj">✏️</button>
-                    <button type="button" onclick="event.stopPropagation(); window.usunMarketing('${ucieczkaHtml(ucieczkaJs(w.id))}')" class="btn-danger btn-sm" style="margin:0;" title="Usuń">🗑️</button>` : '';
+                const miniatura = w.zdjecie
+                    ? `<img src="${w.zdjecie}" class="marketing-mini" style="max-width:64px; max-height:44px; border-radius:4px; cursor:pointer;"
+                            onclick="event.stopPropagation(); window.otworzZoomZdjecia('${ucieczkaJs(w.zdjecie)}')" title="Kliknij, aby powiększyć">`
+                    : '<span class="text-muted">—</span>';
                 return `<tr class="cleaning-row" onclick="window.otworzPodgladMarketing('${ucieczkaHtml(ucieczkaJs(w.id))}')">
-                    <td style="text-align:left;"><strong>${ucieczkaHtml(w.nazwa || '—')}</strong>${w.zdjecie ? ' <span class="badge badge-info">📷</span>' : ''}</td>
+                    <td style="text-align:left;"><strong>${ucieczkaHtml(w.nazwa || '—')}</strong></td>
                     <td>${formatujDateBezpiecznie(w.dataOd)}</td>
                     <td>${formatujDateBezpiecznie(w.dataDo)}</td>
-                    ${admin ? `<td style="white-space:nowrap;">${akcje}</td>` : ''}
+                    <td>${miniatura}</td>
                 </tr>`;
             }).join('')}
         </table></div>`;
@@ -170,6 +171,7 @@ window.otworzPodgladMarketing = async function(id) {
     try {
         const snap = await getDoc(doc(db, MARKETING_KOLEKCJA, id));
         if (!snap.exists()) return alert('Nie znaleziono wpisu.');
+        marketingPodgladId = id;
         const w = snap.data();
         document.getElementById('marketing-podglad-tytul').innerText = `📣 ${w.nazwa || ''}`;
         document.getElementById('marketing-podglad-okres').innerHTML =
@@ -179,10 +181,28 @@ window.otworzPodgladMarketing = async function(id) {
             ? `<img src="${w.zdjecie}" style="max-width:100%; max-height:320px; border-radius:var(--radius-sm); cursor:pointer;"
                  onclick="window.otworzZoomZdjecia('${ucieczkaJs(w.zdjecie)}')" title="Kliknij, aby powiększyć">`
             : '';
+        const admin = czyAdminMarketingu();
+        document.getElementById('marketing-podglad-edytuj')?.classList.toggle('hidden', !admin);
+        document.getElementById('marketing-podglad-usun')?.classList.toggle('hidden', !admin);
         document.getElementById('modal-marketing-podglad').classList.remove('hidden');
     } catch (e) { alert('Błąd wczytania wpisu: ' + e.message); }
 };
 
+window.edytujMarketingZPodgladu = function() {
+    if (!marketingPodgladId) return;
+    const id = marketingPodgladId;
+    window.zamknijPodgladMarketing();
+    window.otworzModalMarketing(id);
+};
+
+window.usunMarketingZPodgladu = async function() {
+    if (!marketingPodgladId) return;
+    const id = marketingPodgladId;
+    window.zamknijPodgladMarketing();
+    await window.usunMarketing(id);
+};
+
 window.zamknijPodgladMarketing = function() {
     document.getElementById('modal-marketing-podglad').classList.add('hidden');
+    marketingPodgladId = null;
 };
