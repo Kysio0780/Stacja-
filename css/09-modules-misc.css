@@ -134,6 +134,25 @@
         .raport-wiersz.raport-blad { background: var(--danger-soft) !important; }
 
         /* Finanse */
+        .finanse-okresy {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-end;
+            gap: 10px 12px;
+            margin: 10px 0;
+        }
+        .finanse-okres-pole { display: flex; flex-direction: column; gap: 4px; }
+        .finanse-okres-pole label { margin: 0; font-size: 0.8em; color: var(--text-muted); }
+        .finanse-okresy .finanse-okres-select {
+            height: 38px;
+            width: 142px;
+            padding: 6px 8px;
+            margin: 0;
+            box-sizing: border-box;
+        }
+        .finanse-okres-oddo { display: flex; gap: 6px; }
+        .finanse-okres-oddo .finanse-okres-select { width: 112px; }
+
         .finanse-tabs {
             display: flex;
             flex-wrap: wrap;
