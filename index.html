@@ -429,7 +429,10 @@
                     <textarea id="czat-tresc" class="czat-pole" placeholder="Napisz wiadomość..." onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault(); window.wyslijWiadomoscWWatku();}"></textarea>
                     <button onclick="window.wyslijWiadomoscWWatku()" class="czat-wyslij" title="Wyślij" aria-label="Wyślij">➤</button>
                 </div>
-                <button onclick="window.zamknijCzat()" class="btn-neutral" style="margin:8px 0 0 0;">Zamknij</button>
+                <div class="flex-row" style="justify-content:space-between; margin-top:8px;">
+                    <button id="czat-usun" onclick="window.usunCzat()" class="btn-danger hidden" style="margin:0;">🗑️ Usuń cały czat</button>
+                    <button onclick="window.zamknijCzat()" class="btn-neutral" style="margin:0 0 0 auto;">Zamknij</button>
+                </div>
             </div>
         </div>
 
@@ -1395,7 +1398,7 @@
     <script defer src="js/modules/tps.js"></script>
     <script defer src="js/modules/premia.js"></script>
     <script defer src="js/modules/pracownicy.js"></script>
-    <script defer src="js/modules/wiadomosci.js?v=20261126h"></script>
+    <script defer src="js/modules/wiadomosci.js?v=20261126j"></script>
     <script defer src="js/modules/statystyki.js?v=20261125b"></script>
     <script defer src="js/modules/misje.js"></script>
     <script defer src="js/modules/planogramy.js"></script>
