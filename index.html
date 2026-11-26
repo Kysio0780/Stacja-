@@ -1437,6 +1437,57 @@
                     <label for="finanse-rok" style="margin:0;">Rok:</label>
                     <input type="number" id="finanse-rok" min="2000" max="2100" style="width:90px; margin:0;"
                         onchange="window.zaladujFinansePrognoza()">
+                    <label for="finanse-okres" style="margin:0;">Okres:</label>
+                    <select id="finanse-okres" style="width:125px; margin:0;" onchange="window.zmienOkresFinanse()">
+                        <option value="miesiac">Miesiąc</option>
+                        <option value="kwartal">Kwartał</option>
+                        <option value="rok">Rok</option>
+                        <option value="oddo">Od–Do</option>
+                    </select>
+                    <span id="finanse-okres-miesiac-wrap">
+                        <label for="finanse-okres-miesiac" style="margin:0;">Miesiąc:</label>
+                        <select id="finanse-okres-miesiac" style="width:130px; margin:0;"
+                            onchange="window.zaladujFinansePrognoza()">
+                            <option value="1">1 — styczeń</option><option value="2">2 — luty</option>
+                            <option value="3">3 — marzec</option><option value="4">4 — kwiecień</option>
+                            <option value="5">5 — maj</option><option value="6">6 — czerwiec</option>
+                            <option value="7">7 — lipiec</option><option value="8">8 — sierpień</option>
+                            <option value="9">9 — wrzesień</option><option value="10">10 — październik</option>
+                            <option value="11">11 — listopad</option><option value="12">12 — grudzień</option>
+                        </select>
+                    </span>
+                    <span id="finanse-okres-kwartal-wrap" class="hidden">
+                        <label for="finanse-okres-kwartal" style="margin:0;">Kwartał:</label>
+                        <select id="finanse-okres-kwartal" style="width:150px; margin:0;"
+                            onchange="window.zaladujFinansePrognoza()">
+                            <option value="1">I (1–3)</option>
+                            <option value="2">II (4–6)</option>
+                            <option value="3">III (7–9)</option>
+                            <option value="4">IV (10–12)</option>
+                        </select>
+                    </span>
+                    <span id="finanse-okres-oddo-wrap" class="hidden">
+                        <label for="finanse-okres-od" style="margin:0;">Od:</label>
+                        <select id="finanse-okres-od" style="width:130px; margin:0;"
+                            onchange="window.zaladujFinansePrognoza()">
+                            <option value="1">1 — styczeń</option><option value="2">2 — luty</option>
+                            <option value="3">3 — marzec</option><option value="4">4 — kwiecień</option>
+                            <option value="5">5 — maj</option><option value="6">6 — czerwiec</option>
+                            <option value="7">7 — lipiec</option><option value="8">8 — sierpień</option>
+                            <option value="9">9 — wrzesień</option><option value="10">10 — październik</option>
+                            <option value="11">11 — listopad</option><option value="12">12 — grudzień</option>
+                        </select>
+                        <label for="finanse-okres-do" style="margin:0;">Do:</label>
+                        <select id="finanse-okres-do" style="width:130px; margin:0;"
+                            onchange="window.zaladujFinansePrognoza()">
+                            <option value="1">1 — styczeń</option><option value="2">2 — luty</option>
+                            <option value="3">3 — marzec</option><option value="4">4 — kwiecień</option>
+                            <option value="5">5 — maj</option><option value="6">6 — czerwiec</option>
+                            <option value="7">7 — lipiec</option><option value="8">8 — sierpień</option>
+                            <option value="9">9 — wrzesień</option><option value="10">10 — październik</option>
+                            <option value="11">11 — listopad</option><option value="12">12 — grudzień</option>
+                        </select>
+                    </span>
                 </div>
                 <div id="finanse-prognoza-container">Ładowanie danych...</div>
             </div>
@@ -1446,23 +1497,8 @@
                     <label for="finanse-roz-rok" style="margin:0;">Rok:</label>
                     <input type="number" id="finanse-roz-rok" min="2000" max="2100" style="width:90px; margin:0;"
                         onchange="window.zaladujFinanseRozliczenie()">
-                    <label for="finanse-roz-miesiac" style="margin:0;">Miesiąc:</label>
-                    <select id="finanse-roz-miesiac" style="width:110px; margin:0;"
-                        onchange="window.zaladujFinanseRozliczenie()">
-                        <option value="1">1 — styczeń</option>
-                        <option value="2">2 — luty</option>
-                        <option value="3">3 — marzec</option>
-                        <option value="4">4 — kwiecień</option>
-                        <option value="5">5 — maj</option>
-                        <option value="6">6 — czerwiec</option>
-                        <option value="7">7 — lipiec</option>
-                        <option value="8">8 — sierpień</option>
-                        <option value="9">9 — wrzesień</option>
-                        <option value="10">10 — październik</option>
-                        <option value="11">11 — listopad</option>
-                        <option value="12">12 — grudzień</option>
-                    </select>
                 </div>
+                <div class="flex-row" id="finanse-roz-okresy" style="margin:10px 0;"></div>
                 <div id="finanse-rozliczenie-container">Ładowanie danych...</div>
             </div>
 
@@ -1472,6 +1508,7 @@
                     <input type="number" id="finanse-bud-rok" min="2000" max="2100" style="width:90px; margin:0;"
                         onchange="window.zaladujFinanseBudzet()">
                 </div>
+                <div class="flex-row" id="finanse-bud-okresy" style="margin:10px 0;"></div>
                 <div id="finanse-budzet-container">Ładowanie danych...</div>
             </div>
         </div>
@@ -1515,7 +1552,7 @@
     <script defer src="js/modules/pracownicy.js"></script>
     <script defer src="js/modules/wiadomosci.js?v=20261126j"></script>
     <script defer src="js/modules/marketing.js?v=20261126b"></script>
-    <script defer src="js/modules/finanse.js?v=20261126h"></script>
+    <script defer src="js/modules/finanse.js?v=20261126l"></script>
     <script defer src="js/modules/statystyki.js?v=20261125b"></script>
     <script defer src="js/modules/misje.js"></script>
     <script defer src="js/modules/planogramy.js"></script>
