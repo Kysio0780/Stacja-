@@ -92,7 +92,10 @@ Bez odpowiednich reguł zapytania listujące (`getDocs`) zostaną odrzucone — 
 
 ## Aplikacja Android (APK)
 
-Projekt jest opakowany w **Capacitor** — dzięki temu działa jako osobna aplikacja z własną ikoną
+Nazwa aplikacji na pulpicie (launcher) to **SPapp** (`capacitor.config.json` i `strings.xml` w workflow).
+Obecna ikona to czerwone koło z białym konturem stacji paliw (`assets/icon.svg` → `icon.png`).
+
+Projekt jest opakowany w **Capacitor** - dzięki temu działa jako osobna aplikacja z własną ikoną
 i bez paska przeglądarki (wnętrze to systemowy WebView, nie przeglądarka internetowa).
 
 - `capacitor.config.json` — identyfikator `pl.sklepapp.stacja`, `webDir: www`,
