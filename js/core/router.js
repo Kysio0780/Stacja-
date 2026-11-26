@@ -4,7 +4,7 @@
 /* ROUTING */
 window.addEventListener("hashchange", () => {
     const hash = window.location.hash;
-    ['modul-sprzedaz', 'modul-premia', 'modul-grafik', 'modul-pracownicy', 'modul-sprzatanie', 'modul-planogram', 'modul-misje', 'modul-statystyki', 'modul-wiadomosci', 'modul-tpsy', 'modul-liczenie', 'modul-raporty', 'modul-finanse', 'menu-tiles'].forEach(id => {
+    ['modul-sprzedaz', 'modul-premia', 'modul-grafik', 'modul-pracownicy', 'modul-sprzatanie', 'modul-planogram', 'modul-misje', 'modul-statystyki', 'modul-wiadomosci', 'modul-marketing', 'modul-tpsy', 'modul-liczenie', 'modul-raporty', 'modul-finanse', 'menu-tiles'].forEach(id => {
         document.getElementById(id).classList.add('hidden');
     });
 
@@ -57,6 +57,9 @@ window.addEventListener("hashchange", () => {
         document.getElementById('modul-wiadomosci').classList.remove('hidden');
         document.getElementById('tab-wszystkie').classList.toggle('hidden', !(currentUserData && currentUserData.rola === 'admin'));
         window.zaladujWiadomosci();
+    } else if (hash === "#marketing") {
+        document.getElementById('modul-marketing').classList.remove('hidden');
+        window.zaladujMarketing();
     } else if (hash === "#sprzatanie") {
         document.getElementById('modul-sprzatanie').classList.remove('hidden');
         const b = pobierzBiezacyOkresSystemowy();
