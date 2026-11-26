@@ -51,7 +51,8 @@ js/vendor/                  lokalne kopie jsPDF i html2canvas (generowanie PDF)
 | Misje | Zadania dla pracowników (można przypisać wielu naraz) | wszyscy (tworzenie tylko admin) |
 | Marketing | Akcje promocyjne i wydarzenia sprzedażowe z opisem i opcjonalnym zdjęciem | wszyscy (dodawanie, edycja i usuwanie tylko admin) |
 | Finanse | Prognoza premii ze sprzedaży, rozliczenie wynagrodzeń (UOP/UZ, premie P1/P2) i analiza budżetu | tylko admin |
-| Pracownicy, Statystyki | Zarządzanie pracownikami i raporty statystyczne | tylko admin |
+| Pracownicy | Dane pracowników: typ umowy (UoP / Zlecenie / brak — admin), data końca lub czas nieokreślony, wynagrodzenie podstawowe lub stawka godzinowa i flaga umowy aktywnej | tylko admin |
+| Statystyki | Raporty statystyczne | tylko admin |
 
 ## Zasady kodu
 
