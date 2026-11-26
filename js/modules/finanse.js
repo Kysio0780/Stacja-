@@ -83,6 +83,81 @@ function finKlasaWartosci(wartosc) {
     return wartosc >= 0 ? 'val-green' : 'val-red';
 }
 
+const FIN_MIESIACE_NAZWY = ['styczeń', 'luty', 'marzec', 'kwiecień', 'maj', 'czerwiec',
+    'lipiec', 'sierpień', 'wrzesień', 'październik', 'listopad', 'grudzień'];
+
+function finHtmlOpcjiMiesiecy() {
+    return FIN_MIESIACE_NAZWY.map((n, i) => `<option value="${i + 1}">${i + 1} — ${n}</option>`).join('');
+}
+
+// Wspólny wybór zakresu: miesiąc, kwartał, rok albo własny przedział od–do.
+function finPobierzOkres(prefix) {
+    const rodzaj = document.getElementById(`${prefix}-okres`)?.value || 'miesiac';
+    if (rodzaj === 'rok') {
+        return { miesiace: Array.from({ length: 12 }, (_, i) => i + 1), etykieta: 'ROK' };
+    }
+    if (rodzaj === 'kwartal') {
+        const kwartal = Number(document.getElementById(`${prefix}-okres-kwartal`)?.value) || 1;
+        return { miesiace: [1, 2, 3].map(i => (kwartal - 1) * 3 + i), etykieta: `KWARTAŁ ${kwartal}` };
+    }
+    if (rodzaj === 'oddo') {
+        let od = Number(document.getElementById(`${prefix}-okres-od`)?.value) || 1;
+        let doMiesiaca = Number(document.getElementById(`${prefix}-okres-do`)?.value) || 12;
+        if (od > doMiesiaca) { const tmp = od; od = doMiesiaca; doMiesiaca = tmp; }
+        const miesiace = [];
+        for (let m = od; m <= doMiesiaca; m++) miesiace.push(m);
+        return { miesiace, etykieta: `OD ${od} DO ${doMiesiaca}` };
+    }
+    const miesiac = Number(document.getElementById(`${prefix}-okres-miesiac`)?.value) || (new Date().getMonth() + 1);
+    return { miesiace: [miesiac], etykieta: 'MIESIĄC' };
+}
+
+function finPobierzOkresPrognozy() {
+    return finPobierzOkres('finanse');
+}
+
+function finZmienOkresWidoku(prefix, loader) {
+    const rodzaj = document.getElementById(`${prefix}-okres`)?.value || 'miesiac';
+    ['miesiac', 'kwartal', 'oddo'].forEach(nazwa => {
+        document.getElementById(`${prefix}-okres-${nazwa}-wrap`)?.classList.toggle('hidden', rodzaj !== nazwa);
+    });
+    loader();
+}
+
+window.zmienOkresFinanse = () => finZmienOkresWidoku('finanse', window.zaladujFinansePrognoza);
+window.zmienOkresFinanseRozliczenie = () => finZmienOkresWidoku('finanse-roz', window.zaladujFinanseRozliczenie);
+window.zmienOkresFinanseBudzet = () => finZmienOkresWidoku('finanse-bud', window.zaladujFinanseBudzet);
+
+// Wbudowuje kontrolki okresu w zakładkach Rozliczenie i Budżet.
+function finWbudujKontrolkiOkresu(prefix, zmienHandler, reloadHandler) {
+    const kontener = document.getElementById(`${prefix}-okresy`);
+    if (!kontener) return;
+    const opcje = finHtmlOpcjiMiesiecy();
+    kontener.innerHTML = `
+        <label for="${prefix}-okres" style="margin:0;">Okres:</label>
+        <select id="${prefix}-okres" style="width:125px; margin:0;" onchange="window.${zmienHandler}()">
+            <option value="miesiac">Miesiąc</option><option value="kwartal">Kwartał</option>
+            <option value="rok">Rok</option><option value="oddo">Od–Do</option>
+        </select>
+        <span id="${prefix}-okres-miesiac-wrap">
+            <label for="${prefix}-okres-miesiac" style="margin:0;">Miesiąc:</label>
+            <select id="${prefix}-okres-miesiac" style="width:130px; margin:0;" onchange="window.${reloadHandler}()">${opcje}</select>
+        </span>
+        <span id="${prefix}-okres-kwartal-wrap" class="hidden">
+            <label for="${prefix}-okres-kwartal" style="margin:0;">Kwartał:</label>
+            <select id="${prefix}-okres-kwartal" style="width:150px; margin:0;" onchange="window.${reloadHandler}()">
+                <option value="1">I (1–3)</option><option value="2">II (4–6)</option>
+                <option value="3">III (7–9)</option><option value="4">IV (10–12)</option>
+            </select>
+        </span>
+        <span id="${prefix}-okres-oddo-wrap" class="hidden">
+            <label for="${prefix}-okres-od" style="margin:0;">Od:</label>
+            <select id="${prefix}-okres-od" style="width:130px; margin:0;" onchange="window.${reloadHandler}()">${opcje}</select>
+            <label for="${prefix}-okres-do" style="margin:0;">Do:</label>
+            <select id="${prefix}-okres-do" style="width:130px; margin:0;" onchange="window.${reloadHandler}()">${opcje}</select>
+        </span>`;
+}
+
 /* ---------- dane prognozy ---------- */
 
 async function finPobierzDanePrognozy(rok, wymus = false) {
@@ -101,6 +176,9 @@ async function finPobierzDanePrognozy(rok, wymus = false) {
     if (sprzedazSnap) sprzedazSnap.forEach(d => { sprzedaz[d.id] = d.data(); });
 
     const dane = { parametry: {}, kategorie: {} };
+    const parametrNadpisany = nadpisania.parametry || {};
+    dane.parametry.prowizjaPodstawowa = parametrNadpisany.prowizjaPodstawowa == null
+        ? 0 : finLiczba(parametrNadpisany.prowizjaPodstawowa);
     for (const kat of FIN_KATEGORIE) {
         const parametr = (nadpisania.parametry && nadpisania.parametry[kat.key]) || {};
         dane.parametry[kat.key] = {
@@ -159,14 +237,21 @@ window.zaladujFinansePrognoza = async function() {
     const kontener = document.getElementById('finanse-prognoza-container');
     if (!kontener) return;
     const rok = finPobierzRok('finanse-rok');
+    const okres = finPobierzOkresPrognozy();
     kontener.innerHTML = 'Ładowanie danych...';
     try {
         const dane = await finPobierzDanePrognozy(rok, true);
         let html = '';
 
-        html += `<div class="finanse-panel">
-            <div class="finanse-panel-title">⚙️ Parametry naliczania premii</div>
+        html += `<details class="finanse-panel finanse-collapsible">
+            <summary>⚙️ Parametry naliczania premii <span class="text-muted">(kliknij, aby rozwinąć)</span></summary>
+            <div class="finanse-param-content">
             <p class="text-muted" style="margin:0 0 8px 0;">Premia jest naliczana od nadwyżki prognozy ponad próg. Zmiany zapisują się automatycznie.</p>
+            <div class="finanse-param-box" style="margin-bottom:10px;">
+                <label for="finanse-prowizja-podstawowa">Prowizja podstawowa firmy z działalności (miesięcznie):</label>
+                <input type="number" step="0.01" id="finanse-prowizja-podstawowa" value="${finLiczba(dane.parametry.prowizjaPodstawowa).toFixed(2)}"
+                    onchange="window.zapiszFinanseProwizjePodstawowa(this.value)">
+            </div>
             <div class="grid-3">`;
         for (const kat of FIN_KATEGORIE) {
             const p = dane.parametry[kat.key];
@@ -180,9 +265,8 @@ window.zaladujFinansePrognoza = async function() {
                     onchange="window.zapiszFinanseParametr('${kat.key}','stawka',this.value)">
             </div>`;
         }
-        html += `</div>
-            <button onclick="window.finPobierzZeSprzedazy()" class="btn-info" style="margin-top:10px;">🔄 Pobierz plan i wykonanie ze Sprzedaży</button>
-        </div>`;
+        html += `</div></div></details>
+        <button onclick="window.finPobierzZeSprzedazy()" class="btn-info" style="margin:10px 0;">🔄 Pobierz plan i wykonanie ze Sprzedaży</button>`;
 
         const sumy = { plan: 0, wykonanie: 0, rokPoprzedni: 0, premiaMiesiac: 0, premiaDoDnia: 0 };
         for (const kat of FIN_KATEGORIE) {
@@ -196,7 +280,7 @@ window.zaladujFinansePrognoza = async function() {
                     <th>Plan/R-1</th><th>Wyk/R-1</th><th>Wyk/dzień</th><th>Cel/dzień</th>
                 </tr>`;
             const podsumowanie = { plan: 0, wykonanie: 0, rokPoprzedni: 0, premiaMiesiac: 0, premiaDoDnia: 0 };
-            for (let m = 1; m <= 12; m++) {
+            for (const m of okres.miesiace) {
                 const w = dane.kategorie[kat.key][m];
                 const o = finObliczMiesiac(w, m, parametr, rok);
                 podsumowanie.plan += w.plan;
@@ -225,7 +309,7 @@ window.zaladujFinansePrognoza = async function() {
             }
             const progRoczna = podsumowanie.plan > 0 ? (podsumowanie.wykonanie / podsumowanie.plan) * 100 : 0;
             html += `<tr class="sum-row">
-                <td>ROK</td><td>—</td><td>—</td>
+                <td>${okres.etykieta}</td><td>—</td><td>—</td>
                 <td>${finKwota(podsumowanie.plan)}</td>
                 <td>${finKwota(podsumowanie.wykonanie)}</td>
                 <td>${finProcent(progRoczna)}</td>
@@ -239,10 +323,10 @@ window.zaladujFinansePrognoza = async function() {
             Object.keys(sumy).forEach(k => { sumy[k] += podsumowanie[k]; });
         }
 
-        html += `<h4 style="margin:18px 0 4px 0;">📊 Podsumowanie premii — wszystkie kategorie</h4>
+        html += `<h4 style="margin:18px 0 4px 0;">📊 Podsumowanie premii — wszystkie kategorie (${okres.etykieta})</h4>
         <div class="table-responsive"><table class="month-table">
             <tr><th>Miesiąc</th><th>Premia prognoza (pełny miesiąc)</th><th>Premia do dnia</th></tr>`;
-        for (let m = 1; m <= 12; m++) {
+        for (const m of okres.miesiace) {
             let premiaMiesiac = 0, premiaDoDnia = 0;
             for (const kat of FIN_KATEGORIE) {
                 const o = finObliczMiesiac(dane.kategorie[kat.key][m], m, dane.parametry[kat.key], rok);
@@ -251,7 +335,7 @@ window.zaladujFinansePrognoza = async function() {
             }
             html += `<tr><td>${m}</td><td>${finKwota(premiaMiesiac)}</td><td><strong>${finKwota(premiaDoDnia)}</strong></td></tr>`;
         }
-        html += `<tr class="sum-row"><td>ROK</td><td>${finKwota(sumy.premiaMiesiac)}</td><td>${finKwota(sumy.premiaDoDnia)}</td></tr>
+        html += `<tr class="sum-row"><td>${okres.etykieta}</td><td>${finKwota(sumy.premiaMiesiac)}</td><td>${finKwota(sumy.premiaDoDnia)}</td></tr>
         </table></div>`;
 
         kontener.innerHTML = html;
@@ -282,6 +366,16 @@ window.zapiszFinanseParametr = async function(kat, pole, wartosc) {
     } catch (e) { alert('Błąd zapisu parametrów: ' + e.message); }
 };
 
+window.zapiszFinanseProwizjePodstawowa = async function(wartosc) {
+    const rok = finPobierzRok('finanse-rok');
+    try {
+        await setDoc(doc(db, FIN_KOLEKCJA_PROGNOZA, String(rok)), {
+            parametry: { prowizjaPodstawowa: Math.max(0, finLiczba(wartosc)) }
+        }, { merge: true });
+        await window.zaladujFinansePrognoza();
+    } catch (e) { alert('Błąd zapisu prowizji podstawowej: ' + e.message); }
+};
+
 window.finPobierzZeSprzedazy = async function() {
     const rok = finPobierzRok('finanse-rok');
     const dane = {};
@@ -304,113 +398,117 @@ async function finPobierzRozliczenie(rok, miesiac) {
     return snap && snap.exists() ? snap.data() : {};
 }
 
-function finPodsumujPracownika(d) {
-    const podstawa = finLiczba(d.podstawa);
+// Koszty pracodawcy od wynagrodzeń UoP (20,48% — mnożnik z arkusza Premie2026).
+const FIN_KOSZTY_PRACODAWCY = 1.2048;
+
+// Rodzaj umowy jest pobierany z modułu Pracownicy (pole `umowa`: UoP lub Zlecenie).
+function finCzyZlecenie(pracownik) {
+    const umowa = String((pracownik && pracownik.umowa) || 'UoP').toLowerCase();
+    return umowa.includes('zlecen') || umowa === 'uz';
+}
+
+function finWynagrodzeniePracownika(d, czyZlecenie) {
     const p1 = finLiczba(d.p1);
     const p2 = finLiczba(d.p2);
     const premia = p1 + p2;
-    const uop = podstawa + premia;
-    const uz = finLiczba(d.godziny) * finLiczba(d.stawka);
-    const razem = uop + uz;
-    return { podstawa, p1, p2, premia, uop, uz, razem, wyplacona: finLiczba(d.wyplacona) };
+    const podstawa = czyZlecenie ? 0 : finLiczba(d.podstawa);
+    const stawka = finLiczba(d.stawka);
+    const godziny = finLiczba(d.godziny);
+    const wynagrodzenieZlecenie = czyZlecenie ? stawka * godziny : 0;
+    return {
+        p1, p2, premia, podstawa, stawka, godziny, wynagrodzenieZlecenie,
+        suma: podstawa + wynagrodzenieZlecenie + premia
+    };
 }
 
 window.zaladujFinanseRozliczenie = async function() {
     const kontener = document.getElementById('finanse-rozliczenie-container');
     if (!kontener) return;
     const rok = finPobierzRok('finanse-roz-rok');
-    const miesiac = Number(document.getElementById('finanse-roz-miesiac').value) || 1;
+    const okres = finPobierzOkres('finanse-roz');
     kontener.innerHTML = 'Ładowanie danych...';
     try {
-        const [dane, pracownicy, prognoza] = await Promise.all([
-            finPobierzRozliczenie(rok, miesiac),
+        const [daneRozliczen, pracownicy, prognoza] = await Promise.all([
+            Promise.all(okres.miesiace.map(m => finPobierzRozliczenie(rok, m))),
             pobierzListePracownikow().catch(() => []),
             finPobierzDanePrognozy(rok)
         ]);
-
-        const premiaPrognozy = FIN_KATEGORIE.reduce((suma, kat) => {
-            const o = finObliczMiesiac(prognoza.kategorie[kat.key][miesiac], miesiac, prognoza.parametry[kat.key], rok);
-            return suma + o.premiaDoDnia;
-        }, 0);
-        const pracownicyDane = dane.pracownicy || {};
-        const premie = dane.premie || {};
+        const prowizjaPodstawowa = finLiczba(prognoza.parametry.prowizjaPodstawowa);
+        const pracownicyUop = pracownicy.filter(p => !finCzyZlecenie(p));
+        const pracownicyUz = pracownicy.filter(p => finCzyZlecenie(p));
 
         let html = `<div class="finanse-panel">
-            <div class="finanse-panel-title">🧾 Rozliczenie za miesiąc ${miesiac} / ${rok}</div>
-            <p class="text-muted" style="margin:0;">Pula premii z prognozy sprzedaży do dnia: <strong>${finKwota(premiaPrognozy)} zł</strong>.
-            Podział premii (P1 i P2) dla każdego pracownika wpisuje administrator.</p>
+            <div class="finanse-panel-title">🧾 Rozliczenie wynagrodzeń — ${okres.etykieta} / ${rok}</div>
+            <p class="text-muted" style="margin:0;">Prowizja podstawowa firmy z działalności:
+            <strong>${finKwota(prowizjaPodstawowa)} zł/mies.</strong> Podział premii (P1 i P2) wpisuje administrator.</p>
         </div>`;
 
-        html += `<div class="table-responsive"><table class="month-table">
-            <tr>
-                <th>Pracownik</th><th>Podstawa (UOP)</th>
-                <th>P1</th><th>P2</th><th>Premia razem</th><th>Wynagrodzenie (UOP)</th>
-                <th>UZ godz.</th><th>Stawka/h</th><th>UZ wynagr.</th>
-                <th>Razem</th><th>Wypłacona</th><th>Różnica</th>
-            </tr>`;
-        const sumy = { podstawa: 0, p1: 0, p2: 0, premia: 0, uop: 0, uz: 0, razem: 0, wyplacona: 0 };
-        for (const p of pracownicy) {
-            const d = pracownicyDane[p.id] || {};
-            const s = finPodsumujPracownika(d);
-            Object.keys(sumy).forEach(k => { sumy[k] += s[k]; });
-            const pid = ucieczkaJs(p.id);
-            const pole = (nazwa, wartosc, step = '0.01') => `
-                <td><input type="number" step="${step}" class="compact-input" value="${Number(wartosc || 0).toFixed(2)}"
-                    onchange="window.zapiszFinanseRozliczenie('${pid}','${nazwa}',this.value)"></td>`;
-            html += `<tr>
-                <td style="text-align:left;"><strong>${ucieczkaHtml(p.imie || p.id)}</strong></td>
-                ${pole('podstawa', s.podstawa)}
-                ${pole('p1', s.p1)}${pole('p2', s.p2)}
-                <td>${finKwota(s.premia)}</td>
-                <td>${finKwota(s.uop)}</td>
-                ${pole('godziny', finLiczba(d.godziny))}${pole('stawka', finLiczba(d.stawka))}
-                <td>${finKwota(s.uz)}</td>
-                <td><strong>${finKwota(s.razem)}</strong></td>
-                ${pole('wyplacona', s.wyplacona)}
-                <td class="${finKlasaWartosci(s.razem - s.wyplacona)}">${finKwota(s.razem - s.wyplacona)}</td>
-            </tr>`;
-        }
-        html += `<tr class="sum-row">
-            <td>SUMA</td>
-            <td>${finKwota(sumy.podstawa)}</td>
-            <td>${finKwota(sumy.p1)}</td><td>${finKwota(sumy.p2)}</td>
-            <td>${finKwota(sumy.premia)}</td><td>${finKwota(sumy.uop)}</td>
-            <td>—</td><td>—</td><td>${finKwota(sumy.uz)}</td>
-            <td>${finKwota(sumy.razem)}</td><td>${finKwota(sumy.wyplacona)}</td>
-            <td class="${finKlasaWartosci(sumy.razem - sumy.wyplacona)}">${finKwota(sumy.razem - sumy.wyplacona)}</td>
-        </tr></table></div>`;
+        okres.miesiace.forEach((miesiac, idx) => {
+            const pracownicyDane = (daneRozliczen[idx] || {}).pracownicy || {};
+            const premiaPrognozy = FIN_KATEGORIE.reduce((suma, kat) => {
+                const o = finObliczMiesiac(prognoza.kategorie[kat.key][miesiac], miesiac, prognoza.parametry[kat.key], rok);
+                return suma + o.premiaDoDnia;
+            }, 0);
+            const inputPole = (pid, nazwa, wartosc) => `
+                <td><input type="number" step="0.01" class="compact-input" value="${Number(wartosc || 0).toFixed(2)}"
+                    onchange="window.zapiszFinanseRozliczenie(${miesiac},'${pid}','${nazwa}',this.value)"></td>`;
 
-        html += `<h4 style="margin:18px 0 4px 0;">💳 Premie i rozliczenie wypłaty</h4>
-        <div class="table-responsive"><table class="month-table">
-            <tr><th>Premia sklep</th><th>Premia SV</th><th>Razem do wypłaty</th><th>Wypłacona</th><th>Różnica</th></tr>
-            <tr>
-                <td><input type="number" step="0.01" class="compact-input" value="${finLiczba(premie.sklep).toFixed(2)}"
-                    onchange="window.zapiszFinansePremie('sklep',this.value)"></td>
-                <td><input type="number" step="0.01" class="compact-input" value="${finLiczba(premie.sv).toFixed(2)}"
-                    onchange="window.zapiszFinansePremie('sv',this.value)"></td>
-                <td>${finKwota(sumy.razem + finLiczba(premie.sklep) + finLiczba(premie.sv))}</td>
-                <td><input type="number" step="0.01" class="compact-input" value="${finLiczba(premie.wyplacona).toFixed(2)}"
-                    onchange="window.zapiszFinansePremie('wyplacona',this.value)"></td>
-                <td class="${finKlasaWartosci(sumy.razem + finLiczba(premie.sklep) + finLiczba(premie.sv) - finLiczba(premie.wyplacona))}">
-                    ${finKwota(sumy.razem + finLiczba(premie.sklep) + finLiczba(premie.sv) - finLiczba(premie.wyplacona))}
-                </td>
-            </tr>
-        </table></div>`;
+            html += `<h4 style="margin:18px 0 4px 0;">Miesiąc ${miesiac} / ${rok} — pula premii ${finKwota(premiaPrognozy)} zł</h4>`;
 
-        // Podsumowanie kwartału — odpowiednik kolumny „Kwartalnie" w arkuszu.
-        const kwartal = Math.ceil(miesiac / 3);
-        const miesiaceKwartalu = [1, 2, 3].map(i => (kwartal - 1) * 3 + i);
-        const daneKwartalu = await Promise.all(miesiaceKwartalu.map(m => finPobierzRozliczenie(rok, m)));
-        html += `<h4 style="margin:18px 0 4px 0;">📅 Podsumowanie kwartału ${kwartal}</h4>
-        <div class="table-responsive"><table class="month-table">
-            <tr><th>Pracownik</th>${miesiaceKwartalu.map(m => `<th>Miesiąc ${m}</th>`).join('')}<th>Suma kwartału</th></tr>`;
-        for (const p of pracownicy) {
-            const wartosci = daneKwartalu.map(d => finPodsumujPracownika((d.pracownicy || {})[p.id] || {}).razem);
-            html += `<tr><td style="text-align:left;">${ucieczkaHtml(p.imie || p.id)}</td>
-                ${wartosci.map(w => `<td>${finKwota(w)}</td>`).join('')}
-                <td><strong>${finKwota(wartosci.reduce((a, b) => a + b, 0))}</strong></td></tr>`;
-        }
-        html += `</table></div>`;
+            // Umowa o pracę — Podstawa, P1, P2, Premia razem, Suma.
+            html += `<div class="table-responsive"><table class="month-table">
+                <tr><th>Pracownik</th><th>Podstawa</th><th>P1</th><th>P2</th><th>Premia razem</th><th>Suma</th></tr>`;
+            let sumaPodstawUop = 0, sumaUop = 0;
+            for (const p of pracownicyUop) {
+                const w = finWynagrodzeniePracownika(pracownicyDane[p.id] || {}, false);
+                sumaPodstawUop += w.podstawa;
+                sumaUop += w.suma;
+                const pid = ucieczkaJs(p.id);
+                html += `<tr>
+                    <td style="text-align:left;"><strong>${ucieczkaHtml(p.imie || p.id)}</strong></td>
+                    ${inputPole(pid, 'podstawa', w.podstawa)}
+                    ${inputPole(pid, 'p1', w.p1)}${inputPole(pid, 'p2', w.p2)}
+                    <td>${finKwota(w.premia)}</td>
+                    <td><strong>${finKwota(w.suma)}</strong></td>
+                </tr>`;
+            }
+            html += `<tr class="sum-row"><td>SUMA UoP</td><td>${finKwota(sumaPodstawUop)}</td>
+                <td>—</td><td>—</td><td>—</td><td>${finKwota(sumaUop)}</td></tr></table></div>`;
+
+            // Umowa zlecenie — Stawka, Il. godzin, P1, P2, Premia razem, Suma.
+            html += `<div class="table-responsive"><table class="month-table">
+                <tr><th>Pracownik</th><th>Stawka</th><th>Il. godzin</th><th>P1</th><th>P2</th><th>Premia razem</th><th>Suma</th></tr>`;
+            let sumaUz = 0;
+            for (const p of pracownicyUz) {
+                const w = finWynagrodzeniePracownika(pracownicyDane[p.id] || {}, true);
+                sumaUz += w.suma;
+                const pid = ucieczkaJs(p.id);
+                html += `<tr>
+                    <td style="text-align:left;"><strong>${ucieczkaHtml(p.imie || p.id)}</strong></td>
+                    ${inputPole(pid, 'stawka', w.stawka)}${inputPole(pid, 'godziny', w.godziny)}
+                    ${inputPole(pid, 'p1', w.p1)}${inputPole(pid, 'p2', w.p2)}
+                    <td>${finKwota(w.premia)}</td>
+                    <td><strong>${finKwota(w.suma)}</strong></td>
+                </tr>`;
+            }
+            html += `<tr class="sum-row"><td>SUMA UZ</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td>
+                <td>${finKwota(sumaUz)}</td></tr></table></div>`;
+
+            // Wynagrodzenia suma — UoP z kosztami pracodawcy, UZ, Total i Bilans.
+            const uopZKosztami = sumaUop * FIN_KOSZTY_PRACODAWCY;
+            const total = uopZKosztami + sumaUz;
+            const bilans = total - (prowizjaPodstawowa + premiaPrognozy);
+            html += `<h4 style="margin:14px 0 4px 0;">🧮 Wynagrodzenia suma — miesiąc ${miesiac}</h4>
+            <div class="table-responsive"><table class="month-table">
+                <tr><th>UoP (z kosztami pracodawcy)</th><th>UZ</th><th>Total</th><th>Bilans</th></tr>
+                <tr>
+                    <td>${finKwota(uopZKosztami)}</td>
+                    <td>${finKwota(sumaUz)}</td>
+                    <td><strong>${finKwota(total)}</strong></td>
+                    <td class="${finKlasaWartosci(bilans)}"><strong>${finKwota(bilans)}</strong></td>
+                </tr>
+            </table></div>`;
+        });
 
         kontener.innerHTML = html;
     } catch (e) {
@@ -418,9 +516,8 @@ window.zaladujFinanseRozliczenie = async function() {
     }
 };
 
-window.zapiszFinanseRozliczenie = async function(pracownikId, pole, wartosc) {
+window.zapiszFinanseRozliczenie = async function(miesiac, pracownikId, pole, wartosc) {
     const rok = finPobierzRok('finanse-roz-rok');
-    const miesiac = Number(document.getElementById('finanse-roz-miesiac').value) || 1;
     const id = `${rok}-${finMiesiacStr(miesiac)}`;
     try {
         await setDoc(doc(db, FIN_KOLEKCJA_ROZLICZENIE, id), {
@@ -428,17 +525,6 @@ window.zapiszFinanseRozliczenie = async function(pracownikId, pole, wartosc) {
         }, { merge: true });
         await window.zaladujFinanseRozliczenie();
     } catch (e) { alert('Błąd zapisu rozliczenia: ' + e.message); }
-};
-
-window.zapiszFinansePremie = async function(pole, wartosc) {
-    const rok = finPobierzRok('finanse-roz-rok');
-    const miesiac = Number(document.getElementById('finanse-roz-miesiac').value) || 1;
-    try {
-        await setDoc(doc(db, FIN_KOLEKCJA_ROZLICZENIE, `${rok}-${finMiesiacStr(miesiac)}`), {
-            premie: { [pole]: Math.max(0, finLiczba(wartosc)) }
-        }, { merge: true });
-        await window.zaladujFinanseRozliczenie();
-    } catch (e) { alert('Błąd zapisu premii: ' + e.message); }
 };
 
 /* ---------- zakładka: analiza budżetu ---------- */
@@ -454,6 +540,7 @@ window.zaladujFinanseBudzet = async function() {
     const kontener = document.getElementById('finanse-budzet-container');
     if (!kontener) return;
     const rok = finPobierzRok('finanse-bud-rok');
+    const okres = finPobierzOkres('finanse-bud');
     kontener.innerHTML = 'Ładowanie danych...';
     try {
         const dane = await finPobierzBudzet(rok);
@@ -462,7 +549,7 @@ window.zaladujFinanseBudzet = async function() {
         let przychodRocznie = 0, kosztyRocznie = 0, zostajeRocznie = 0;
 
         let html = `<div class="finanse-panel">
-            <div class="finanse-panel-title">💰 Budżet ${rok}</div>
+            <div class="finanse-panel-title">💰 Budżet ${rok} — ${okres.etykieta}</div>
             <p class="text-muted" style="margin:0;">Przychód i koszty wpisuje administrator. „Zostaje" to przychód minus suma kosztów.</p>
             <button onclick="window.finKopiujWynagrodzenia()" class="btn-info" style="margin-top:10px;">🔄 Pobierz wynagrodzenia z Rozliczenia</button>
         </div>`;
@@ -470,7 +557,7 @@ window.zaladujFinanseBudzet = async function() {
         html += `<div class="table-responsive"><table class="month-table">
             <tr><th>M-c</th><th>Przychód (prowizja)</th>${FIN_KOSZTY.map(k => `<th>${k.nazwa}</th>`).join('')}
             <th>Koszty razem</th><th>Zostaje</th><th>% kosztów</th></tr>`;
-        for (let m = 1; m <= 12; m++) {
+        for (const m of okres.miesiace) {
             const d = dane[m - 1] || {};
             const koszty = d.koszty || {};
             const przychod = finLiczba(d.przychod);
@@ -496,7 +583,7 @@ window.zaladujFinanseBudzet = async function() {
             </tr>`;
         }
         html += `<tr class="sum-row">
-            <td>ROK</td><td>${finKwota(przychodRocznie)}</td>
+            <td>${okres.etykieta}</td><td>${finKwota(przychodRocznie)}</td>
             ${FIN_KOSZTY.map(k => `<td>${finKwota(sumyKosztow[k.key])}</td>`).join('')}
             <td>${finKwota(kosztyRocznie)}</td>
             <td class="${finKlasaWartosci(zostajeRocznie)}">${finKwota(zostajeRocznie)}</td>
@@ -532,12 +619,14 @@ window.zapiszFinanseBudzet = async function(miesiac, pole, wartosc) {
 window.finKopiujWynagrodzenia = async function() {
     const rok = finPobierzRok('finanse-bud-rok');
     try {
-        const daneRozliczen = await Promise.all(Array.from({ length: 12 }, (_, i) =>
-            finPobierzRozliczenie(rok, i + 1)
-        ));
+        const [daneRozliczen, listaPracownikow] = await Promise.all([
+            Promise.all(Array.from({ length: 12 }, (_, i) => finPobierzRozliczenie(rok, i + 1))),
+            pobierzListePracownikow().catch(() => [])
+        ]);
         await Promise.all(daneRozliczen.map((dane, i) => {
-            const pracownicy = dane.pracownicy || {};
-            const suma = Object.keys(pracownicy).reduce((acc, id) => acc + finPodsumujPracownika(pracownicy[id]).razem, 0);
+            const wpisy = dane.pracownicy || {};
+            const suma = listaPracownikow.reduce((acc, p) =>
+                acc + finWynagrodzeniePracownika(wpisy[p.id] || {}, finCzyZlecenie(p)).suma, 0);
             return setDoc(doc(db, FIN_KOLEKCJA_BUDZET, `${rok}-${finMiesiacStr(i + 1)}`), {
                 koszty: { wynagrodzenia: suma }
             }, { merge: true });
@@ -567,6 +656,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const el = document.getElementById(id);
         if (el && !el.value) el.value = rok;
     });
-    const miesiac = document.getElementById('finanse-roz-miesiac');
-    if (miesiac && !miesiac.value) miesiac.value = String(teraz.getMonth() + 1);
+    finWbudujKontrolkiOkresu('finanse-roz', 'zmienOkresFinanseRozliczenie', 'zaladujFinanseRozliczenie');
+    finWbudujKontrolkiOkresu('finanse-bud', 'zmienOkresFinanseBudzet', 'zaladujFinanseBudzet');
+
+    const miesiacBiezacy = teraz.getMonth() + 1;
+    const ustaw = (id, wartosc) => { const el = document.getElementById(id); if (el) el.value = String(wartosc); };
+    ['finanse', 'finanse-roz', 'finanse-bud'].forEach(prefix => {
+        ustaw(`${prefix}-okres-miesiac`, miesiacBiezacy);
+        ustaw(`${prefix}-okres-kwartal`, Math.ceil(miesiacBiezacy / 3));
+        ustaw(`${prefix}-okres-od`, 1);
+        ustaw(`${prefix}-okres-do`, miesiacBiezacy);
+    });
 });
