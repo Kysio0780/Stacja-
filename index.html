@@ -162,7 +162,7 @@
                     <span>Misje</span>
                     <span id="misje-badge" class="notification-badge hidden">0</span>
                 </div>
-                <div class="tile tile-info" onclick="window.otworzModul('marketing')">
+                <div class="tile tile-yellow" onclick="window.otworzModul('marketing')">
                     <span class="tile-icon">📣</span>
                     <span>Marketing</span>
                 </div>
@@ -436,7 +436,9 @@
                 <div id="marketing-podglad-opis" style="white-space:pre-wrap; margin-bottom:12px;"></div>
                 <div id="marketing-podglad-zdjecie" style="text-align:center;"></div>
                 <div class="flex-row" style="margin-top:14px;">
-                    <button onclick="window.zamknijPodgladMarketing()" class="btn-neutral" style="margin:0;">Zamknij</button>
+                    <button id="marketing-podglad-edytuj" onclick="window.edytujMarketingZPodgladu()" class="btn-info hidden" style="margin:0;">✏️ Edytuj</button>
+                    <button id="marketing-podglad-usun" onclick="window.usunMarketingZPodgladu()" class="btn-danger hidden" style="margin:0;">🗑️ Usuń</button>
+                    <button onclick="window.zamknijPodgladMarketing()" class="btn-neutral" style="margin:0 0 0 auto;">Zamknij</button>
                 </div>
             </div>
         </div>
@@ -1467,7 +1469,7 @@
     <script defer src="js/modules/premia.js"></script>
     <script defer src="js/modules/pracownicy.js"></script>
     <script defer src="js/modules/wiadomosci.js?v=20261126j"></script>
-    <script defer src="js/modules/marketing.js?v=20261126"></script>
+    <script defer src="js/modules/marketing.js?v=20261126b"></script>
     <script defer src="js/modules/statystyki.js?v=20261125b"></script>
     <script defer src="js/modules/misje.js"></script>
     <script defer src="js/modules/planogramy.js"></script>
