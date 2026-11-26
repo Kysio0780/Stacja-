@@ -25,7 +25,7 @@
     <link rel="stylesheet" href="css/06-grafik.css">
     <link rel="stylesheet" href="css/07-components.css">
     <link rel="stylesheet" href="css/08-modals-zoom-gallery.css">
-    <link rel="stylesheet" href="css/09-modules-misc.css">
+    <link rel="stylesheet" href="css/09-modules-misc.css?v=20261126m">
     <link rel="stylesheet" href="css/10-responsive.css">
 </head>
 <body>
@@ -1128,6 +1128,7 @@
                     <select id="new-p-umowa" onchange="window.toggleEtatPole('new')">
                         <option value="UoP">Umowa o pracę (UoP)</option>
                         <option value="Zlecenie">Umowa Zlecenie</option>
+                        <option value="">Brak umowy (administrator)</option>
                     </select>
 
                     <div id="new-etat-box">
@@ -1140,6 +1141,31 @@
                             <option value="inny">Inny (wpisz ręcznie)</option>
                         </select>
                         <input type="text" id="new-p-etat-custom" class="hidden" placeholder="Wpisz etat np. 3/5">
+                    </div>
+
+                    <div id="new-dane-umowy-box" class="field-group grid-2" style="background: var(--preview-bg); margin-top: 8px;">
+                        <div>
+                            <label>Umowa do:</label>
+                            <input type="date" id="new-p-umowa-do" style="margin-bottom:4px;">
+                            <label class="flex-row" style="margin:0; font-size:0.85em;">
+                                <input type="checkbox" id="new-p-umowa-bezterminu" onchange="window.toggleDaneUmowy('new')" style="margin:0;">
+                                na czas nieokreślony
+                            </label>
+                        </div>
+                        <div>
+                            <div id="new-uop-box">
+                                <label>Wynagrodzenie podstawowe:</label>
+                                <input type="number" step="0.01" min="0" id="new-p-wynagrodzenie" placeholder="np. 5000" style="margin-bottom:0;">
+                            </div>
+                            <div id="new-uz-box" class="hidden">
+                                <label>Stawka godzinowa:</label>
+                                <input type="number" step="0.01" min="0" id="new-p-stawka" placeholder="np. 30" style="margin-bottom:0;">
+                            </div>
+                            <label class="flex-row" style="margin:8px 0 0 0; font-size:0.85em;">
+                                <input type="checkbox" id="new-p-umowa-aktywna" checked style="margin:0;">
+                                Umowa aktywna
+                            </label>
+                        </div>
                     </div>
 
                     <div class="field-group grid-3" style="background: var(--preview-bg); margin-top: 8px;">
@@ -1201,6 +1227,7 @@
                         <select id="edit-p-umowa" onchange="window.toggleEtatPole('edit')">
                             <option value="UoP">Umowa o pracę (UoP)</option>
                             <option value="Zlecenie">Umowa Zlecenie</option>
+                            <option value="">Brak umowy (administrator)</option>
                         </select>
                     </div>
                 </div>
@@ -1215,6 +1242,31 @@
                         <option value="inny">Inny (wpisz ręcznie)</option>
                     </select>
                     <input type="text" id="edit-p-etat-custom" class="hidden" placeholder="Wpisz etat np. 3/5">
+                </div>
+
+                <div id="edit-dane-umowy-box" class="field-group grid-2" style="background: var(--preview-bg);">
+                    <div>
+                        <label>Umowa do:</label>
+                        <input type="date" id="edit-p-umowa-do" style="margin-bottom:4px;">
+                        <label class="flex-row" style="margin:0; font-size:0.85em;">
+                            <input type="checkbox" id="edit-p-umowa-bezterminu" onchange="window.toggleDaneUmowy('edit')" style="margin:0;">
+                            na czas nieokreślony
+                        </label>
+                    </div>
+                    <div>
+                        <div id="edit-uop-box">
+                            <label>Wynagrodzenie podstawowe:</label>
+                            <input type="number" step="0.01" min="0" id="edit-p-wynagrodzenie" style="margin-bottom:0;">
+                        </div>
+                        <div id="edit-uz-box" class="hidden">
+                            <label>Stawka godzinowa:</label>
+                            <input type="number" step="0.01" min="0" id="edit-p-stawka" style="margin-bottom:0;">
+                        </div>
+                        <label class="flex-row" style="margin:8px 0 0 0; font-size:0.85em;">
+                            <input type="checkbox" id="edit-p-umowa-aktywna" checked style="margin:0;">
+                            Umowa aktywna
+                        </label>
+                    </div>
                 </div>
 
                 <div class="field-group grid-3" style="background: var(--preview-bg);">
@@ -1433,82 +1485,17 @@
             </div>
 
             <div id="finanse-view-prognoza" class="finanse-view">
-                <div class="flex-row" style="margin:10px 0;">
-                    <label for="finanse-rok" style="margin:0;">Rok:</label>
-                    <input type="number" id="finanse-rok" min="2000" max="2100" style="width:90px; margin:0;"
-                        onchange="window.zaladujFinansePrognoza()">
-                    <label for="finanse-okres" style="margin:0;">Okres:</label>
-                    <select id="finanse-okres" style="width:125px; margin:0;" onchange="window.zmienOkresFinanse()">
-                        <option value="miesiac">Miesiąc</option>
-                        <option value="kwartal">Kwartał</option>
-                        <option value="rok">Rok</option>
-                        <option value="oddo">Od–Do</option>
-                    </select>
-                    <span id="finanse-okres-miesiac-wrap">
-                        <label for="finanse-okres-miesiac" style="margin:0;">Miesiąc:</label>
-                        <select id="finanse-okres-miesiac" style="width:130px; margin:0;"
-                            onchange="window.zaladujFinansePrognoza()">
-                            <option value="1">1 — styczeń</option><option value="2">2 — luty</option>
-                            <option value="3">3 — marzec</option><option value="4">4 — kwiecień</option>
-                            <option value="5">5 — maj</option><option value="6">6 — czerwiec</option>
-                            <option value="7">7 — lipiec</option><option value="8">8 — sierpień</option>
-                            <option value="9">9 — wrzesień</option><option value="10">10 — październik</option>
-                            <option value="11">11 — listopad</option><option value="12">12 — grudzień</option>
-                        </select>
-                    </span>
-                    <span id="finanse-okres-kwartal-wrap" class="hidden">
-                        <label for="finanse-okres-kwartal" style="margin:0;">Kwartał:</label>
-                        <select id="finanse-okres-kwartal" style="width:150px; margin:0;"
-                            onchange="window.zaladujFinansePrognoza()">
-                            <option value="1">I (1–3)</option>
-                            <option value="2">II (4–6)</option>
-                            <option value="3">III (7–9)</option>
-                            <option value="4">IV (10–12)</option>
-                        </select>
-                    </span>
-                    <span id="finanse-okres-oddo-wrap" class="hidden">
-                        <label for="finanse-okres-od" style="margin:0;">Od:</label>
-                        <select id="finanse-okres-od" style="width:130px; margin:0;"
-                            onchange="window.zaladujFinansePrognoza()">
-                            <option value="1">1 — styczeń</option><option value="2">2 — luty</option>
-                            <option value="3">3 — marzec</option><option value="4">4 — kwiecień</option>
-                            <option value="5">5 — maj</option><option value="6">6 — czerwiec</option>
-                            <option value="7">7 — lipiec</option><option value="8">8 — sierpień</option>
-                            <option value="9">9 — wrzesień</option><option value="10">10 — październik</option>
-                            <option value="11">11 — listopad</option><option value="12">12 — grudzień</option>
-                        </select>
-                        <label for="finanse-okres-do" style="margin:0;">Do:</label>
-                        <select id="finanse-okres-do" style="width:130px; margin:0;"
-                            onchange="window.zaladujFinansePrognoza()">
-                            <option value="1">1 — styczeń</option><option value="2">2 — luty</option>
-                            <option value="3">3 — marzec</option><option value="4">4 — kwiecień</option>
-                            <option value="5">5 — maj</option><option value="6">6 — czerwiec</option>
-                            <option value="7">7 — lipiec</option><option value="8">8 — sierpień</option>
-                            <option value="9">9 — wrzesień</option><option value="10">10 — październik</option>
-                            <option value="11">11 — listopad</option><option value="12">12 — grudzień</option>
-                        </select>
-                    </span>
-                </div>
+                <div id="finanse-okresy" class="finanse-okresy"></div>
                 <div id="finanse-prognoza-container">Ładowanie danych...</div>
             </div>
 
             <div id="finanse-view-rozliczenie" class="finanse-view hidden">
-                <div class="flex-row" style="margin:10px 0;">
-                    <label for="finanse-roz-rok" style="margin:0;">Rok:</label>
-                    <input type="number" id="finanse-roz-rok" min="2000" max="2100" style="width:90px; margin:0;"
-                        onchange="window.zaladujFinanseRozliczenie()">
-                </div>
-                <div class="flex-row" id="finanse-roz-okresy" style="margin:10px 0;"></div>
+                <div class="finanse-okresy" id="finanse-roz-okresy"></div>
                 <div id="finanse-rozliczenie-container">Ładowanie danych...</div>
             </div>
 
             <div id="finanse-view-budzet" class="finanse-view hidden">
-                <div class="flex-row" style="margin:10px 0;">
-                    <label for="finanse-bud-rok" style="margin:0;">Rok:</label>
-                    <input type="number" id="finanse-bud-rok" min="2000" max="2100" style="width:90px; margin:0;"
-                        onchange="window.zaladujFinanseBudzet()">
-                </div>
-                <div class="flex-row" id="finanse-bud-okresy" style="margin:10px 0;"></div>
+                <div class="finanse-okresy" id="finanse-bud-okresy"></div>
                 <div id="finanse-budzet-container">Ładowanie danych...</div>
             </div>
         </div>
@@ -1549,10 +1536,10 @@
     <script defer src="js/modules/grafik-obecnosc.js"></script>
     <script defer src="js/modules/tps.js"></script>
     <script defer src="js/modules/premia.js"></script>
-    <script defer src="js/modules/pracownicy.js"></script>
+    <script defer src="js/modules/pracownicy.js?v=20261126o"></script>
     <script defer src="js/modules/wiadomosci.js?v=20261126j"></script>
     <script defer src="js/modules/marketing.js?v=20261126b"></script>
-    <script defer src="js/modules/finanse.js?v=20261126l"></script>
+    <script defer src="js/modules/finanse.js?v=20261126m"></script>
     <script defer src="js/modules/statystyki.js?v=20261125b"></script>
     <script defer src="js/modules/misje.js"></script>
     <script defer src="js/modules/planogramy.js"></script>
