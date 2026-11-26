@@ -436,6 +436,21 @@ function finWynagrodzeniePracownika(d, czyZlecenie) {
     };
 }
 
+// Godziny pracownika w grafiku danego miesiąca (klucze wpisów: id_dzień_zmiana).
+function finGodzinyZGrafiku(snap, pracownik) {
+    if (!snap || !snap.exists()) return 0;
+    const dane = snap.data() || {};
+    const wpisy = dane.entries || {};
+    const grafikownik = (dane.employees || []).find(e =>
+        String(e.id) === String(pracownik.id) || e.imie === pracownik.imie);
+    const id = grafikownik ? String(grafikownik.id) : String(pracownik.id);
+    let suma = 0;
+    Object.keys(wpisy).forEach(klucz => {
+        if (klucz.startsWith(id + '_')) suma += Number(wpisy[klucz]?.hours) || 0;
+    });
+    return suma;
+}
+
 window.zaladujFinanseRozliczenie = async function() {
     const kontener = document.getElementById('finanse-rozliczenie-container');
     if (!kontener) return;
@@ -443,10 +458,13 @@ window.zaladujFinanseRozliczenie = async function() {
     const okres = finPobierzOkres('finanse-roz');
     kontener.innerHTML = 'Ładowanie danych...';
     try {
-        const [daneRozliczen, pracownicy, prognoza] = await Promise.all([
+        const [daneRozliczen, pracownicy, prognoza, grafiki] = await Promise.all([
             Promise.all(okres.miesiace.map(m => finPobierzRozliczenie(rok, m))),
             pobierzListePracownikow().catch(() => []),
-            finPobierzDanePrognozy(rok)
+            finPobierzDanePrognozy(rok),
+            Promise.all(okres.miesiace.map(m =>
+                getDoc(doc(db, 'grafiki', `${rok}-${finMiesiacStr(m)}`)).catch(() => null)
+            ))
         ]);
         const prowizjaPodstawowa = finLiczba(prognoza.parametry.prowizjaPodstawowa);
         const pracownicyUop = pracownicy.filter(p => !finCzyZlecenie(p));
@@ -475,7 +493,11 @@ window.zaladujFinanseRozliczenie = async function() {
                 <tr><th>Pracownik</th><th>Podstawa</th><th>P1</th><th>P2</th><th>Premia razem</th><th>Suma</th></tr>`;
             let sumaPodstawUop = 0, sumaUop = 0;
             for (const p of pracownicyUop) {
-                const w = finWynagrodzeniePracownika(pracownicyDane[p.id] || {}, false);
+                const danePracownika = { ...(pracownicyDane[p.id] || {}) };
+                if (danePracownika.podstawa == null) {
+                    danePracownika.podstawa = finLiczba(p.wynagrodzeniePodstawowe);
+                }
+                const w = finWynagrodzeniePracownika(danePracownika, false);
                 sumaPodstawUop += w.podstawa;
                 sumaUop += w.suma;
                 const pid = ucieczkaJs(p.id);
@@ -495,7 +517,14 @@ window.zaladujFinanseRozliczenie = async function() {
                 <tr><th>Pracownik</th><th>Stawka</th><th>Il. godzin</th><th>P1</th><th>P2</th><th>Premia razem</th><th>Suma</th></tr>`;
             let sumaUz = 0;
             for (const p of pracownicyUz) {
-                const w = finWynagrodzeniePracownika(pracownicyDane[p.id] || {}, true);
+                const danePracownika = { ...(pracownicyDane[p.id] || {}) };
+                if (danePracownika.stawka == null) {
+                    danePracownika.stawka = finLiczba(p.stawkaGodzinowa);
+                }
+                if (danePracownika.godziny == null) {
+                    danePracownika.godziny = finGodzinyZGrafiku(grafiki[idx], p);
+                }
+                const w = finWynagrodzeniePracownika(danePracownika, true);
                 sumaUz += w.suma;
                 const pid = ucieczkaJs(p.id);
                 html += `<tr>
