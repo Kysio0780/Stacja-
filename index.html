@@ -162,6 +162,10 @@
                     <span>Misje</span>
                     <span id="misje-badge" class="notification-badge hidden">0</span>
                 </div>
+                <div class="tile tile-info" onclick="window.otworzModul('marketing')">
+                    <span class="tile-icon">📣</span>
+                    <span>Marketing</span>
+                </div>
                 <div class="tile tile-gray admin-only-tile" onclick="window.otworzModul('pracownicy')" id="tile-pracownicy" style="display: none;">
                     <span class="tile-icon">👥</span>
                     <span>Pracownicy</span>
@@ -371,6 +375,70 @@
             <button class="msg-tab-btn hidden" id="tab-wszystkie" onclick="window.przelaczTabWiadomosci('wszystkie')">🌐 Wszystkie (Admin)</button>
 
             <div id="wiadomosci-lista-container" style="margin-top: 14px;">Ładowanie wiadomości...</div>
+        </div>
+
+        <!-- MODUŁ MARKETING -->
+        <div id="modul-marketing" class="hidden">
+            <div class="module-nav-bar">
+                <h3>📣 Marketing — akcje i wydarzenia</h3>
+                <button class="btn-back" onclick="window.otworzModul('menu')">⬅ Menu</button>
+            </div>
+
+            <div id="marketing-admin-panel" class="hidden" style="margin-bottom:12px;">
+                <button onclick="window.otworzModalMarketing()" class="btn-success">➕ Dodaj promocję</button>
+            </div>
+
+            <div id="marketing-lista-container">Ładowanie wpisów...</div>
+        </div>
+
+        <!-- MODAL DODAWANIA/EDYCJI PROMOCJI -->
+        <div id="modal-marketing" class="modal-overlay hidden">
+            <div class="modal-content" style="max-width:560px;">
+                <h4 id="modal-marketing-tytul">➕ Nowa promocja</h4>
+                <input type="hidden" id="marketing-id">
+
+                <label for="marketing-nazwa">Nazwa:</label>
+                <input type="text" id="marketing-nazwa" placeholder="np. Promocja letnia" style="margin-bottom:10px;">
+
+                <div class="grid-2">
+                    <div>
+                        <label for="marketing-od">Obowiązuje od:</label>
+                        <input type="date" id="marketing-od" style="margin-bottom:0;">
+                    </div>
+                    <div>
+                        <label for="marketing-do">Obowiązuje do:</label>
+                        <input type="date" id="marketing-do" style="margin-bottom:0;">
+                    </div>
+                </div>
+
+                <label for="marketing-opis" style="margin-top:10px;">Krótki opis:</label>
+                <textarea id="marketing-opis" rows="4" placeholder="Opis akcji promocyjnej lub wydarzenia..."></textarea>
+
+                <label>Zdjęcie (opcjonalnie):</label>
+                <input type="file" id="marketing-zdjecie-input" accept="image/*">
+                <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;">
+                    <button type="button" onclick="window.dodajZdjecieMarketingAparatem()" class="btn-info" style="margin:0;">📷 Zrób zdjęcie</button>
+                </div>
+                <div id="marketing-zdjecie-preview" style="margin-top:6px; text-align:center;"></div>
+
+                <div class="flex-row" style="margin-top:14px;">
+                    <button onclick="window.zamknijModalMarketing()" class="btn-neutral" style="margin:0;">Anuluj</button>
+                    <button onclick="window.zapiszMarketing()" class="btn-success" style="margin:0 0 0 auto;">💾 Zapisz</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL PODGLĄDU PROMOCJI -->
+        <div id="modal-marketing-podglad" class="modal-overlay hidden">
+            <div class="modal-content" style="max-width:600px;">
+                <h4 id="marketing-podglad-tytul">📣 Promocja</h4>
+                <p id="marketing-podglad-okres" class="text-muted" style="margin:0 0 10px 0;"></p>
+                <div id="marketing-podglad-opis" style="white-space:pre-wrap; margin-bottom:12px;"></div>
+                <div id="marketing-podglad-zdjecie" style="text-align:center;"></div>
+                <div class="flex-row" style="margin-top:14px;">
+                    <button onclick="window.zamknijPodgladMarketing()" class="btn-neutral" style="margin:0;">Zamknij</button>
+                </div>
+            </div>
         </div>
 
         <!-- MODAL NOWEJ WIADOMOŚCI -->
@@ -1399,6 +1467,7 @@
     <script defer src="js/modules/premia.js"></script>
     <script defer src="js/modules/pracownicy.js"></script>
     <script defer src="js/modules/wiadomosci.js?v=20261126j"></script>
+    <script defer src="js/modules/marketing.js?v=20261126"></script>
     <script defer src="js/modules/statystyki.js?v=20261125b"></script>
     <script defer src="js/modules/misje.js"></script>
     <script defer src="js/modules/planogramy.js"></script>
