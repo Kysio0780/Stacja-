@@ -100,10 +100,6 @@
                         <option value="poppins">Poppins</option>
                     </select>
 
-                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin-top: 10px;">
-                        <input type="checkbox" id="kiosk-toggle-dd" onchange="window.ustawTrybKiosku(this.checked, true)">
-                        <span>🖥️ Tryb pełnoekranowy (kiosk)</span>
-                    </label>
 
                     <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin-top: 10px;">
                         <input type="checkbox" id="biometria-dd">
@@ -370,13 +366,9 @@
                 <button class="btn-back" onclick="window.otworzModul('menu')">⬅ Menu</button>
             </div>
             
-            <button onclick="window.otworzFormularzNowejWiadomosci()" class="btn-success">✉️ Napisz nową wiadomość</button>
+            <button onclick="window.otworzFormularzNowejWiadomosci()" class="btn-success">➕ Nowa wiadomość</button>
             
-            <div class="msg-tabs">
-                <button class="msg-tab-btn active" id="tab-odebrane" onclick="window.przelaczTabWiadomosci('odebrane')">📥 Odebrane</button>
-                <button class="msg-tab-btn" id="tab-wyslane" onclick="window.przelaczTabWiadomosci('wyslane')">📤 Wysłane</button>
-                <button class="msg-tab-btn hidden" id="tab-wszystkie" onclick="window.przelaczTabWiadomosci('wszystkie')">🌐 Wszystkie (Admin)</button>
-            </div>
+            <button class="msg-tab-btn hidden" id="tab-wszystkie" onclick="window.przelaczTabWiadomosci('wszystkie')">🌐 Wszystkie (Admin)</button>
 
             <div id="wiadomosci-lista-container" style="margin-top: 14px;">Ładowanie wiadomości...</div>
         </div>
@@ -392,6 +384,9 @@
                         Ładowanie adresatów...
                     </div>
                 </div>
+
+                <label for="msg-temat-input">Temat wiadomości:</label>
+                <input type="text" id="msg-temat-input" placeholder="Wpisz temat wiadomości" style="margin-bottom:10px;">
 
                 <label>Treść wiadomości:</label>
                 <textarea id="msg-tresc-input" rows="4" placeholder="Wpisz treść wiadomości..."></textarea>
@@ -415,6 +410,26 @@
                     <button onclick="window.zamknijModalNowejWiadomosci()" class="btn-neutral" style="margin:0;">Anuluj</button>
                     <button onclick="window.wyslijWiadomosc()" class="btn-success" style="margin:0 0 0 auto;">📤 Wyślij</button>
                 </div>
+            </div>
+        </div>
+
+        <!-- OKNO CZATU -->
+        <div id="modal-czat" class="modal-overlay hidden">
+            <div class="modal-content czat-panel">
+                <h4 id="czat-tytul">Czat</h4>
+                <div id="czat-wiadomosci" class="czat-wiadomosci"></div>
+                <div id="czat-zalacznik-menu" class="hidden" style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap;">
+                    <button type="button" onclick="window.wybierzPlikDoCzatu()" class="btn-info btn-sm" style="margin:0;">📁 Plik / galeria</button>
+                    <button type="button" onclick="window.dodajZdjecieZAparatuDoCzatu()" class="btn-info btn-sm" style="margin:0;">📷 Aparat</button>
+                    <button type="button" onclick="window.zamknijMenuZalacznikaCzatu()" class="btn-neutral btn-sm" style="margin:0;">Anuluj</button>
+                </div>
+                <input type="file" id="czat-plik-input" accept="image/*" class="hidden">
+                <div class="czat-forma">
+                    <button type="button" onclick="window.otworzMenuZalacznikaCzatu()" class="czat-dodaj" title="Dodaj plik lub zdjęcie" aria-label="Dodaj plik lub zdjęcie">+</button>
+                    <textarea id="czat-tresc" class="czat-pole" placeholder="Napisz wiadomość..." onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault(); window.wyslijWiadomoscWWatku();}"></textarea>
+                    <button onclick="window.wyslijWiadomoscWWatku()" class="czat-wyslij" title="Wyślij" aria-label="Wyślij">➤</button>
+                </div>
+                <button onclick="window.zamknijCzat()" class="btn-neutral" style="margin:8px 0 0 0;">Zamknij</button>
             </div>
         </div>
 
@@ -1380,7 +1395,7 @@
     <script defer src="js/modules/tps.js"></script>
     <script defer src="js/modules/premia.js"></script>
     <script defer src="js/modules/pracownicy.js"></script>
-    <script defer src="js/modules/wiadomosci.js"></script>
+    <script defer src="js/modules/wiadomosci.js?v=20261126h"></script>
     <script defer src="js/modules/statystyki.js?v=20261125b"></script>
     <script defer src="js/modules/misje.js"></script>
     <script defer src="js/modules/planogramy.js"></script>
